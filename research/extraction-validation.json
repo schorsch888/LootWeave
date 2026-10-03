@@ -1,0 +1,1553 @@
+{
+  "schema_version": 1,
+  "status": "structural_and_serialized_numeric_validation_complete",
+  "date": "2026-10-03",
+  "scope": "独立只读验证本地静态提取；未修改主提取脚本、数据输出或游戏文件；自有managed-reference修复模块和枚举导出已授权并由主提取方接入，不访问游戏内存或存档、不把网上字段补成本地事实。",
+  "target": "data/extracted/deskrawl/25690430",
+  "online_expectations": [
+    {
+      "id": "staff_identity",
+      "sample": "LegendaryStaff1",
+      "expected": "霜龙法杖 / Staff of the Frostwyrm；巫师、传奇、武器；最低掉落15。",
+      "source": "https://x1x.tw/deskrawl/items/LegendaryStaff1/",
+      "source_build": "25690430",
+      "verify": "稳定原型ID、职业/类型原始值、中文本地化键到值、最低掉落字段；不要从网页模拟器写itemLevel150。"
+    },
+    {
+      "id": "staff_affix_effect",
+      "sample": "LegendaryStaff1",
+      "expected": "4主要1次要；有随机属性池；固定效果使冰碎片命中后弹射额外1目标。",
+      "source": "https://x1x.tw/deskrawl/items/LegendaryStaff1/",
+      "source_build": "25690430",
+      "verify": "词条池完整性；物品→效果/能力→技能关联可解析；分清描述字符串与实际行为参数。"
+    },
+    {
+      "id": "axe_crossclass_effect",
+      "sample": "LegendaryAxe1",
+      "expected": "北方巨人巨斧；战士/武僧；最低掉落10；普攻附加50%武器冰霜伤害并3%冻结。",
+      "source": "https://x1x.tw/deskrawl/items/LegendaryAxe1/",
+      "source_build": "25690430",
+      "verify": "多职业字段保留；传奇效果引用不是仅文案；参数单位原始值与解释分开。"
+    },
+    {
+      "id": "sacred_requirements",
+      "sample": "DivineRing1",
+      "expected": "古贤遗骨；神圣戒指；固定属性、全部技能+10。网页旧build正文需求70但通用模拟器显示1。",
+      "source": "https://x1x.tw/deskrawl/items/DivineRing1/",
+      "source_build": "25642216",
+      "verify": "报告本地真实等级/品质/技能字段；若要求来自运行代码而不是资产，报告未知；不以网页值修补。"
+    },
+    {
+      "id": "ice_set_graph",
+      "sample": "冰封弹幕符文套装",
+      "expected": "六成员；2/4/6门槛；2件对减速增伤65%、4件冰碎片施冰寒、6件额外3投射物。",
+      "source": "https://x1x.tw/deskrawl/runes/",
+      "source_build": "25690430",
+      "verify": "本地set_id及成员链接、阈值→效果引用；套装名字与成员中文名分别正确。"
+    },
+    {
+      "id": "normal_rune_skill",
+      "sample": "法师普通冰碎片符文",
+      "expected": "冰碎片技能+2与生命值加成，网页称可重复装备。",
+      "source": "https://x1x.tw/deskrawl/runes/",
+      "source_build": "25690430",
+      "verify": "技能/属性引用；别把可重复规则或动态等级增量从网页伪造成静态字段。"
+    },
+    {
+      "id": "gem_three_targets",
+      "sample": "Sapphire第一阶及第六阶",
+      "expected": "同宝石对武器/护甲/饰品提供不同属性；第一阶冰伤10%/生命5%/冰减伤5%，第六阶50%/18%/15%。",
+      "source": "https://x1x.tw/deskrawl/gems/",
+      "source_build": "25690430",
+      "verify": "宝石种类、阶数、三属性作用目标与本地化；比例单位不混淆。"
+    },
+    {
+      "id": "config_thresholds",
+      "sample": "系统配置（如有）",
+      "expected": "符文六槽40/45/50/55/60/65；武器3孔、头1、胸2、腿2、戒1、项1；强化成功率100/100/100/100/75/50/40/30/20/10%。",
+      "source": "https://www.x1x.tw/deskrawl/guide/gear/",
+      "source_build": "25690430",
+      "verify": "只核验真正提取到的配置；无法找到不能以社区数据代填。"
+    }
+  ],
+  "validation_rules": [
+    "优先检查提取来源、build、资产文件/对象path_id和原始字段追溯。",
+    "每个样本记录本地路径和对象引用，标pass/partial/fail/unknown。",
+    "物品原型、随机属性池与玩家已掉落实例实际roll必须分开。",
+    "类型枚举映射必须来自本地证据；未经证明的职业数值保留原始值。",
+    "缺字段、解析错误、悬空引用、重复ID或丢中文需显式报告。",
+    "静态提取无法验证线上服务器参数和游戏实际执行逻辑。"
+  ],
+  "limitations": [
+    "Validation covers the 1593 selected gameplay objects, not every Unity asset or runtime rule.",
+    "Raw template assets are not private dropped item instances or actual rolls.",
+    "Online server parameters, requirements computed by methods, runtime combat interactions and market behavior remain outside static structural validation.",
+    "Prior header-only and 817-object snapshots are retained explicitly as historical validation stages.",
+    "ManagedReference registry v2 was verified on actual samples; the module rejects unsupported versions.",
+    "Serialized encrypted-number conversion is verified; interpretation as game-rule units or formulas is separate and remains outside this validation."
+  ],
+  "first_structured_snapshot": {
+    "count": 817,
+    "manifest_count": 817,
+    "errors": 775,
+    "all_exported_read_checks_pass": true,
+    "samples": [
+      {
+        "object_id": "resources.assets:4741",
+        "class_name": "GameConfig",
+        "name": "BetaGameConfig",
+        "expected_byte_size": 1512,
+        "consumed_bytes": 1512,
+        "validation": {
+          "full_byte_count": true,
+          "builtin_header_matches": true
+        }
+      },
+      {
+        "object_id": "resources.assets:4753",
+        "class_name": "EquipmentEffect_AbilityTagApplyStatus",
+        "name": "LegendaryAxe1_Freeze",
+        "expected_byte_size": 100,
+        "consumed_bytes": 100,
+        "validation": {
+          "full_byte_count": true,
+          "builtin_header_matches": true
+        }
+      },
+      {
+        "object_id": "resources.assets:4793",
+        "class_name": "EquipmentEffect_AbilityProjectileDeflect",
+        "name": "LegendaryStaff1",
+        "expected_byte_size": 68,
+        "consumed_bytes": 68,
+        "validation": {
+          "full_byte_count": true,
+          "builtin_header_matches": true
+        }
+      },
+      {
+        "object_id": "resources.assets:4968",
+        "class_name": "ItemData",
+        "name": "LegendaryAxe1",
+        "expected_byte_size": 264,
+        "consumed_bytes": 264,
+        "validation": {
+          "full_byte_count": true,
+          "builtin_header_matches": true
+        }
+      },
+      {
+        "object_id": "resources.assets:4972",
+        "class_name": "ItemData",
+        "name": "LegendaryStaff1",
+        "expected_byte_size": 252,
+        "consumed_bytes": 252,
+        "validation": {
+          "full_byte_count": true,
+          "builtin_header_matches": true
+        }
+      },
+      {
+        "object_id": "sharedassets0.assets:59808",
+        "class_name": "GameConfig",
+        "name": "GameConfig",
+        "expected_byte_size": 1552,
+        "consumed_bytes": 1552,
+        "validation": {
+          "full_byte_count": true,
+          "builtin_header_matches": true
+        }
+      },
+      {
+        "object_id": "sharedassets0.assets:59871",
+        "class_name": "ItemizationConfig",
+        "name": "ItemizationConfig",
+        "expected_byte_size": 1056,
+        "consumed_bytes": 1056,
+        "validation": {
+          "full_byte_count": true,
+          "builtin_header_matches": true
+        }
+      },
+      {
+        "object_id": "sharedassets0.assets:59954",
+        "class_name": "GemData",
+        "name": "GemSapphire1",
+        "expected_byte_size": 284,
+        "consumed_bytes": 284,
+        "validation": {
+          "full_byte_count": true,
+          "builtin_header_matches": true
+        }
+      },
+      {
+        "object_id": "sharedassets0.assets:59959",
+        "class_name": "GemData",
+        "name": "GemSapphire6",
+        "expected_byte_size": 284,
+        "consumed_bytes": 284,
+        "validation": {
+          "full_byte_count": true,
+          "builtin_header_matches": true
+        }
+      }
+    ],
+    "verified_local_facts": [
+      "LegendaryStaff1 ItemData resources:4972 full252/252, Type3 Equipment, Rarity3 Legendary, EquipSlot1 Weapon, UsableClasses2 Mage, MinDropLevel15, EquipmentEffects file0/path4793",
+      "Staff effect resources:4793 full68/68, Deflects1, Ability file2/path59839; target is an AbilityData parse error, so chain partial",
+      "LegendaryAxe1 ItemData full264/264, UsableClasses9 = Barbarian|Monk, MinDropLevel10, effects4753+4752; Freeze4753 full100/100 Chance0.0299999993 Tag0=BasicAttack, Damage4752 parse error",
+      "GemSapphire1 shared:59954 and GemSapphire6 shared:59959 both full284/284; Weapon Stat25 DamageCold 0.1/0.5, Armor Stat42 MaxHealthPercent0.05/0.18, Accessory Stat53 ColdDamageReduction0.05/0.15",
+      "ItemizationConfig shared:59871 full1056/1056, 11 slot pools; Weapon primary26 stats/secondary3 stats, GemSocketsBySlot and MinLevelForSockets30",
+      "BetaGameConfig resources:4741 IsDemo1 MaxLevel35 RuneSlots30..55; GameConfig shared:59808 IsDemo0 MaxLevel70 RuneSlots40..65; runtime active selection not proven"
+    ],
+    "unverified": [
+      "DivineRing1 current parse error",
+      "SorcererSetRune2 and majority runes current parse error",
+      "Reference.resolved true only target exists, does not mean target custom fields parsed",
+      "ItemData does not have private itemLevel/requiredLevel/actual rolls",
+      "Original inventory checks are historical header-only stage, not current raw snapshot verdict"
+    ],
+    "status": "superseded",
+    "superseded_by": "repo://research/extraction-validation.json"
+  },
+  "initial_inventory_checks": {
+    "status": "superseded",
+    "superseded_by": "repo://research/extraction-validation.json",
+    "historical_evidence": [
+      {
+        "id": "inventory_provenance",
+        "status": "partial",
+        "evidence": "库存有绝对源路径、资产SHA256和Unity版本；build25690430来自输出目录，库存自身未记录Steam manifest。",
+        "next": "以提取manifest证实游戏build与原始文件哈希对应。"
+      },
+      {
+        "id": "full_field_read",
+        "status": "fail",
+        "evidence": "全部195 ItemData、119 RuneData、13 RuneSetData均parse_error，无field_names；检查样本均has_type_tree=false且read_bytes小于byte_size。",
+        "consequence": "不接受任何本地词条、等级、效果参数、符文阈值结论。"
+      },
+      {
+        "id": "staff_identity",
+        "status": "partial",
+        "evidence": "resources.assets/path4972为名LegendaryStaff1的ItemData对象头。",
+        "unknown": [
+          "中文名",
+          "职业",
+          "品质",
+          "部位",
+          "最低掉落等级"
+        ]
+      },
+      {
+        "id": "staff_affix_effect",
+        "status": "unknown",
+        "evidence": "存在同名ProjectileDeflect对象头path4793；无已解析的物品effect PPtr或完整字段。",
+        "unknown": [
+          "4主要/1次要",
+          "属性池",
+          "弹射次数",
+          "实际技能关联"
+        ]
+      },
+      {
+        "id": "axe_crossclass_effect",
+        "status": "partial",
+        "evidence": "resources.assets/path4968为LegendaryAxe1 ItemData头部，264字节仅读48。",
+        "unknown": [
+          "职业列表",
+          "最低掉落",
+          "附加冰伤参数",
+          "冻结概率",
+          "效果引用"
+        ]
+      },
+      {
+        "id": "sacred_requirements",
+        "status": "partial",
+        "evidence": "resources.assets/path4931为DivineRing1 ItemData头部，476字节仅读44。",
+        "unknown": [
+          "需求70规则",
+          "品质",
+          "固定属性",
+          "全部技能等级效果"
+        ]
+      },
+      {
+        "id": "ice_set_graph",
+        "status": "unknown",
+        "evidence": "RuneSetData有SorcererSetRune1/2/3对象头（path5082/5085/5088），有命名成六成员的RuneData头部，但全部缺完整字段。",
+        "unknown": [
+          "哪套对应冰封弹幕",
+          "实际成员PPtr",
+          "2/4/6阈值",
+          "各阈值effect引用",
+          "中文名"
+        ]
+      },
+      {
+        "id": "normal_rune_skill",
+        "status": "unknown",
+        "evidence": "RareRune_Sorcerer*头部存在；不能从名称确认冰碎片skill链接或属性。"
+      },
+      {
+        "id": "gem_three_targets",
+        "status": "unknown",
+        "evidence": "尚无完整宝石字段或本地化内容可读，不能把网上数值补入。"
+      },
+      {
+        "id": "config_thresholds",
+        "status": "unknown",
+        "evidence": "GameConfig/LootConfig各1对象头、各1解析错误；没有可用配置字段。"
+      },
+      {
+        "id": "name_uniqueness",
+        "status": "fail_if_used_as_object_key",
+        "evidence": "LegendaryStaff1至少两个同名异类对象。",
+        "requirement": "用资产文件标识＋path_id作对象键，name仅作辅助；外部file_id需按资产externals解析。"
+      },
+      {
+        "id": "game_enum_values",
+        "status": "pass_static_declarations",
+        "evidence": "52个全局枚举字面值已导出，7个核心枚举存在；StatType66成员/66唯一值；Flags与原始拼写保留，逐源文件SHA256可追溯。",
+        "requirement": "不能将EquipSlotType和EquipSlotId混用；不能按StatType声明顺序推数值；不能把HeroClass按顺序的枚举解释。"
+      }
+    ]
+  },
+  "initial_inventory_local_facts": {
+    "status": "superseded",
+    "superseded_by": "repo://research/extraction-validation.json",
+    "historical_evidence": [
+      {
+        "fact": "已生成resources.assets对象头库存",
+        "file": "data/extracted/deskrawl/25690430/inventory/resources.assets.inventory.json",
+        "source": "game://Deskrawl_Data/resources.assets",
+        "source_sha256": "a72f27e706b4f7a4b2a38c42b4f78f4f54138065fb770244e8f8b801f6ba0adb",
+        "unity_version": "6000.3.6f1",
+        "objects": 5846,
+        "scope": "以下计数仅resources.assets，不声称全游戏总数或字段提取成功。"
+      },
+      {
+        "fact": "对象类计数和解析失败计数相等",
+        "classes": {
+          "ItemData": {
+            "count": 195,
+            "parse_error": 195,
+            "parsed_field_names": 0
+          },
+          "RuneData": {
+            "count": 119,
+            "parse_error": 119,
+            "parsed_field_names": 0
+          },
+          "RuneSetData": {
+            "count": 13,
+            "parse_error": 13,
+            "parsed_field_names": 0
+          },
+          "GameConfig": {
+            "count": 1,
+            "parse_error": 1,
+            "parsed_field_names": 0
+          },
+          "LootConfig": {
+            "count": 1,
+            "parse_error": 1,
+            "parsed_field_names": 0
+          }
+        },
+        "meaning": "可确认静态对象和脚本类存在，不能确认词条、效果参数、等级、槽解锁或阈值。"
+      },
+      {
+        "fact": "LegendaryStaff1同名对象有两个不同类别",
+        "objects": [
+          {
+            "file": "resources.assets",
+            "path_id": 4793,
+            "class": "EquipmentEffect_AbilityProjectileDeflect",
+            "byte_size": 68,
+            "read_bytes_from_error": 48
+          },
+          {
+            "file": "resources.assets",
+            "path_id": 4972,
+            "class": "ItemData",
+            "byte_size": 252,
+            "read_bytes_from_error": 48
+          }
+        ],
+        "meaning": "只确认同名对象及类别；尚未读到ItemData到特效对象的实际PPtr。禁止按名称唯一去重或据同名推断关联。"
+      },
+      {
+        "fact": "其他目标物品只有头部",
+        "objects": [
+          {
+            "file": "resources.assets",
+            "path_id": 4931,
+            "name": "DivineRing1",
+            "class": "ItemData",
+            "byte_size": 476,
+            "read_bytes_from_error": 44
+          },
+          {
+            "file": "resources.assets",
+            "path_id": 4968,
+            "name": "LegendaryAxe1",
+            "class": "ItemData",
+            "byte_size": 264,
+            "read_bytes_from_error": 48
+          }
+        ]
+      },
+      {
+        "fact": "只读本地Cpp2IL全局游戏枚举已导出",
+        "output": "data/extracted/deskrawl/25690430/enums.json",
+        "method": "读取已生成diffable-cs字面枚举声明，不执行游戏代码，不补社区值。",
+        "enum_count": 52,
+        "StatType_members": 66,
+        "StatType_unique_values": 66,
+        "dummy_assembly_sha256": "876ba09d187f9f31859c6d94e2235c5364052a198f3d8f790485b4ffa4dc312b",
+        "important_values": {
+          "HeroClass": {
+            "flags": true,
+            "None": 0,
+            "Barbarian": 1,
+            "Mage": 2,
+            "Hunter": 4,
+            "Monk": 8,
+            "All": 15
+          },
+          "EquipSlotId": {
+            "Ring1": 6,
+            "Ring2": 7
+          },
+          "EquipSlotType": {
+            "Ring": 7
+          },
+          "ItemRarity": {
+            "Common": 0,
+            "Uncommon": 1,
+            "Rare": 2,
+            "Legendary": 3,
+            "Divine": 4,
+            "RuneSet": 5
+          },
+          "AbilityTag": {
+            "None": 9999,
+            "Aracane": 13
+          }
+        },
+        "limitations": "类型枚举只证明声明结构，未证明运行时规则；不含素材库命名空间/内部嵌套枚举。"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "id": "staff_identity",
+      "status": "pass_static",
+      "local": {
+        "object_id": "resources.assets:4972",
+        "name": {
+          "key": "LegendaryStaff1",
+          "English": "Staff of the Frostwyrm",
+          "Chinese (Simplified)": "霜龙法杖",
+          "Chinese (Traditional)": "霜龍法杖"
+        },
+        "Type": 3,
+        "Rarity": 3,
+        "EquipSlot": 1,
+        "UsableClasses": 2,
+        "MinDropLevel": 15
+      },
+      "assertions_pass": true,
+      "unknown": [],
+      "verified_decoded_fields": {}
+    },
+    {
+      "id": "staff_affix_effect",
+      "status": "pass_structure_partial_numeric_rules",
+      "local": {
+        "effect_reference": {
+          "field": "$.EquipmentEffects[0]",
+          "raw": {
+            "m_FileID": 0,
+            "m_PathID": 4793
+          },
+          "target_file": "resources.assets",
+          "target_id": "resources.assets:4793",
+          "resolved": true,
+          "target_unity_type": "MonoBehaviour",
+          "target_parsed": true,
+          "target_exported": true,
+          "target_parse_failed": false
+        },
+        "Deflects": 1,
+        "skill_reference": {
+          "field": "$.Ability",
+          "raw": {
+            "m_FileID": 2,
+            "m_PathID": 59839
+          },
+          "target_file": "sharedassets0.assets",
+          "target_id": "sharedassets0.assets:59839",
+          "resolved": true,
+          "target_unity_type": "MonoBehaviour",
+          "target_parsed": true,
+          "target_exported": true,
+          "target_parse_failed": false
+        },
+        "weapon_pool": {
+          "Slot": 1,
+          "Primary": [
+            0,
+            1,
+            2,
+            3,
+            5,
+            6,
+            33,
+            34,
+            61,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            43,
+            32,
+            45,
+            58,
+            46,
+            62,
+            63,
+            40
+          ],
+          "Secondary": [
+            11,
+            12,
+            35
+          ]
+        },
+        "managed_effect_classes": [
+          "SpawnProjectileEffect",
+          "DamageEffect"
+        ]
+      },
+      "assertions_pass": true,
+      "unknown": [
+        "4primary/1secondary quantity not proved by raw ItemData field",
+        "weapon and affix numeric growth formulas",
+        "actual player item rolls"
+      ],
+      "verified_decoded_fields": {
+        "sharedassets0.assets:59839": [
+          {
+            "field": "$.Range.Base",
+            "serialized_type": "ObscuredFloat",
+            "value": 8.5,
+            "decoded_bits_hex": "0x41080000",
+            "raw_hash": 1276232787,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.Range.PerLevel",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.0,
+            "decoded_bits_hex": "0x0",
+            "raw_hash": 723851361,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.ManaCost.Base",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.0,
+            "decoded_bits_hex": "0x0",
+            "raw_hash": 723851361,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.ManaCost.PerLevel",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.0,
+            "decoded_bits_hex": "0x0",
+            "raw_hash": 723851361,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.Cooldown.Base",
+            "serialized_type": "ObscuredFloat",
+            "value": 1.5,
+            "decoded_bits_hex": "0x3fc00000",
+            "raw_hash": 159847311,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.Cooldown.PerLevel",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.0,
+            "decoded_bits_hex": "0x0",
+            "raw_hash": 723851361,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.ChannelManaCost.Base",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.0,
+            "decoded_bits_hex": "0x0",
+            "raw_hash": 723851361,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.ChannelManaCost.PerLevel",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.0,
+            "decoded_bits_hex": "0x0",
+            "raw_hash": 723851361,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.references.RefIds[1].data.AttackScaling.Base",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.8999999761581421,
+            "decoded_bits_hex": "0x3f666666",
+            "raw_hash": 1307995975,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.references.RefIds[1].data.AttackScaling.PerLevel",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.029999999329447746,
+            "decoded_bits_hex": "0x3cf5c28f",
+            "raw_hash": 536418157,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "axe_crossclass_effect",
+      "status": "pass_static_serialized_numeric_values",
+      "local": {
+        "object_id": "resources.assets:4968",
+        "name": {
+          "key": "LegendaryAxe1",
+          "English": "Northern Giant's Great Axe",
+          "Chinese (Simplified)": "北方巨人巨斧",
+          "Chinese (Traditional)": "北方巨人巨斧"
+        },
+        "UsableClasses": 9,
+        "MinDropLevel": 10,
+        "freeze": {
+          "Tag": 0,
+          "Chance": 0.029999999329447746,
+          "StatusEffect": {
+            "field": "$.StatusEffect",
+            "raw": {
+              "m_FileID": 2,
+              "m_PathID": 60460
+            },
+            "target_file": "sharedassets0.assets",
+            "target_id": "sharedassets0.assets:60460",
+            "resolved": true,
+            "target_unity_type": "MonoBehaviour",
+            "target_parsed": true,
+            "target_exported": true,
+            "target_parse_failed": false
+          }
+        },
+        "damage_registry_types": [
+          "DamageEffect"
+        ]
+      },
+      "assertions_pass": true,
+      "unknown": [],
+      "verified_decoded_fields": {
+        "sharedassets0.assets:60460": [
+          {
+            "field": "$.Duration.Base",
+            "serialized_type": "ObscuredFloat",
+            "value": 3.5,
+            "decoded_bits_hex": "0x40600000",
+            "raw_hash": 1813081441,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.Duration.PerLevel",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.0,
+            "decoded_bits_hex": "0x0",
+            "raw_hash": 723851361,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sacred_requirements",
+      "status": "pass_structure_required_level_unknown",
+      "local": {
+        "object_id": "resources.assets:4931",
+        "name": {
+          "key": "DivineRing1",
+          "English": "Remnant of the Elder Sage",
+          "Chinese (Simplified)": "古贤遗骨",
+          "Chinese (Traditional)": "古賢遺骨"
+        },
+        "Rarity": 4,
+        "EquipSlot": 7,
+        "MinDropLevel": 1,
+        "AbilityLevels": [
+          {
+            "AllAbilities": 1,
+            "Ability": {
+              "m_FileID": 0,
+              "m_PathID": 0
+            },
+            "Levels": 10,
+            "EveryNRuneLevels": 0
+          }
+        ],
+        "fixed_stat_types": [
+          37,
+          13,
+          4,
+          5,
+          15,
+          16
+        ]
+      },
+      "assertions_pass": true,
+      "unknown": [
+        "RequiredLevel70 is online rule/method logic, not a raw ItemData field"
+      ],
+      "verified_decoded_fields": {
+        "resources.assets:4931": [
+          {
+            "field": "$.FixedStats[0].Value",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.17000000178813934,
+            "decoded_bits_hex": "0x3e2e147b",
+            "raw_hash": -584400363,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.FixedStats[1].Value",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.17000000178813934,
+            "decoded_bits_hex": "0x3e2e147b",
+            "raw_hash": -584400363,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.FixedStats[2].Value",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.13500000536441803,
+            "decoded_bits_hex": "0x3e0a3d71",
+            "raw_hash": -886330771,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.FixedStats[3].Value",
+            "serialized_type": "ObscuredFloat",
+            "value": 1.0,
+            "decoded_bits_hex": "0x3f800000",
+            "raw_hash": 149504655,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.FixedStats[4].Value",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.3499999940395355,
+            "decoded_bits_hex": "0x3eb33333",
+            "raw_hash": -2115551783,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.FixedStats[5].Value",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.3499999940395355,
+            "decoded_bits_hex": "0x3eb33333",
+            "raw_hash": -2115551783,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ice_set_graph",
+      "status": "pass_static_serialized_numeric_values",
+      "local": {
+        "set_object": "resources.assets:5085",
+        "name": {
+          "key": "SorcererSetRune2",
+          "English": "Frozen Barrage",
+          "Chinese (Simplified)": "冰封弹幕",
+          "Chinese (Traditional)": "冰封彈幕"
+        },
+        "member_objects": [
+          "resources.assets:5110",
+          "resources.assets:5111",
+          "resources.assets:5112",
+          "resources.assets:5113",
+          "resources.assets:5114",
+          "resources.assets:5115"
+        ],
+        "thresholds": [
+          2,
+          4,
+          6
+        ],
+        "two_piece_stat": 31,
+        "four_piece_effect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 0
+          },
+          "m_Enabled": 1,
+          "m_Script": {
+            "m_FileID": 1,
+            "m_PathID": 3335
+          },
+          "m_Name": "SorcererSetRune2_Effect2",
+          "Tag": 0,
+          "TrackedAbility": {
+            "m_FileID": 2,
+            "m_PathID": 59839
+          },
+          "Target": 0,
+          "StatusEffect": {
+            "m_FileID": 2,
+            "m_PathID": 60426
+          },
+          "Chance": 1.0,
+          "StacksPerCast": 1,
+          "ConsumeOnCast": 0,
+          "DamageBonusPerStack": 0.20000000298023224
+        },
+        "six_piece_effect": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 0
+          },
+          "m_Enabled": 1,
+          "m_Script": {
+            "m_FileID": 1,
+            "m_PathID": 488
+          },
+          "m_Name": "SorcererSetRune2_Effect3",
+          "Ability": {
+            "m_FileID": 2,
+            "m_PathID": 59839
+          },
+          "ExtraProjectiles": 3,
+          "OverrideDegreesBetweenProjectiles": 0,
+          "DegreesBetweenProjectiles": 15.0
+        },
+        "chill_status_target": {
+          "field": "$.StatusEffect",
+          "raw": {
+            "m_FileID": 2,
+            "m_PathID": 60426
+          },
+          "target_file": "sharedassets0.assets",
+          "target_id": "sharedassets0.assets:60426",
+          "resolved": true,
+          "target_unity_type": "MonoBehaviour",
+          "target_parsed": true,
+          "target_exported": true,
+          "target_parse_failed": false
+        }
+      },
+      "assertions_pass": true,
+      "unknown": [
+        "runtime application/duplicate set counting"
+      ],
+      "verified_decoded_fields": {
+        "resources.assets:5085": [
+          {
+            "field": "$.Bonuses[0].Modifiers[0].Value",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.6499999761581421,
+            "decoded_bits_hex": "0x3f266666",
+            "raw_hash": 1297653319,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          }
+        ],
+        "sharedassets0.assets:60426": [
+          {
+            "field": "$.Duration.Base",
+            "serialized_type": "ObscuredFloat",
+            "value": 4.0,
+            "decoded_bits_hex": "0x40800000",
+            "raw_hash": 1776933601,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.Duration.PerLevel",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.0,
+            "decoded_bits_hex": "0x0",
+            "raw_hash": 723851361,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.references.RefIds[0].data.Modifiers[0].Value.Base",
+            "serialized_type": "ObscuredFloat",
+            "value": -0.3499999940395355,
+            "decoded_bits_hex": "0xbeb33333",
+            "raw_hash": 31880409,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.references.RefIds[0].data.Modifiers[0].Value.PerLevel",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.0,
+            "decoded_bits_hex": "0x0",
+            "raw_hash": 723851361,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.references.RefIds[0].data.Modifiers[1].Value.Base",
+            "serialized_type": "ObscuredFloat",
+            "value": -0.25,
+            "decoded_bits_hex": "0xbe800000",
+            "raw_hash": -2014808067,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.references.RefIds[0].data.Modifiers[1].Value.PerLevel",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.0,
+            "decoded_bits_hex": "0x0",
+            "raw_hash": 723851361,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "normal_rune_skill",
+      "status": "pass_static",
+      "local": {
+        "object_id": "resources.assets:5046",
+        "name": {
+          "key": "RareRune_SorcererBasicAttack2",
+          "English": "Ice Shards Rune",
+          "Chinese (Simplified)": "冰碎片符文",
+          "Chinese (Traditional)": "冰碎片符文"
+        },
+        "AbilityLevels": [
+          {
+            "AllAbilities": 0,
+            "Ability": {
+              "m_FileID": 2,
+              "m_PathID": 59839
+            },
+            "Levels": 2,
+            "EveryNRuneLevels": 3
+          }
+        ],
+        "AllowDuplicateEquip": 1,
+        "attribute_stat_types": [
+          42
+        ]
+      },
+      "assertions_pass": true,
+      "unknown": [
+        "Runtime formula applying EveryNRuneLevels and leveled attributes has not been verified."
+      ],
+      "verified_decoded_fields": {
+        "resources.assets:5046": [
+          {
+            "field": "$.Attributes[0].Value.Base",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.10000000149011612,
+            "decoded_bits_hex": "0x3dcccccd",
+            "raw_hash": 1573529835,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          },
+          {
+            "field": "$.Attributes[0].Value.PerLevel",
+            "serialized_type": "ObscuredFloat",
+            "value": 0.009999999776482582,
+            "decoded_bits_hex": "0x3c23d70a",
+            "raw_hash": 1479264653,
+            "roundtrip_matches": true,
+            "evidence": "numeric-decoding.json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "gem_three_targets",
+      "status": "pass_static_plain_numeric",
+      "local": [
+        {
+          "object_id": "sharedassets0.assets:59954",
+          "name": {
+            "key": "GemSapphire1",
+            "English": "Raw Sphere Sapphire",
+            "Chinese (Simplified)": "粗糙的蓝宝石球",
+            "Chinese (Traditional)": "粗糙的藍寶石球"
+          },
+          "WeaponBonuses": [
+            {
+              "Stat": 25,
+              "Modifier": 0,
+              "Value": 0.10000000149011612
+            }
+          ],
+          "ArmorBonuses": [
+            {
+              "Stat": 42,
+              "Modifier": 0,
+              "Value": 0.05000000074505806
+            }
+          ],
+          "AccessoryBonuses": [
+            {
+              "Stat": 53,
+              "Modifier": 0,
+              "Value": 0.05000000074505806
+            }
+          ]
+        },
+        {
+          "object_id": "sharedassets0.assets:59959",
+          "name": {
+            "key": "GemSapphire6",
+            "English": "Radiant Octagon Sapphire",
+            "Chinese (Simplified)": "璀璨的蓝宝石八边形",
+            "Chinese (Traditional)": "璀璨的藍寶石八邊形"
+          },
+          "WeaponBonuses": [
+            {
+              "Stat": 25,
+              "Modifier": 0,
+              "Value": 0.5
+            }
+          ],
+          "ArmorBonuses": [
+            {
+              "Stat": 42,
+              "Modifier": 0,
+              "Value": 0.18000000715255737
+            }
+          ],
+          "AccessoryBonuses": [
+            {
+              "Stat": 53,
+              "Modifier": 0,
+              "Value": 0.15000000596046448
+            }
+          ]
+        }
+      ],
+      "assertions_pass": true,
+      "unknown": [],
+      "verified_decoded_fields": {}
+    },
+    {
+      "id": "config_thresholds",
+      "status": "pass_static_scene_link",
+      "local": {
+        "game_manager_object": "level0:40412",
+        "Config_reference": {
+          "field": "$.Config",
+          "raw": {
+            "m_FileID": 3,
+            "m_PathID": 59808
+          },
+          "target_file": "sharedassets0.assets",
+          "target_id": "sharedassets0.assets:59808",
+          "resolved": true,
+          "target_unity_type": "MonoBehaviour",
+          "target_parsed": true,
+          "target_exported": true,
+          "target_parse_failed": false
+        },
+        "release_IsDemo": 0,
+        "release_MaxPlayerLevel": 70,
+        "RuneSlotUnlockLevels": [
+          40,
+          45,
+          50,
+          55,
+          60,
+          65
+        ],
+        "MaxRuneLevel": 6,
+        "MaxEquipmentUpgradeLevel": 10,
+        "UpgradeSuccessChances": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          0.75,
+          0.5,
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.10000000149011612
+        ],
+        "SocketMaterialAmount": 100,
+        "SocketGoldPerItemLevel": 400,
+        "GemSocketsBySlot": [
+          {
+            "Slot": 1,
+            "MaxSockets": 3
+          },
+          {
+            "Slot": 2,
+            "MaxSockets": 1
+          },
+          {
+            "Slot": 3,
+            "MaxSockets": 2
+          },
+          {
+            "Slot": 4,
+            "MaxSockets": 2
+          },
+          {
+            "Slot": 5,
+            "MaxSockets": 0
+          },
+          {
+            "Slot": 6,
+            "MaxSockets": 0
+          },
+          {
+            "Slot": 7,
+            "MaxSockets": 1
+          },
+          {
+            "Slot": 8,
+            "MaxSockets": 1
+          },
+          {
+            "Slot": 9,
+            "MaxSockets": 0
+          },
+          {
+            "Slot": 10,
+            "MaxSockets": 0
+          },
+          {
+            "Slot": 11,
+            "MaxSockets": 0
+          }
+        ],
+        "MinLevelForSockets": 30,
+        "beta_rune_slots": [
+          30,
+          35,
+          40,
+          45,
+          50,
+          55
+        ]
+      },
+      "assertions_pass": true,
+      "unknown": [
+        "runtime online server override remains unproved"
+      ],
+      "verified_decoded_fields": {}
+    }
+  ],
+  "local_facts": {
+    "snapshot": "stable_full_structured_objects",
+    "selected_objects": 1593,
+    "class_counts": {
+      "GameConfig": 2,
+      "LootConfig": 2,
+      "AbilityData": 124,
+      "EquipmentEffect_TriggerEffectsOnHit": 2,
+      "EquipmentEffect_AllStats": 1,
+      "EquipmentEffect_StatModifier": 11,
+      "EquipmentEffect_StatusOnHit": 3,
+      "EquipmentEffect_SelfStatusStackTriggerAbility": 1,
+      "EquipmentEffect_AbilityTagApplyStatus": 10,
+      "EquipmentEffect_TriggerEffectsOnPotionUse": 3,
+      "EquipmentEffect_StatusOnKill": 3,
+      "EquipmentEffect_AbilityTriggerAbility": 3,
+      "EquipmentEffect_StatusOnCritTaken": 1,
+      "TriggerEffectOnStatus": 2,
+      "EquipmentEffect_AbilityEffectOverride": 8,
+      "EquipmentEffect_StatConversion": 2,
+      "EquipmentEffect_FreeCast": 1,
+      "EquipmentEffect_AbilityTagCritDamage": 4,
+      "EquipmentEffect_StatPerStatusStack": 2,
+      "EquipmentEffect_AbilityOnCastCount": 1,
+      "EquipmentEffect_AbilityProjectileCount": 5,
+      "EquipmentEffect_AbilityProjectileLifetime": 1,
+      "EquipmentEffect_AbilityProjectileSize": 1,
+      "EquipmentEffect_TriggerDotDetonation": 1,
+      "EquipmentEffect_AbilitySpawnCount": 1,
+      "EquipmentEffect_BeingHitTriggerAbility": 1,
+      "EquipmentEffect_GainStatusEverySecond": 2,
+      "EquipmentEffect_AbilityModifier": 3,
+      "EquipmentEffect_AbilityProjectileDeflect": 1,
+      "EquipmentEffect_ConditionalCritDamage": 3,
+      "EquipmentEffect_ConditionalCritChance": 1,
+      "ItemData": 336,
+      "RuneData": 119,
+      "RuneSetData": 13,
+      "EquipmentEffect_TrapRearm": 1,
+      "EquipmentEffect_StatusApplyStatus": 1,
+      "EquipmentEffect_TriggerAbilityCooldownReduction": 2,
+      "EquipmentEffect_AbilitySummonAbility": 2,
+      "EquipmentEffect_AbilityStrikeSplash": 1,
+      "EquipmentEffect_TriggerEffectsOnCrit": 1,
+      "EquipmentEffect_AbilityChannelModifier": 1,
+      "EquipmentEffect_ChannelAllowedCastTag": 1,
+      "LifeSkillEffect_StatModifier": 13,
+      "MapData": 76,
+      "RecipeData": 50,
+      "SlaveData": 67,
+      "StatusEffectData": 93,
+      "TalentData": 185,
+      "TalentEffect_ActiveSlaveBonus": 8,
+      "TalentEffect_AbilityApplyStatus": 11,
+      "TalentEffect_StatusStatBonus": 2,
+      "TalentEffect_ConditionalCritChance": 3,
+      "TalentEffect_ConditionalBonusDamage": 7,
+      "TalentEffect_AbilityModifier": 52,
+      "EquipmentEffect_StatusOnLowHealth": 1,
+      "EquipmentEffect_StatusOnResourceConsumed": 1,
+      "EquipmentEffect_DamagePerManaFraction": 1,
+      "EquipmentEffect_TriggerKillEffectsOnHit": 1,
+      "HeroData": 4,
+      "ItemizationConfig": 1,
+      "RandomEquipment": 10,
+      "GemData": 36,
+      "HealingPotionUpgradeData": 1,
+      "HealthPotionConfig": 8,
+      "LifeSkillEffect_FishingTime": 3,
+      "LifeSkillEffect_ReviveCooldown": 2,
+      "LifeSkillEffect_FeatureFlag": 6,
+      "LifeSkillEffect_FishingSuccess": 2,
+      "LifeSkillEffect_OfflineTimeCap": 2,
+      "LifeSkillEffect_MaterialCarryCap": 4,
+      "LifeSkillEffect_UnlockConsumableSlot": 3,
+      "LifeSkillEffect_UnlockStoragePage": 1,
+      "LifeSkillNodeData": 85,
+      "TownData": 3,
+      "FishingMapData": 3,
+      "QuestData": 22,
+      "RecipeBook": 2,
+      "TalentEffect_StatusStackTriggerEffect": 5,
+      "TalentEffect_AbilityAoEApplyStatus": 2,
+      "TalentEffect_TriggerAbilityTwice": 1,
+      "TalentEffect_CritTriggerEffect": 10,
+      "TalentEffect_LowHPTriggerEffect": 1,
+      "TalentEffect_DotTickLifeOnHit": 1,
+      "TalentEffect_StatusPotency": 7,
+      "TalentEffect_ConditionalStat": 6,
+      "TalentEffect_AbilityKnockback": 3,
+      "TalentEffect_AbilityProjectilePierceDamage": 1,
+      "TalentEffect_TriggerAbilityCooldownReduction": 2,
+      "TalentEffect_AbilityProjectileRicochet": 1,
+      "TalentEffect_OnKillTriggerEffect": 4,
+      "TalentEffect_StatusApplyStatus": 1,
+      "TalentEffect_AbilityTriggerAbility": 2,
+      "TalentEffect_NthAbilityApplyStatus": 2,
+      "TalentEffect_HitsTakenTriggerEffect": 4,
+      "TalentEffect_StatConversion": 4,
+      "TalentEffect_AlternatingAbilityMana": 1,
+      "TalentEffect_AbilityAddNthCastEffect": 1,
+      "TalentEffect_CastSequenceDamage": 1,
+      "TalentEffect_CheatDeath": 1,
+      "TalentEffect_DodgeTriggerEffect": 2,
+      "TalentEffect_ManaSpentTriggerEffect": 1,
+      "TalentEffect_RemainingManaDamage": 1,
+      "TalentEffect_AbilityProjectileSpeed": 1,
+      "TalentEffect_BleedDeathBurst": 1,
+      "TalentEffect_AbilityExecute": 1,
+      "TalentEffect_AbilityHitStackBuff": 1,
+      "TalentEffect_ThornsCanCrit": 1,
+      "TalentEffect_ManaUpkeepStatus": 1,
+      "TalentEffect_LowHPHeal": 1,
+      "LuckyWheelData": 1,
+      "Enemy": 65,
+      "PlayerData": 1,
+      "GameManager": 1
+    },
+    "unique_object_ids": 1593,
+    "byte_header_strict_failures": [],
+    "exported_error_count": 0,
+    "pptr_validation_failures": [],
+    "pptr_unresolved_nonzero": [],
+    "pptr_target_parsed_links": 1679,
+    "pptr_nonexported_targets": 4604,
+    "managed_registry_count": 262,
+    "managed_rid_references": 393,
+    "managed_rid_failures": [],
+    "managed_reference_types": [
+      "ApplyStatusEffectEffect",
+      "CCDiminishBehavior",
+      "DamageAmplificationBehavior",
+      "DamageDealtReductionBehavior",
+      "DamageEffect",
+      "DamageOverTimeBehavior",
+      "DamageReductionBehavior",
+      "DashEffect",
+      "EveryNthCastEffect",
+      "GainManaEffect",
+      "HealEffect",
+      "HealOverTimeBehavior",
+      "ImmobilizedBehavior",
+      "ImmuneBehavior",
+      "KnockbackEffect",
+      "OnEndEffectBehavior",
+      "PeriodicAreaEffectBehavior",
+      "PullEffect",
+      "ReviveAllEffect",
+      "ShieldBehavior",
+      "SourceCritChanceBonusBehavior",
+      "SpawnBeamEffect",
+      "SpawnGroundZoneEffect",
+      "SpawnParticleAoEEffect",
+      "SpawnProjectileEffect",
+      "SpawnTransientCharacterEffect",
+      "StaggeredStrikesEffect",
+      "StatModifierBehavior",
+      "StatScaledDamageEffect",
+      "StunnedBehavior",
+      "VulnerableBehavior"
+    ],
+    "negative_rid_counts": {},
+    "static_build_verified": "25690430",
+    "hashes": {
+      "manifest.json": "ca4593695b9bd694cce5033f5ca7d8b59f695fc9d787f23adb6feb66d3fb514e",
+      "objects.jsonl": "998ec61646f734ee575e35204534bfe2739cc583f4e81e0313a8a3ed0219c04e",
+      "enums.json": "594eefc0f9185398bc587821f066a2fedf6512ad6685d560bba3156f46dc6c42",
+      "parse-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "external-references.json": "c845e4de68153f54f394dddb1356011ff4a3c806f2d0c306a608e4534d23005e",
+      "numeric-decoding.json": "03ca9d8a53af1524244b8eaa4b6987b75b57d7ea86bd9118d7ddd95b12867362",
+      "type-trees.json": "e126ce10118a30ed2ac6e723d6a40c3576116ceb94c04d1a7ac094d06f57173c",
+      "tool-provenance.json": "21b90018d4aea3f97b8b084ccb86b36f982d35dd29a96af8b0c2b207e788e126",
+      "schema-repairs.json": "e72179481ff446ad99fa8af1cdd81d323f445ba9236ae378f9295e43ecae7681",
+      "catalog.json": "3abee2574e44bff907c3d2ee050714ef49d666aea2979b44779cb89bc9d20b4b"
+    }
+  },
+  "numeric_semantics": {
+    "status": "verified_build_25690430_serialized_numeric_conversion",
+    "independent_validator": "scripts/validate_deskrawl_numeric.py",
+    "independent_validator_sha256": "275d419f1bec13b249e085edc64a364cc4cfa14a8aec715c89d353370229cc74",
+    "decoder_imported_or_used": false,
+    "game_code_executed": false,
+    "native_methods": [
+      {
+        "type": "ObscuredFloat",
+        "method": "jwu",
+        "rva": 4540384,
+        "offset": 4534240,
+        "hex": "f30f114424088b44240833c2894424080fb64c240ac1e808884c24098844240a8b442408c3",
+        "bytes_match": true,
+        "pe_mapping_matches": true
+      },
+      {
+        "type": "ObscuredFloat",
+        "method": "jwv / FloatIntBytesUnion.jwk",
+        "rva": 4540432,
+        "offset": 4534288,
+        "hex": "894c2410894c24080fb644240988442412c1e910884c24118b44241033c2660f6ec0c3",
+        "bytes_match": true,
+        "pe_mapping_matches": true
+      },
+      {
+        "type": "ObscuredInt",
+        "method": "jyl",
+        "rva": 4544256,
+        "offset": 4538112,
+        "hex": "33ca8d040ac3",
+        "bytes_match": true,
+        "pe_mapping_matches": true
+      },
+      {
+        "type": "ObscuredInt",
+        "method": "jym",
+        "rva": 4544272,
+        "offset": 4538128,
+        "hex": "2bca33ca8bc1c3",
+        "bytes_match": true,
+        "pe_mapping_matches": true
+      },
+      {
+        "type": "ObscuredLong",
+        "method": "jze",
+        "rva": 4530992,
+        "offset": 4524848,
+        "hex": "4833ca488d040ac3",
+        "bytes_match": true,
+        "pe_mapping_matches": true
+      },
+      {
+        "type": "ObscuredLong",
+        "method": "jzf",
+        "rva": 4531008,
+        "offset": 4524864,
+        "hex": "482bca4833ca488bc1c3",
+        "bytes_match": true,
+        "pe_mapping_matches": true
+      }
+    ],
+    "method_address_source_hash_matches": true,
+    "method_identity_note": "Symbolic method identities use the Cpp2IL Address attributes documented in numeric-decoding.json; binary bytes, PE address mapping and conversion instruction semantics were independently checked without native execution.",
+    "native_instruction_semantics_review": "Float encode XORs then exchanges byte offsets 1 and 2; decode reverses exchange then XORs. Int and Long encode XOR then add key; decode subtracts key then XORs. Register widths establish modulo 2^32/2^64.",
+    "decoded_counts": {
+      "ObscuredFloat": 3080,
+      "ObscuredInt": 67,
+      "ObscuredLong": 196
+    },
+    "coverage": "Independent flat-type-tree traversal, including concrete managed types, matched all raw encrypted structures and all derived field paths one-to-one.",
+    "derived_value_bit_and_raw_hash_failures": 0,
+    "byte_reencoding_failures": 0,
+    "float_nonfinite_values": 0,
+    "float_hash_groups": 132,
+    "float_hash_group_conflicts": 0,
+    "raw_obscured_structures_preserved": true,
+    "limits": [
+      "Only serialized numeric conversion verified; units, stat scaling, enhancement formulas, combat order, runtime requirements and live server overrides remain outside this check.",
+      "All sampled legacy hiddenValueOldByte4 fields were zero; nonzero legacy migration was not validated."
+    ]
+  },
+  "managed_reader_validation": {
+    "module": "scripts/deskrawl_managed_refs.py",
+    "module_sha256": "161ea096031aa24a0f28cd72e8177f75bf4ba3e08e3dd86aef896fc3c321ba0e",
+    "official_format_source": "https://github.com/Unity-Technologies/UnityDataTools/blob/main/TextDumper/TextDumperTool.cs",
+    "independent_samples": [
+      {
+        "object": "sharedassets0.assets:59839",
+        "bytes": 992,
+        "registry_version": 2,
+        "types": [
+          "SpawnProjectileEffect",
+          "DamageEffect"
+        ]
+      },
+      {
+        "object": "resources.assets:4752",
+        "bytes": 296,
+        "registry_version": 2,
+        "types": [
+          "DamageEffect"
+        ]
+      }
+    ],
+    "policy": "Python reader, strict check_read, dynamic type resolution by class/ns/asm, no game code execution"
+  },
+  "source_provenance_validation": {
+    "static_build": "25690430",
+    "source_file_sha256_checks": [
+      {
+        "path": "game://Deskrawl_Data/resources.assets",
+        "expected_sha256": "a72f27e706b4f7a4b2a38c42b4f78f4f54138065fb770244e8f8b801f6ba0adb",
+        "observed_sha256": "a72f27e706b4f7a4b2a38c42b4f78f4f54138065fb770244e8f8b801f6ba0adb",
+        "matches": true
+      },
+      {
+        "path": "game://Deskrawl_Data/sharedassets0.assets",
+        "expected_sha256": "d10c933d76ae11e7ce30f240f3f53bdb32c3c3a0ff8c5b3d133e96e5e55c4f46",
+        "observed_sha256": "d10c933d76ae11e7ce30f240f3f53bdb32c3c3a0ff8c5b3d133e96e5e55c4f46",
+        "matches": true
+      },
+      {
+        "path": "game://Deskrawl_Data/globalgamemanagers.assets",
+        "expected_sha256": "eca9b219c6d7e9fb53aa06d698d0876b30eb32a32f80df068ab46bb734218011",
+        "observed_sha256": "eca9b219c6d7e9fb53aa06d698d0876b30eb32a32f80df068ab46bb734218011",
+        "matches": true
+      },
+      {
+        "path": "game://Deskrawl_Data/level0",
+        "expected_sha256": "09285498e91db552449788c89efcfc303da83abcd08a04f6e6124c687ed2764b",
+        "observed_sha256": "09285498e91db552449788c89efcfc303da83abcd08a04f6e6124c687ed2764b",
+        "matches": true
+      },
+      {
+        "path": "game://GameAssembly.dll",
+        "expected_sha256": "8880d8aca431b9c60f868fe55e6a7581ce506d788b52b220891698450004cbdd",
+        "observed_sha256": "8880d8aca431b9c60f868fe55e6a7581ce506d788b52b220891698450004cbdd",
+        "matches": true
+      },
+      {
+        "path": "game://Deskrawl_Data/il2cpp_data/Metadata/global-metadata.dat",
+        "expected_sha256": "a0c1a47a95a2498d2b6df54756ec85e51c203e4b9b8833802af679d1badc7933",
+        "observed_sha256": "a0c1a47a95a2498d2b6df54756ec85e51c203e4b9b8833802af679d1badc7933",
+        "matches": true
+      }
+    ],
+    "immutable_game_sources_match": true,
+    "steam_build_identity": {
+      "source": "steam://appmanifest_4623570.acf",
+      "appid": "4623570",
+      "buildid": "25690430"
+    },
+    "steam_manifest_note": "Only application and build identity are retained. Steam mutable state, activity times and ACF file hashes are omitted."
+  },
+  "privacy_revision": {
+    "logical_source_schemes": [
+      "repo://",
+      "game://",
+      "steam://"
+    ],
+    "runtime_installation_path_source": "--game or DESKRAWL_GAME_DIR; never persisted",
+    "real_player_snapshot_retained": false,
+    "steam_mutable_state_and_acf_hash_retained": false,
+    "raw_game_objects_and_localization_modified": false,
+    "metadata_files_normalized": true,
+    "original_immutable_source_sha256_retained": true,
+    "historical_partial_snapshots": "Explicitly superseded by final validation; historical counts retained, obsolete metadata artifact hashes omitted.",
+    "current_catalog_input_hashes_verified": 9
+  },
+  "reproduction_validation": {
+    "guide": "repo://docs/research.md",
+    "toolchain": "repo://research/toolchain-provenance.json",
+    "dependency_reinstallation_performed": false,
+    "full_extraction_repeated": false,
+    "current_script_sha256": {
+      "extract_deskrawl.py": "5fdac918355e03043bd78a198ad82f1f98887b6493774d29d606aa0d8ad8f1bf",
+      "validate_deskrawl_numeric.py": "c39e4e99c445474d67151a8254b9c61de77615cef239f3a4b1a0a099dd266511",
+      "validate_deskrawl_xp.py": "45181d73356d0e21b621d91d5f52e7d1ec6c478e0e9f257a817331f11a769f94"
+    },
+    "checks": {
+      "python_compile": "pass",
+      "cli_help_entrypoints": 5,
+      "pinned_installed_package_metadata_matches": 13,
+      "missing_game_input_failure_paths": 4,
+      "numeric_existing_export_validation": "pass; 1593 objects, 3080 Float/67 Int/196 Long, six native methods, zero failures; new local report created",
+      "xp_evidence_identity": "pass; five source hashes, six native methods/PE mappings, three constants, formal config/scene link"
+    },
+    "limits": "Existing exports revalidated; no fresh source extraction, clean-machine installation, behavioral game test or server verification."
+  }
+}

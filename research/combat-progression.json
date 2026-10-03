@@ -1,0 +1,642 @@
+{
+  "schemaVersion": 1,
+  "researchDate": "2026-10-03",
+  "targetBuild": "25690430",
+  "scope": "Combat and character progression only. Research data; no application implementation.",
+  "evidenceLegend": {
+    "A_official": "Developer/Steam statement; validate patch-to-build association separately.",
+    "B_versioned_community": "Community author supplies exact build. Not equivalent to official or in-game verification.",
+    "C_unversioned_community": "Community statement without build association.",
+    "D_user_observation": "Generic observation requirements only; no real player snapshot is retained in this public research record."
+  },
+  "sources": [
+    {
+      "id": "steam-store",
+      "url": "https://store.steampowered.com/app/4623570",
+      "version": "release listing; no build stated",
+      "evidence": "A_official",
+      "supports": "hero builds combine gear, minions and abilities; minions provide passives and abilities"
+    },
+    {
+      "id": "steam-h",
+      "url": "https://steamcommunity.com/app/4623570/announcements/?l=norwegian",
+      "version": "Patch 1.0.0h; shown Sep 30 in this Steam locale",
+      "evidence": "A_official",
+      "supports": "cast ownership, counter resets, profession balance changes"
+    },
+    {
+      "id": "x1-warrior",
+      "url": "https://x1x.tw/deskrawl/classes/warrior/",
+      "version": "1.0.0i (25690430)",
+      "evidence": "B_versioned_community",
+      "supports": "primary attribute, skill classification and unlocks; footer checked"
+    },
+    {
+      "id": "x1-hunter",
+      "url": "https://x1x.tw/deskrawl/classes/hunter/",
+      "version": "1.0.0i (25690430)",
+      "evidence": "B_versioned_community",
+      "supports": "primary attribute, skill classification and unlocks; footer checked"
+    },
+    {
+      "id": "x1-sorcerer",
+      "url": "https://x1x.tw/deskrawl/classes/sorcerer/",
+      "version": "1.0.0i (25690430)",
+      "evidence": "B_versioned_community",
+      "supports": "primary attribute, skill classification and unlocks; footer checked"
+    },
+    {
+      "id": "x1-monk",
+      "url": "https://x1x.tw/deskrawl/classes/monk/",
+      "version": "1.0.0i (25690430)",
+      "evidence": "B_versioned_community",
+      "supports": "primary attribute, skill classification and unlocks; footer checked"
+    },
+    {
+      "id": "x1-talents",
+      "url": "https://x1x.tw/deskrawl/talents/sorcerer/",
+      "version": "1.0.0i (25690430)",
+      "evidence": "B_versioned_community",
+      "supports": "rank effects, spent-point gates, conditional talents"
+    },
+    {
+      "id": "x1-talents-old",
+      "url": "https://www.x1x.tw/deskrawl/talents/sorcerer/",
+      "version": "25613402",
+      "evidence": "B_versioned_community_older",
+      "supports": "version discrepancy; not silently merged into current rules"
+    },
+    {
+      "id": "x1-combat",
+      "url": "https://x1x.tw/deskrawl/guide/combat/",
+      "version": "1.0.0i (25690430)",
+      "evidence": "B_versioned_community",
+      "supports": "author says extracted from program; formulas not independently verified"
+    },
+    {
+      "id": "x1-faq",
+      "url": "https://x1x.tw/deskrawl/guide/faq/",
+      "version": "1.0.0i (25690430)",
+      "evidence": "B_versioned_community",
+      "supports": "level/talent progression, paragon sharing, consumable/death lifecycle, XP penalty"
+    },
+    {
+      "id": "wiki-stats",
+      "url": "https://wikily.gg/deskrawl/stats",
+      "version": null,
+      "evidence": "C_unversioned_community",
+      "supports": "base stats and primary-attribute conversions; not proof of local build"
+    },
+    {
+      "id": "wiki-damage",
+      "url": "https://new.wikily.gg/deskrawl/stats/damage-formula",
+      "version": null,
+      "evidence": "C_unversioned_community",
+      "supports": "formula cross-check; DoT description conflicts with versioned X1X"
+    },
+    {
+      "id": "wiki-paragon",
+      "url": "https://new.wikily.gg/deskrawl/paragon",
+      "version": null,
+      "evidence": "C_unversioned_community",
+      "supports": "paragon allocation table; first unlocked level not cross-verified"
+    }
+  ],
+  "mechanics": {
+    "classes": [
+      {
+        "id": "warrior",
+        "primary": "strength",
+        "damageElementsObserved": [
+          "physical",
+          "fire"
+        ],
+        "source": "x1-warrior",
+        "examples": [
+          {
+            "name": "英勇打击",
+            "attackType": "basic",
+            "status": "vulnerable",
+            "statusChanceAtRank1": 0.1
+          },
+          {
+            "name": "血刃",
+            "attackType": "basic",
+            "components": [
+              "direct",
+              "bleeding"
+            ]
+          },
+          {
+            "name": "铁棘",
+            "attackType": "special",
+            "scaling": "thorns",
+            "temporary": true
+          }
+        ]
+      },
+      {
+        "id": "hunter",
+        "primary": "dexterity",
+        "damageElementsObserved": [
+          "physical",
+          "poison",
+          "arcane",
+          "cold"
+        ],
+        "source": "x1-hunter",
+        "examples": [
+          {
+            "name": "毒箭",
+            "attackType": "basic",
+            "status": "poison",
+            "statusChanceAtRank1": 0.2
+          },
+          {
+            "name": "奥术炸弹",
+            "attackType": "basic",
+            "element": "arcane"
+          },
+          {
+            "name": "照明弹",
+            "attackType": "special",
+            "statuses": [
+              "vulnerable",
+              "dizzy"
+            ]
+          },
+          {
+            "name": "毒陷阱",
+            "attackType": "special",
+            "category": "trap"
+          }
+        ]
+      },
+      {
+        "id": "sorcerer",
+        "primary": "intelligence",
+        "damageElementsObserved": [
+          "fire",
+          "cold",
+          "lightning"
+        ],
+        "source": "x1-sorcerer",
+        "examples": [
+          {
+            "name": "火球",
+            "attackType": "basic",
+            "element": "fire",
+            "manaGain": 9,
+            "unlockLevel": 1
+          },
+          {
+            "name": "冰碎片",
+            "attackType": "basic",
+            "element": "cold",
+            "manaGain": 9,
+            "unlockLevel": 15
+          },
+          {
+            "name": "烈焰吐息",
+            "attackType": "strong",
+            "element": "fire",
+            "status": "burn",
+            "manaCost": 65,
+            "unlockLevel": 5
+          },
+          {
+            "name": "冰陨石",
+            "attackType": "strong",
+            "element": "cold",
+            "status": "chill",
+            "manaCost": 80,
+            "cooldownSeconds": 4,
+            "durationSeconds": 3,
+            "unlockLevel": 20
+          },
+          {
+            "name": "火元素",
+            "attackType": "special",
+            "category": "summon",
+            "unlockLevel": 15
+          }
+        ]
+      },
+      {
+        "id": "monk",
+        "primary": "dexterity",
+        "damageElementsObserved": [
+          "physical",
+          "lightning"
+        ],
+        "source": "x1-monk",
+        "examples": [
+          {
+            "name": "三重击",
+            "attackType": "basic",
+            "cycle": "enhanced third attack"
+          },
+          {
+            "name": "怒拳",
+            "attackType": "basic",
+            "temporaryAttackSpeedStack": true
+          },
+          {
+            "name": "圣裁之击",
+            "attackType": "strong",
+            "element": "lightning"
+          },
+          {
+            "name": "灵体分身",
+            "attackType": "special",
+            "category": "summon",
+            "copies": [
+              "basic",
+              "strong"
+            ]
+          }
+        ]
+      }
+    ],
+    "skillStructure": {
+      "source": [
+        "x1-warrior",
+        "x1-hunter",
+        "x1-sorcerer",
+        "x1-monk"
+      ],
+      "availablePerClass": {
+        "basic": 4,
+        "strong": 4,
+        "special": 6
+      },
+      "equippedBasic": 1,
+      "equippedStrong": 1,
+      "equippedSpecialCount": null,
+      "unlockSchedules": {
+        "basic": [
+          1,
+          15,
+          30,
+          45
+        ],
+        "strong": [
+          5,
+          20,
+          35,
+          50
+        ],
+        "special": [
+          10,
+          15,
+          25,
+          30,
+          40,
+          45
+        ]
+      },
+      "basicRole": "Automatic repeated casts generate mana.",
+      "strongRole": "Spend mana; timing/cooldowns differ by skill.",
+      "specialRole": "Cooldown-driven damage, control, buffs, healing or summons.",
+      "rankCap": {
+        "value": 10,
+        "source": "https://x1x.tw/deskrawl/zh-CN/guide/start/",
+        "evidence": "C_search_excerpt_only"
+      },
+      "unlocksDoNotProveEquipped": true
+    },
+    "attributes": {
+      "source": "wiki-stats",
+      "primaryDamagePerPointClaim": 0.01,
+      "universalSecondaryClaims": {
+        "strength": "armor +1/point",
+        "intelligence": "magic resist +1/point",
+        "dexterity": "critical damage reduction = dexterity/(dexterity+1500)"
+      },
+      "baseClaims": {
+        "maxHealthLevel1": 100,
+        "maxHealthPerAdditionalLevel": 16,
+        "maxMana": 100,
+        "primaryAttribute": 10,
+        "primaryAttributeGrowsWithLevel": false,
+        "critChance": 0.05,
+        "critDamageBonus": 1.5,
+        "dodge": 0.05,
+        "moveSpeed": 3
+      },
+      "warning": "These numerical claims are community-derived; cross-check local tooltips before exact projections."
+    },
+    "combatClaims": {
+      "source": "x1-combat",
+      "independentVerification": false,
+      "damageTypes": [
+        "physical",
+        "fire",
+        "cold",
+        "lightning",
+        "poison",
+        "arcane"
+      ],
+      "directStages": [
+        "weapon+flat damage; skill coefficient; primary attribute",
+        "element+all-damage bucket",
+        "crit",
+        "random 0.9..1.1",
+        "sum applicable damage-vs bonuses",
+        "matching attack-type bonus",
+        "effect coefficient; target mitigation"
+      ],
+      "critMultiplierClaim": "1 + critDamageBonus * (1 - targetCritDamageReduction)",
+      "healthyThreshold": ">80% HP",
+      "injuredThreshold": "<30% HP",
+      "distantThreshold": ">6 ground units",
+      "immobilizedIncludes": [
+        "stun",
+        "root",
+        "freeze"
+      ],
+      "eliteIncludesBoss": true,
+      "vulnerableTakenMultiplier": 1.3,
+      "armorAppliesTo": "physical",
+      "magicResistAppliesTo": "other five types",
+      "resistanceReductionClaim": "R/(R+50*attackerLevel)",
+      "cap85Percent": [
+        "critical chance",
+        "dodge",
+        "cooldown reduction",
+        "mana cost reduction"
+      ],
+      "dotClaim": "No spread/dodge; source attack-type bonus at application; current target conditions each tick; crit only when allowed by effect.",
+      "stackingClaim": "Effect-specific; bleed accumulates remaining damage and refreshes time."
+    },
+    "formulaCrosscheck": {
+      "source": "wiki-damage",
+      "unversioned": true,
+      "agreesWith": [
+        "extra-part crit interpretation",
+        "primary attribute conversion",
+        "resistance formula",
+        "separate damage-vs bucket"
+      ],
+      "conflictsWith": [
+        {
+          "topic": "DoT attack-type scaling",
+          "wiki": "No attack-type bonus for ticks.",
+          "x1": "Application snapshots source attack-type bonus; later ticks evaluate target conditions.",
+          "resolution": "Unresolved. Do not infer ordinary/strong/special bonus has zero DoT value."
+        }
+      ],
+      "panelFormulaClaims": "Toughness and Recovery are estimates with assumed offense/defense mix; reportedly omit several damage-reduction stats.",
+      "exactDpsSupported": false
+    },
+    "speedCooldownResources": {
+      "source": [
+        "wiki-stats",
+        "x1-sorcerer",
+        "x1-talents",
+        "steam-h"
+      ],
+      "attackSpeedMeaning": "Panel attacks/second; bonus is a percent modifier.",
+      "knownLoop": "Basic generates mana; strong consumes mana; specials may alter recovery, mana or attack rate.",
+      "unknownRelations": [
+        "Attack-speed impact on each casting animation, channel tick, summon and cooldown",
+        "Additive versus multiplicative global and skill-specific CDR/cost reduction",
+        "AI skill priority, range, mana thresholds and overlapping cast constraints",
+        "Independent damage and attribute inheritance for summons and captured minions"
+      ],
+      "judgment": "Resource and cooldown affixes require equipped skills and observed bottleneck; no universal weight."
+    },
+    "talents": {
+      "source": "x1-talents",
+      "rowsUnlockBySpentPoints": [
+        0,
+        5,
+        10,
+        15,
+        20,
+        30,
+        40,
+        50,
+        60
+      ],
+      "coreRows": [
+        10,
+        30,
+        60
+      ],
+      "maxCoreChoicesPerRow": 1,
+      "rankValueSemantics": "Rank entry is cumulative total, not a fresh bonus to add over every earlier rank.",
+      "effectClasses": [
+        "flat/stat-percent",
+        "skill-specific modifiers",
+        "element-specific modifiers",
+        "conditional buffs",
+        "status application",
+        "resource conversion",
+        "cast counters",
+        "on-hit/on-kill/on-crit proc"
+      ],
+      "examples": [
+        {
+          "name": "奥术储能",
+          "relationship": "maxMana contributes intelligence",
+          "rank1Ratio": 0.05
+        },
+        {
+          "name": "奥术动能",
+          "trigger": "hero special cast",
+          "durationSeconds": 5,
+          "basicDamageBonus": 0.4
+        },
+        {
+          "name": "寒霜迅捷",
+          "scope": "cold skills",
+          "cdrPerRank": 0.04
+        },
+        {
+          "name": "强化冰陨石：法力消耗",
+          "scope": "Ice Meteor only",
+          "costReductionPerRank": 0.04
+        }
+      ]
+    },
+    "officialCastCounters": {
+      "source": "steam-h",
+      "onlyOwnCasts": true,
+      "repeatedCastsCount": false,
+      "minionOrSummonAttacksCount": false,
+      "resetOn": [
+        "death",
+        "area change"
+      ],
+      "examples": [
+        "Chain Force",
+        "Arcane Exposure"
+      ],
+      "otherOfficialChanges": [
+        "Hunter Flare gained Dizzy; movement speed -35% for 3 seconds.",
+        "Monk Chain Force became every seventh basic cast applying Vulnerable for 3 seconds.",
+        "Ice Nova base damage increased to 30% weapon damage.",
+        "Poisoned ticks can trigger Life on Hit with the appropriate Hunter talent."
+      ]
+    },
+    "growth": {
+      "source": "x1-faq",
+      "characterLevelCap": 70,
+      "talentPointsStartAtLevel": 2,
+      "talentPointsPerLevel": 1,
+      "totalAt70": 69,
+      "earliestCoreLevels": [
+        12,
+        32,
+        62
+      ],
+      "lowerLevelEnemyXpPenalty": "Local build 25690430: penalty multiplier decreases by 1/6 per lower enemy level and reaches zero at six levels lower; the local kill branch still clamps final XP to at least 1. Positive PlannedXP bypasses this local formula; online server reward rules remain unverified.",
+      "xpPenaltyLocalEvidence": "repo://research/experience-penalty.json",
+      "higherEnemyXp": "No increase beyond full XP.",
+      "paragonUnlock": "Any character reaches level 70.",
+      "paragonSharedLevel": true,
+      "paragonAllocationPerCharacter": true,
+      "temporaryBuffLifecycle": "Consumables replace same-category buff; death clears buffs. Do not count them as permanent gear."
+    },
+    "paragon": {
+      "source": "wiki-paragon",
+      "onePointPerLevelClaim": true,
+      "allocationClaims": {
+        "strength": {
+          "perPoint": 1,
+          "maxPoints": null
+        },
+        "dexterity": {
+          "perPoint": 1,
+          "maxPoints": null
+        },
+        "intelligence": {
+          "perPoint": 1,
+          "maxPoints": null
+        },
+        "moveSpeedPercent": {
+          "perPoint": 0.5,
+          "maxPoints": 50
+        },
+        "maxMana": {
+          "perPoint": 2,
+          "maxPoints": 50
+        },
+        "critChancePercent": {
+          "perPoint": 0.1,
+          "maxPoints": 50
+        },
+        "critDamagePercent": {
+          "perPoint": 2,
+          "maxPoints": 50
+        },
+        "attackSpeedPercent": {
+          "perPoint": 0.4,
+          "maxPoints": 50
+        },
+        "cdrPercent": {
+          "perPoint": 0.2,
+          "maxPoints": 50
+        },
+        "armorPercent": {
+          "perPoint": 1,
+          "maxPoints": 50
+        },
+        "magicResistPercent": {
+          "perPoint": 1,
+          "maxPoints": 50
+        },
+        "healthPercent": {
+          "perPoint": 0.5,
+          "maxPoints": 50
+        },
+        "lifeRegen": {
+          "perPoint": 4,
+          "maxPoints": 50
+        },
+        "lifeOnHit": {
+          "perPoint": 5,
+          "maxPoints": 25
+        },
+        "healthPotionFindPercent": {
+          "perPoint": 5,
+          "maxPoints": null
+        }
+      },
+      "firstLevelClaim": 1,
+      "firstLevelLocallyVerified": false
+    }
+  },
+  "equipmentJudgmentImplications": [
+    "Use profession primary attribute and actual damage-source components; one skill may have multiple elements.",
+    "Represent captured minion, summon, proc, direct hit and DoT ownership separately.",
+    "Conditional enemy bonuses require target HP, range, elite flag and status availability; status access is not permanent uptime.",
+    "Track effect provenance so panel totals, talents, consumables and temporary buffs are not added twice.",
+    "Attack-speed, mana and cooldown improvements address different bottlenecks; keep contextual explanations instead of asking user for weights.",
+    "Thorns, max-health scaling, mana-to-intelligence conversion and talent changes can make apparently secondary affixes useful.",
+    "Separate item retention, current build relevance and immediate replacement; later unlocks can justify retaining future candidates.",
+    "Unverified formulas, effects or OCR facts prevent definitive discard or real-DPS improvement claims."
+  ],
+  "collectionFields": {
+    "profile": [
+      "class",
+      "character level + capture timestamp",
+      "game build",
+      "online/singleplayer",
+      "profile revision",
+      "skill slots + stable names/IDs + ranks",
+      "talent node IDs + ranks + core selection",
+      "paragon shared level + per-character allocations"
+    ],
+    "damageSource": [
+      "actor owner",
+      "skill/proc ID",
+      "basic/strong/special tag",
+      "one or more component elements",
+      "direct/dot/channel/projectile/summon/thorns",
+      "weapon/flat/HP/mana/thorns scaling",
+      "cost/gain/cooldown/cast/channel duration",
+      "status applications/chance/stacks/duration",
+      "targeting/range/AOE"
+    ],
+    "effect": [
+      "source ID",
+      "permanent/conditional/temporary",
+      "trigger owner and event",
+      "stat scope",
+      "amount/unit",
+      "duration/stacks",
+      "replace/refresh/accumulate/exclusive rule",
+      "snapshot/dynamic policy",
+      "death/area reset"
+    ],
+    "observation": [
+      "item slot and raw tooltip",
+      "panel total versus item affix versus skill tooltip",
+      "OCR text and original image reference",
+      "manual confirmation state",
+      "buff indicator/timer",
+      "mana starvation/idle time/death observations"
+    ],
+    "evaluation": [
+      "profile revision",
+      "knowledge pack version",
+      "engine version",
+      "original facts",
+      "assumptions",
+      "active unknown conditions",
+      "source/build/evidence per reason"
+    ]
+  },
+  "openQuestions": [
+    "Global CDR/cost reduction combination with cold-only and Ice Meteor-only modifiers remains unverified.",
+    "Exact attack speed relationship to casting, channelling, multiple-hit spells and summoned actors remains unverified.",
+    "DoT source attack-type snapshot is inconsistent across community sources; investigate tooltip and controlled observation.",
+    "Status durations, maxima, refresh/replacement rules and boss control resistance require a separate status knowledge pass.",
+    "Primary attribute, flat damage, all-damage and special-item scaling inheritance for summons/captured minions needs confirmation.",
+    "Full rank arrays and prerequisite relationships for Warrior/Hunter/Monk talents have not been exhaustively validated in this focused pass.",
+    "Steam 1.0.0h release date varies by locale; do not use locale display date as build identity.",
+    "Wikily paragon values and first unlocked level have no build pin; exact progression projections remain provisional."
+  ]
+}

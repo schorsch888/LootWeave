@@ -1,0 +1,64 @@
+# Downloaded research tools and regenerable game extraction
+.tools/
+data/extracted/
+
+# Local research drafts superseded by the current design or final evidence
+/docs/README.md
+/docs/product.md
+/docs/architecture.md
+/docs/data-evidence.md
+/docs/privacy-and-publication.md
+/docs/leveling-map-recommendation.md
+/research/extraction-checklist.json
+/research/extraction-source-verification.json
+/data/deskrawl-reference.json
+
+# Private player material, machine configuration, and credentials
+.local/
+private/
+captures/
+screenshots/
+codex-clipboard-*
+.codex/
+.aws/
+.env
+.env.*
+!.env.example
+save.json
+*.d2s
+*.d2i
+*.key
+*.pfx
+*.p12
+credentials*.json
+
+# Native game resources, binaries, build products, and debug dumps
+*.exe
+*.dll
+*.pdb
+*.dmp
+*.assets
+*.bundle
+*.resS
+*.resource
+global-metadata.dat
+target/
+dist/
+build/
+node_modules/
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Temporary files and operating-system metadata
+*.log
+*.tmp
+*.temp
+Thumbs.db
+Desktop.ini

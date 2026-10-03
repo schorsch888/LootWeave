@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "title": "Deskrawl 世界、生活、挂机与经济机制事实目录",
+  "research_date": "2026-10-03",
+  "game": {
+    "platform": "Windows / Steam",
+    "observed_build_id": "25690430"
+  },
+  "sources": [
+    {
+      "id": "steam_store",
+      "url": "https://store.steampowered.com/app/4623570/Deskrawl_Idle_ARPG/?l=schinese",
+      "title": "Steam 商店：桌面破坏神：挂机ARPG",
+      "publisher": "First Day Games",
+      "source_kind": "官方产品说明",
+      "observed_at": "2026-10-03",
+      "game_build": "未标注",
+      "confidence": "官方概述；机制细节仅按商店说明原文摘要"
+    },
+    {
+      "id": "x1x_start",
+      "url": "https://x1x.tw/deskrawl/guide/start/",
+      "title": "X1X 新手入门",
+      "source_kind": "非官方玩家资料站；自述数据来自游戏本体静态资料",
+      "observed_at": "2026-10-03",
+      "game_build": "1.0.0i (25690430)",
+      "confidence": "较高：页面有版本号且与本机build一致；仍非官方"
+    },
+    {
+      "id": "x1x_progression",
+      "url": "https://x1x.tw/deskrawl/guide/progression/",
+      "title": "X1X 难度与推进",
+      "source_kind": "非官方玩家资料站；自述数据来自游戏本体静态资料",
+      "observed_at": "2026-10-03",
+      "game_build": "页面版本信息未在本次摘录中读取",
+      "confidence": "中等；地图、难度倍率等资料可能受更新影响"
+    },
+    {
+      "id": "x1x_lifeskills",
+      "url": "https://x1x.tw/deskrawl/lifeskills/",
+      "title": "X1X 生活技能规划",
+      "source_kind": "非官方玩家资料站；交互规划工具按游戏节点编排",
+      "observed_at": "2026-10-03",
+      "game_build": "页面版本信息未在本次摘录中读取",
+      "confidence": "中等；节点布局和费用应以游戏内显示为准"
+    },
+    {
+      "id": "x1x_faq",
+      "url": "https://x1x.tw/deskrawl/guide/faq/",
+      "title": "X1X 常见问题",
+      "source_kind": "非官方玩家资料站，整理游戏内说明",
+      "observed_at": "2026-10-03",
+      "game_build": "页面版本信息未在本次摘录中读取",
+      "confidence": "中等；涉及自动拾取筛选、死亡、储物和交易限制"
+    },
+    {
+      "id": "x1x_gear",
+      "url": "https://x1x.tw/deskrawl/guide/gear/",
+      "title": "X1X 装备、强化与交易",
+      "source_kind": "非官方玩家资料站；自述数据来自游戏本体静态资料",
+      "observed_at": "2026-10-03",
+      "game_build": "1.0.0i (25690430)",
+      "confidence": "较高：与本机build一致；仍非官方"
+    },
+    {
+      "id": "x1x_paragon",
+      "url": "https://x1x.tw/deskrawl/paragon/",
+      "title": "X1X 巅峰配点",
+      "source_kind": "非官方玩家资料站；自述数据来自游戏本体静态资料",
+      "observed_at": "2026-10-03",
+      "game_build": "1.0.0i (25690430)",
+      "confidence": "较高：与本机build一致；巅峰点数共享关系是页面明确描述"
+    },
+    {
+      "id": "x1x_runes",
+      "url": "https://x1x.tw/deskrawl/runes/",
+      "title": "X1X 符文",
+      "source_kind": "非官方玩家资料站；自述数据来自游戏本体静态资料",
+      "observed_at": "2026-10-03",
+      "game_build": "1.0.0i (25690430)",
+      "confidence": "较高：与本机build一致；套装例子来自页面明确列表"
+    }
+  ],
+  "systems": {
+    "world_and_difficulty": {
+      "facts": [
+        "世界含11个地区、共70张地图，按顺序解锁；每区末尾有首领。普通难度敌人等级范围覆盖1至70。",
+        "普通难度为基础；击败普通最终首领解锁梦魇，击败梦魇最终首领解锁炼狱。难度只能在城镇切换。",
+        "资料页列出难度会提高敌人生命/伤害，并增加经验、金币、物品发现、物品等级和首领材料倍率。",
+        "多数地区第4关是银色首领、第7关是黄金首领；银色首领掉落进入黄金首领关所需的同难度头骨。"
+      ],
+      "source_ids": [
+        "x1x_progression"
+      ],
+      "impact_on_item_judgment": "练级和刷装效率与当前推进地图、难度、目标掉落相关；助手应先问或读取角色正在刷的区域/难度，再判断经验、掉落或抗生存词条的当前用途。不能把更高难度的掉落收益当作免费提升。",
+      "unknowns": [
+        "地图清怪速度和死亡率的个体数据",
+        "实际掉落分布",
+        "具体当前地区/难度"
+      ]
+    },
+    "life_skills_and_auto_loot": {
+      "facts": [
+        "战利品车初始只拾取物品；载重达到上限后需回城。",
+        "生活技能逐步解锁装备筛选、自動出售和自動分解；筛选可按稀有度配置。出售装备当场变金币，分解装备转为制作材料，两者均不占战利品车容量。",
+        "生活技能页面列出物品发现、金币发现、经验获取、材料发现、载重、储物页、自动恢复、自动补充、离线远征等不同方向节点。",
+        "被筛选的地面战利品留一段时间后会消失；旅行前应先拾取地面物品。"
+      ],
+      "source_ids": [
+        "x1x_start",
+        "x1x_lifeskills",
+        "x1x_faq"
+      ],
+      "impact_on_item_judgment": "自动出售/分解不是无风险保管：规则应在稀有度过滤前先识别当前角色适配词条、传奇/套装效果和潜在升级价值；不确定的物品应交由用户确认或保留。出售有金币收益，分解有材料收益，但材料具体用途应由制作/升级配方数据确定。",
+      "unknowns": [
+        "用户实际已解锁的生活技能和筛选设置",
+        "背包/战利品车剩余容量",
+        "哪些稀有度当前设置为自动出售或分解"
+      ]
+    },
+    "town_services_materials_crafting": {
+      "facts": [
+        "首城 NPC/服务需花金币解锁，部分另有等级或材料条件；各城市各有一套服务。",
+        "新手资料列举：炼金术士制作药水；铁匠分解和强化装备；神秘物品商人处理神秘物品；宝石专家买卖/移除宝石；拍卖师提供物品交易入口。",
+        "Steam 商店概述说明推进城镇可解锁铁匠、炼金商人、神秘商人和拍卖行。"
+      ],
+      "source_ids": [
+        "x1x_start",
+        "steam_store"
+      ],
+      "impact_on_item_judgment": "物品可能有出售、拆解换材、强化、镶宝石或神秘词条揭示等用途；助手应区分这些服务入口及其成本/不可交易后果，不能只比较面板属性。材料价值需结合对应配方、强化费用和用户目标；本研究不推算材料价格。",
+      "specific_first_town_unlocks_from_source": [
+        {
+          "service": "炼金术士（药水制作）",
+          "gold": 500,
+          "level": 5,
+          "material_requirement": "有，页面显示×5，材料名未摘录"
+        },
+        {
+          "service": "拍卖师",
+          "gold": 500,
+          "level": 5,
+          "material_requirement": "无"
+        },
+        {
+          "service": "铁匠（分解/强化）",
+          "gold": 800,
+          "level": 10,
+          "material_requirement": "有，页面显示×5，材料名未摘录"
+        },
+        {
+          "service": "神秘物品商人",
+          "gold": 2000,
+          "level": 20,
+          "material_requirement": "有，页面显示×3，材料名未摘录"
+        },
+        {
+          "service": "宝石专家（买卖/移除宝石）",
+          "gold": 20000,
+          "level": 30,
+          "material_requirement": "无"
+        }
+      ],
+      "unknowns": [
+        "各其他主城服务和材料条件",
+        "物品制作的完整配方与消耗"
+      ]
+    },
+    "minions": {
+      "facts": [
+        "Steam 官方商店说明称敌人包括Boss都可捕获为仆从。",
+        "出阵仆从牵引战利品车并拾取掉落，载重决定一次可装物品数量。",
+        "仆从会支援战斗：部分提供被动增益，部分释放特殊技能。"
+      ],
+      "source_ids": [
+        "steam_store",
+        "x1x_start"
+      ],
+      "impact_on_item_judgment": "实际伤害/生存/资源循环可能受当前仆从的被动与技能影响；面向装备保留建议需把已选仆从纳入已确认构筑上下文，不能仅按角色职业和技能判断。仆从也影响拾取容量体验。",
+      "unknowns": [
+        "当前出阵仆从",
+        "仆从等级、技能和被动",
+        "捕获/升级所需材料与数值"
+      ]
+    },
+    "online_offline_market_leaderboards": {
+      "facts": [
+        "线上角色可参与排行榜、交易及其他社交功能；单人角色不能使用排行榜和市场交易。",
+        "离线狩猎需解锁生活技能远征营地；金币和经验按已解锁最高区域累积，并于下次进城领取。基础离线收益上限8小时，生活技能可提高至16小时。",
+        "只有线上角色可交易。可交易标签物品才可上架；资料举例可交易类别包括黑雾装备、神圣装备、套装符文和传奇缰绳。强化或已镶嵌装备、已装备过的符文无法交易。",
+        "上架物品会离开游戏并进入Steam库存；资料称最多同时上架8件。"
+      ],
+      "source_ids": [
+        "x1x_start",
+        "x1x_faq",
+        "x1x_gear",
+        "steam_store"
+      ],
+      "impact_on_item_judgment": "线上模式让可交易物品保留市场价值；强化、镶嵌或装备符文会改变可交易资格，助手在建议操作前应展示这一后果。离线收益资料明确金币与经验来源，不足以证明角色离线时会继续实际战斗或获得装备掉落。",
+      "unknowns": [
+        "当前物品的具体可交易标记",
+        "当前市场价格与成交需求",
+        "生活技能远征是否已解锁及累计离线时间"
+      ]
+    },
+    "paragon_and_runes_brief_reference": {
+      "facts": [
+        "任一角色达到70级解锁巅峰；巅峰等级由所有角色共享，每级1点，但每个角色独立分配点数。当前24级巫师并不能说明账号无巅峰，因为账号其他角色等级未知。",
+        "符文槽从40级开放，最多6格，40/45/50/55/60/65级依次解锁。符文有技能等级/属性，职业符文套装提供2/4/6件效果。"
+      ],
+      "source_ids": [
+        "x1x_paragon",
+        "x1x_runes"
+      ],
+      "impact_on_item_judgment": "巅峰和符文会形成后续构筑能力；但当前角色24级尚未达到符文槽门槛。巅峰只能在确认账号其他角色情况后判断已解锁与否。",
+      "unknowns": [
+        "账号是否存在70级角色",
+        "当前角色符文/巅峰界面状态"
+      ]
+    }
+  },
+  "research_limits": [
+    "除Steam商店说明外，细节来源为非官方X1X资料站；该站多数相关页面标注静态游戏数据，但部分页面本次没有读取到版本页脚。",
+    "在线等级24的巫师是唯一已知的玩家上下文；未假设技能槽、天赋、装备、当前地图、仆从、生活技能或账号其他角色状态。",
+    "本文仅登记世界、生活、经济与仆从机制，不提供伤害公式、掉落概率估算或装备权重。"
+  ]
+}

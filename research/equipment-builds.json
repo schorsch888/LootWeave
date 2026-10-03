@@ -1,0 +1,592 @@
+{
+  "schema_version": 1,
+  "scope": "Deskrawl装备与构筑研究；仅资料与助手设计，不实现工具、不操作游戏、不读写游戏内存或存档。",
+  "research_date": "2026-10-03",
+  "target_version": {
+    "game": "Deskrawl: Idle ARPG",
+    "version": "1.0.0i",
+    "build": "25690430",
+    "online_generation": "线上掉落由服务器产生，客户端静态公式不能直接视为线上精确真值。"
+  },
+  "evidence_levels": {
+    "A": "开发者Steam说明；历史版本声明只证明当时存在。",
+    "B": "资料站逐页标记与目标build一致，声称来自游戏静态资料；尚无本次游戏内验证。",
+    "C": "旧build、通用模拟器冲突、来源不完整或仅搜索索引可读。",
+    "D": "设计推论；不作为游戏事实。"
+  },
+  "sources": [
+    {
+      "id": "steam_store",
+      "url": "https://store.steampowered.com/app/4623570/",
+      "title": "Steam官方商店",
+      "version": "2026-10-03当前商店",
+      "evidence": "A",
+      "supports": "混合装备、技能和仆从形成构筑；有Steam市场交易。"
+    },
+    {
+      "id": "steam_ancient",
+      "url": "https://steamcommunity.com/games/4623570/announcements/detail/699893813442776270",
+      "readable_official_mirror": "https://store.steampowered.com/news/posts/?enddate=1782022500&feed=steam_community_announcements",
+      "title": "开发者0.1.12公告：Ancient Legendary",
+      "version": "历史demo 0.1.12；2026-06-20/21，日期受时区影响",
+      "evidence": "A",
+      "supports": "远古传奇系统引入时宣称物品等级与词条取可能区间最高值；当前最高等级边界不能据此确定。",
+      "access_note": "SteamCommunity正文未解析；Steam官方news汇总中读到对应开发者完整段落。"
+    },
+    {
+      "id": "items",
+      "url": "https://x1x.tw/deskrawl/items/",
+      "title": "物品图鉴",
+      "version": "1.0.0i (25690430)",
+      "evidence": "B",
+      "supports": "209装备；部位、品质、职业、掉落等级和交易标签；不能把图鉴条目等同玩家实例。"
+    },
+    {
+      "id": "gear",
+      "url": "https://www.x1x.tw/deskrawl/guide/gear/",
+      "title": "装备、强化与交易",
+      "version": "1.0.0i (25690430)",
+      "evidence": "B",
+      "supports": "品质词条数、穿戴等级例外、黑雾揭示、强化与交易品类。"
+    },
+    {
+      "id": "staff",
+      "url": "https://x1x.tw/deskrawl/items/LegendaryStaff1/",
+      "title": "霜龙法杖",
+      "version": "1.0.0i (25690430)",
+      "evidence": "B",
+      "supports": "低掉落等级核心传奇、随机词条池与区间、武器基础伤害/速度、在线公式差异。"
+    },
+    {
+      "id": "sacred_ring",
+      "url": "https://x1x.tw/deskrawl/items/DivineRing1/",
+      "title": "古贤遗骨",
+      "version": "25642216，早于目标build",
+      "evidence": "C",
+      "supports": "神圣实例有固定属性和所有技能等级效果；通用滑块与神圣穿戴等级正文冲突。"
+    },
+    {
+      "id": "runes",
+      "url": "https://x1x.tw/deskrawl/runes/",
+      "title": "符文",
+      "version": "1.0.0i (25690430)",
+      "evidence": "B",
+      "supports": "6独立槽、等级解锁、技能属性、重复装备、13套2/4/6效果和符文绑定。"
+    },
+    {
+      "id": "gems",
+      "url": "https://x1x.tw/deskrawl/gems/",
+      "title": "宝石",
+      "version": "1.0.0i (25690430)",
+      "evidence": "B",
+      "supports": "6种6阶、部位效果、孔上限、开孔绑定、合成及拆除销毁。"
+    },
+    {
+      "id": "upgrade",
+      "url": "https://www.x1x.tw/deskrawl/tools/upgrade/",
+      "title": "铁匠强化模拟",
+      "version": "搜索索引页脚1.0.0i (25690430)",
+      "evidence": "C",
+      "supports": "强化金钱与材料公式、失败资源消耗、分解价值和宝石孔费用。",
+      "access_note": "正文open失败；搜索索引返回正文与页脚；强化成功率另由gear全文交叉证实，精确费用仍待运行时核验。"
+    },
+    {
+      "id": "crafting",
+      "url": "https://www.x1x.tw/deskrawl/crafting/",
+      "alternate_url": "https://x1x.tw/deskrawl/crafting/",
+      "title": "制作与材料",
+      "version": "www搜索索引1.0.0i (25690430)；无www正文缓存25642216",
+      "evidence": "C",
+      "supports": "已见制作是药水、宝石合成、治疗药水升级；铁匠分解和强化材料。",
+      "access_note": "同站不同主机缓存内容与build不同，不能统一给整站贴当前版本标签。"
+    },
+    {
+      "id": "loot",
+      "url": "https://x1x.tw/deskrawl/tools/loot/",
+      "title": "掉落机率",
+      "version": "当日抓取；页面正文注明1.0.0g改动，页脚版本本次未定位确认",
+      "evidence": "C",
+      "supports": "先选部位再选职业/等级合格物品、远古/黑雾/神圣/符文门槛、指定敌人特殊掉落；精确线上概率待核验。"
+    }
+  ],
+  "mechanisms": [
+    {
+      "id": "types_slots_quality",
+      "status": "已证实存在",
+      "evidence": "B",
+      "sources": [
+        "items",
+        "gear"
+      ],
+      "facts": {
+        "slots": [
+          "武器",
+          "头盔",
+          "胸甲",
+          "护腿",
+          "靴子",
+          "手套",
+          "护肩",
+          "腰带",
+          "戒指",
+          "项链",
+          "披风"
+        ],
+        "qualities": [
+          "普通",
+          "优秀",
+          "稀有",
+          "传奇",
+          "神圣"
+        ],
+        "affix_counts": {
+          "普通": {
+            "primary": 1,
+            "secondary": 0
+          },
+          "优秀": {
+            "primary": 2,
+            "secondary": 0
+          },
+          "稀有": {
+            "primary": 3,
+            "secondary": 1
+          },
+          "传奇": {
+            "primary": 4,
+            "secondary": 1
+          },
+          "神圣": {
+            "primary": 4,
+            "secondary": 1
+          }
+        },
+        "rarity_bonus": {
+          "普通": "20%",
+          "优秀": "40%",
+          "稀有": "50%",
+          "传奇": "60%",
+          "神圣": null
+        }
+      },
+      "limits": "部位种类不证明每个部位的实例数量；本次未证实戒指是否多槽、双持/副手系统。武器名称有法杖、弓、斧等，职业限制须逐条读，不能按暗黑系列基础类型表推断。",
+      "design_implication": "以真实可用槽与职业为可行性约束。神圣不是万能优胜标签；随机词条、固定属性、特效另行比较。"
+    },
+    {
+      "id": "three_levels",
+      "status": "已证实存在",
+      "evidence": "B",
+      "sources": [
+        "gear",
+        "staff"
+      ],
+      "facts": {
+        "item_level": "决定基础数值与词条区间的物品等级。",
+        "required_level": "一般为物品等级/10向下取整，最低1、最高70；神圣/黑雾固定70，其他披风固定1。",
+        "drop_min_level": "图鉴原型的最低掉落门槛；霜龙法杖为15起。",
+        "example": "法杖页面默认itemLevel150、requiredLevel15、dropMinLevel15；这是模拟取值，不是玩家拥有的掉落实例。"
+      },
+      "limits": "掉落等级到实例物品等级的具体随机范围、难度加成与远古当前上限待核实。神圣旧页模拟显示需求1，但正文需求70，不能抓滑块值覆盖明确例外。",
+      "design_implication": "三个等级必须分别保存；保留低级核心特效不等于低级实例值得长期穿戴。"
+    },
+    {
+      "id": "affix_random_ranges",
+      "status": "有资料但不完整",
+      "evidence": "B",
+      "sources": [
+        "staff"
+      ],
+      "facts": {
+        "generation": "从该物品的主要/次要属性池随机抽取，品质决定数量。",
+        "reported_formula": "(1+品质加成)×属性系数×物品等级×随机系数；普通随机系数0.85–1.15，远古传奇固定1.15。",
+        "weapon_basics": "基础武器伤害区间和武器速度独立显示；不是附加伤害词条的同义字段。",
+        "sample_at_ilvl150": {
+          "intelligence": "10–14",
+          "cold_damage": "16.3%–22.1%",
+          "weapon_damage": "40–80",
+          "weapon_speed": "0.80–1.20"
+        }
+      },
+      "limits": "区间为客户端公式推算。线上服务器可能略有差异；属性系数、取整、禁止重复抽取规则、基础武器速度与伤害的完整公式未核验。",
+      "design_implication": "读实际roll优先；区间仅作合法性与成长性参照，不能用中位词条替代玩家实例。"
+    },
+    {
+      "id": "legendary_effects",
+      "status": "已证实存在",
+      "evidence": "B",
+      "sources": [
+        "staff"
+      ],
+      "facts": {
+        "example": {
+          "template_id": "LegendaryStaff1",
+          "name": "霜龙法杖",
+          "class": "巫师",
+          "effect": "冰碎片命中可弹射至额外1名敌人。",
+          "drop_min_level": 15
+        },
+        "effect_vs_affixes": "固定技能机制与随机数值词条分别存在。"
+      },
+      "design_implication": "判断换装必须展示丢失的弹射与作用技能；若仍使用冰碎片，只有面板伤害优势不足以证明新武器更好。保留唯一核心特效、备用构筑和较高等级同特效升级候选。",
+      "limits": "同特效叠加、弹射目标选择、触发伤害继承待核实；不声称存在暗黑式特效萃取/转移。"
+    },
+    {
+      "id": "ancient",
+      "status": "已证实存在",
+      "evidence": "B",
+      "sources": [
+        "steam_ancient",
+        "gear",
+        "staff",
+        "loot"
+      ],
+      "facts": {
+        "identity": "传奇的远古形态。",
+        "reported_chance": "10%，来自当前资料站，线上概率未核验。",
+        "affix_roll": "取可能区间最高值。",
+        "historical_item_level": "0.1.12官方引入时同时称取最高可能物品等级。"
+      },
+      "limits": "当前最高物品等级是固定上限、掉落局部上限还是地图相关上限不明；远古不意味着词条种类适配当前技能。",
+      "design_implication": "远古标志是生成形态和潜力信息；必须保留词条种类与技能适配判断。"
+    },
+    {
+      "id": "sacred",
+      "status": "已证实存在",
+      "evidence": "B",
+      "sources": [
+        "gear",
+        "sacred_ring",
+        "loot"
+      ],
+      "facts": {
+        "gate": "煉狱难度掉落，需求70。",
+        "example": "旧build古贤遗骨有固定属性与全部技能+10，另列4主要/1次要随机词条。"
+      },
+      "limits": "样例是旧build，数值不能作为当前精确结论；神圣品质系数未给。页面通用模拟需求和正文矛盾已记录。",
+      "design_implication": "固定属性、技能等级增量与特效要作为完整包读入；品质升高仍可能切断核心机制。"
+    },
+    {
+      "id": "black_mist",
+      "status": "已证实存在",
+      "evidence": "B",
+      "sources": [
+        "gear",
+        "staff",
+        "loot"
+      ],
+      "facts": {
+        "identity": "黑雾传奇，可交暗影夫人揭示。",
+        "choice": "7条隐藏属性，每条显露2个选项后选择1个。",
+        "trade_transition": "揭示后永久不可交易。",
+        "reported_gate": "梦魇起，资料站概率0.2%；线上基准与条件未核验。"
+      },
+      "design_implication": "未揭示物品是一组可能后继状态；不能把未知属性计作零，也不能保证得到理想词条。需要记录每条揭示/选择状态，以及为了自用放弃交易的机会成本。",
+      "limits": "揭示花费、候选词条抽取池、能否改选及与远古关系未确认。"
+    },
+    {
+      "id": "upgrade",
+      "status": "已证实存在",
+      "evidence": "B",
+      "sources": [
+        "gear",
+        "upgrade"
+      ],
+      "facts": {
+        "cap": 10,
+        "success_percent_by_target": [
+          100,
+          100,
+          100,
+          100,
+          75,
+          50,
+          40,
+          30,
+          20,
+          10
+        ],
+        "failure": "强化等级保持；金币与材料仍消耗。",
+        "trade_transition": "强化后永久不可交易。"
+      },
+      "partial_cost_information": {
+        "evidence": "C",
+        "gold": "每次3×物品等级×目标强化等级²，远古加倍。",
+        "material": "品质对应+1材料量×目标等级²；稀有以上+9/+10另需3个对应部位首领材料。"
+      },
+      "limits": "每级具体增强哪些数值、增强比例、线上成本和材料取整未核验。费用来自搜索索引，使用前应以截图核实。",
+      "design_implication": "比较当前实例与可强化实例，附成功概率、预算和绑定结果；已投入成本不等于必须继续穿戴。"
+    },
+    {
+      "id": "gems_sockets",
+      "status": "已证实存在",
+      "evidence": "B",
+      "sources": [
+        "gems",
+        "upgrade"
+      ],
+      "facts": {
+        "gems": "紫水晶、钻石、祖母绿、红宝石、蓝宝石、黄玉；各6阶。",
+        "effects": "同宝石在武器/护甲/饰品上提供不同效果。",
+        "socket_requirement": "物品需求等级至少30。",
+        "max_sockets": {
+          "武器": 3,
+          "头盔": 1,
+          "胸甲": 2,
+          "护腿": 2,
+          "戒指": 1,
+          "项链": 1
+        },
+        "other_slots": "其余部位无孔（强化模拟搜索索引）。",
+        "socket_cost": "每孔100大地精华＋400×物品等级金币；金币公式本次仅搜索索引可读。",
+        "remove": "1万金币；宝石被销毁。",
+        "trade_transition": "添加宝石孔永久不可交易。",
+        "combine": "10同种同阶合成下一阶；5/6阶仅合成，第1阶可购买。"
+      },
+      "design_implication": "要比较物品＋孔＋实际宝石的整体状态；迁移宝石需要新宝石资源，不能假定取出免费回收。",
+      "limits": "六种宝石完整阶梯不在本文件穷举；开孔金币与其他部位0孔为C级证据。"
+    },
+    {
+      "id": "runes_independent",
+      "status": "已证实存在",
+      "evidence": "B",
+      "sources": [
+        "runes"
+      ],
+      "facts": {
+        "slot_unlock_levels": [
+          40,
+          45,
+          50,
+          55,
+          60,
+          65
+        ],
+        "max_level": 6,
+        "types": "职业技能＋属性符文，以及全职业属性符文；普通技能/属性符文可重复装备。",
+        "set_structure": "13套，职业限制，每套6件，2/4/6件奖励。",
+        "ice_barrage": {
+          "two": "减速目标增伤65%。",
+          "four": "冰碎片能施加冰寒。",
+          "six": "冰碎片额外3投射物。"
+        },
+        "trade_transition": "装备过的符文不可交易。"
+      },
+      "design_implication": "符文不等于装备孔中的暗黑2符文之语；替换前后重算套装件数，6→5/4→3/2→1都可能丢机制。普通符文重复件可能仍是有效构筑件。",
+      "limits": "套装同编号是否可重复计件、技能增级规则和升级成本未知。页面写每3符文等级增技能，准确值应读提示，不猜公式。"
+    },
+    {
+      "id": "crafting_salvage",
+      "status": "有资料但不完整",
+      "evidence": "C",
+      "sources": [
+        "crafting",
+        "upgrade"
+      ],
+      "facts": {
+        "observed_crafting": "炼金药水、治疗药水升级、宝石合成。",
+        "salvage": "铁匠分解毁掉装备并返回材料；材料产量依品质、物品等级和触发概率。"
+      },
+      "design_implication": "为不再使用的实例比较保留、交易、出售、分解价值；唯一核心和未来套装候选应先识别。",
+      "limits": "不据此断言存在制作武器/防具或通用洗练；旧build与当前索引混用，只证明类别存在。"
+    },
+    {
+      "id": "drops_retention",
+      "status": "有资料但不完整",
+      "evidence": "C",
+      "sources": [
+        "loot",
+        "staff"
+      ],
+      "facts": {
+        "generic_pool": "1.0.0g起先选部位，再从职业及等级合格的物品选；披风权重特殊。",
+        "specific_drop": "同时有敌人特殊掉落表，例如血月狼人列癒行之靴；不能把所有独特装备一概称世界掉落。",
+        "runes_gate": "40级以上首领，套装符文煉狱起。"
+      },
+      "design_implication": "获得难度影响再次获取成本，不能用稀有度名称替代真实掉落门槛；对暂时穿不了的核心装备记录可用等级与未来构筑用途。",
+      "limits": "具体概率及物品发现如何影响多个掉落判定未知；特殊掉落表不自动证明物品绝对专属该敌人。"
+    },
+    {
+      "id": "market_binding",
+      "status": "已证实存在",
+      "evidence": "B",
+      "sources": [
+        "steam_store",
+        "gear",
+        "gems",
+        "runes"
+      ],
+      "facts": {
+        "mode": "只有线上角色能交易，最终依据物品提示的可交易标记。",
+        "eligible_categories": "黑雾装备、神圣装备、套装符文、传奇韁绳。",
+        "irreversible_transitions": [
+          "强化",
+          "开宝石孔",
+          "黑雾揭示",
+          "符文首次装备"
+        ],
+        "listing": "物品进入Steam库存；取回/领取有冷却并寄信箱。"
+      },
+      "design_implication": "可交易性是实例状态和后续行为约束；不只存原型canTrade。装备普通传奇不等同市场可售；市场标价不是实际成交保证。"
+    }
+  ],
+  "not_found_evidence": [
+    {
+      "system": "常规装备词条洗练/重铸",
+      "conclusion": "在本次装备、强化、制作资料中未找到；不能判定绝对不存在，也不能把黑雾二选一泛化为全装备洗练。"
+    },
+    {
+      "system": "传奇特效萃取、铭刻、跨装备转移",
+      "conclusion": "未找到；不能套用暗黑3魔盒或暗黑4威能体系。"
+    },
+    {
+      "system": "暗黑2符文之语及按顺序镶嵌成词",
+      "conclusion": "未找到；已有明确独立符文栏与套装体系。"
+    },
+    {
+      "system": "装备套装/普通防具2、4、6件奖励",
+      "conclusion": "本次2/4/6奖励证据属于符文套装，不应外推普通装备。"
+    },
+    {
+      "system": "装备制作、双持/副手、一般装备强化等级转移",
+      "conclusion": "本次未找到充分证据，设计为未知能力。"
+    }
+  ],
+  "first_principles_model": {
+    "evidence": "D",
+    "core": "任务对象是玩家持有的私人物品实例以及可行后继状态，而非图鉴原型排名。用约束、构筑依赖、成本和不可逆变化支持保留或换装解释。",
+    "minimum_inputs": {
+      "provenance": [
+        "game_id",
+        "build",
+        "online_or_offline",
+        "capture_time",
+        "source_kind",
+        "raw_tooltip_or_screenshot",
+        "extraction_confidence"
+      ],
+      "instance_identity": [
+        "instance_reference由用户材料建立，不读取游戏内部ID",
+        "template_id若可识别",
+        "display_name",
+        "slot",
+        "weapon_base_type",
+        "quality",
+        "ancient_flag",
+        "black_mist_flag",
+        "owner_character_reference",
+        "location/equipped/stash/other",
+        "locked_or_keep_mark"
+      ],
+      "eligibility": [
+        "itemLevel",
+        "requiredLevel",
+        "dropMinLevel",
+        "class_restrictions",
+        "level_requirement_exceptions",
+        "real_slot_count",
+        "character_level"
+      ],
+      "actual_properties": [
+        "weapon_damage_min/max",
+        "weapon_speed",
+        "fixed_stats",
+        "primary_affixes及实际roll/单位",
+        "secondary_affixes及实际roll/单位",
+        "optional_range及其来源版本",
+        "upgrade_level",
+        "socket_count",
+        "socket_capacity",
+        "socketed_gem_kind/tier/effect",
+        "rune_level",
+        "set_id",
+        "set_member_identity",
+        "skill_level_bonuses"
+      ],
+      "mechanics": [
+        "special_effect原文与规范化skill/trigger/target/condition/output",
+        "status_applied",
+        "damage_type",
+        "attack_category",
+        "projectile/chain/area/change_to_casting",
+        "effect_dependencies与未知交互",
+        "hidden_affix_count",
+        "revealed_options",
+        "chosen_options"
+      ],
+      "build_context": [
+        "主动技能与实际技能等级",
+        "技能类型/元素/触发条件",
+        "天赋核心节点",
+        "独立符文与套装件数",
+        "其他装备特效",
+        "仆从被动和技能",
+        "当前关键属性与资源续航",
+        "敌人/难度/用途",
+        "用户目标与候选未来构筑"
+      ],
+      "state_and_cost": [
+        "actual_trade_label",
+        "binding_reason",
+        "ever_equipped_rune",
+        "ever_upgraded",
+        "ever_socketed",
+        "ever_revealed",
+        "available_gold/materials/gems",
+        "NPC/service_unlock",
+        "salvage/sell_values",
+        "known_acquisition_sources",
+        "replacement_alternatives",
+        "market_opportunity_cost只有有来源才记录"
+      ]
+    },
+    "feasible_paths": [
+      {
+        "path": "保留当前实例",
+        "outputs": "维持核心机制或保存未来用途；占用仓库；其余代价不猜。"
+      },
+      {
+        "path": "直接换装",
+        "outputs": "先核验职业、等级、槽位；展示丢失/获得特效、套装阈值、资源和生存变化。"
+      },
+      {
+        "path": "强化后再换装",
+        "outputs": "金钱/材料预算、成功率、目标强化状态、失去交易资格；未核验强化收益则无法宣称确定胜出。"
+      },
+      {
+        "path": "开孔并镶嵌后比较",
+        "outputs": "孔位上限、开孔绑定、宝石供给、旧宝石拆除销毁成本。"
+      },
+      {
+        "path": "黑雾揭示后比较",
+        "outputs": "未知候选分支、揭示/选词状态与绑定；无法保证理想结果。"
+      },
+      {
+        "path": "换符文或组合符文",
+        "outputs": "可用槽、技能等级、套装阈值、首次装备绑定；未知套装重复计件须保守处理。"
+      },
+      {
+        "path": "出售/交易/分解",
+        "outputs": "先判核心保留与实际可交易性；交易冷却与取得成本；分解不可恢复。"
+      }
+    ],
+    "decision_contract": [
+      "先给可用性与机制变化，再给适配性和成本。",
+      "条件增伤必须绑定条件的施加来源；删除来源时下游词条可能失效。",
+      "不清楚特效/套装/改造收益时给需核实或保留，不输出伪精确总分。",
+      "新装备基础高但丢核心特效，必须解释该交换，不能仅以绿色箭头或品质作结论。",
+      "保留理由区分当前核心、未来构筑、低投入可改造、交易潜力、收藏；无证据时不捏造用途。",
+      "未来暗黑2/3/4只共享实例、约束、依赖、成本概念；每款游戏的槽、特效转移、交易和改造规则独立适配。"
+    ]
+  },
+  "still_to_verify": [
+    "游戏截图中装备槽真实数量（尤其戒指）、双持/副手及武器基础类型限制。",
+    "线上物品等级生成、最大等级、远古当前等级区间、品质/词条公式取整。",
+    "强化每级的实际收益、是否影响固定属性/特效、线上精确材料成本。",
+    "黑雾揭示费用、候选池、能否改选、7属性如何分类及与远古互斥/并存。",
+    "符文升级材料与成本、技能增级公式、套装重复件是否计数。",
+    "传奇/神圣固定属性与技能等级在当前build和线上实例是否一致。",
+    "特效叠加、投射物/弹射与套装组合、条件状态施加覆盖率等运行时交互。",
+    "掉落部位权重、专属与额外掉落的区别、物品发现与线上生成参数。",
+    "未发现系统若后续用户展示界面再补证据，不能因本次未找到视为永久不存在。"
+  ]
+}

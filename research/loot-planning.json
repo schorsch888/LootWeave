@@ -1,0 +1,138 @@
+{
+  "document_kind": "solution_design_not_implementation",
+  "research_date": "2026-10-03",
+  "capability": "刷装规划与重新获取难度评估",
+  "purpose": "在判断装备是否保留之外，帮助玩家确定为当前或目标BD去哪里刷、何时刷，以及重复获得替代品的难度。",
+  "phase": "design_only",
+  "relationship_to_core_decision": {
+    "inputs": [
+      "GameContext",
+      "BuildSnapshot",
+      "EvaluationIntent",
+      "OwnedOptions",
+      "MechanicDefinition",
+      "EvidenceRecord"
+    ],
+    "output": "按场景给出获取路径和不确定性，并将重新获取难度作为保留理由之一。",
+    "invariant": "稀有度、获取难度和BD实用性分别解释；高稀有度不自动等于应该保留。"
+  },
+  "user_flow": [
+    "从装备判断或目标BD中选择缺少的物品、底材、词条组合或机制。",
+    "根据版本、在线模式、角色与内容解锁进度筛选已证实可获得的来源。",
+    "展示来源、门槛、证据，以及当前不能确认的掉落条件。",
+    "有可靠概率和实测效率时，比较单位时间获得可用物品的机会与耗时分布。",
+    "允许玩家记录刷取结果，用样本完善个人效率估计。"
+  ],
+  "records": [
+    {
+      "name": "AcquisitionTarget",
+      "fields": [
+        "definition_id_or_item_predicate",
+        "acceptable_affix_combinations",
+        "minimum_rolls",
+        "build_mechanism_requirements",
+        "alternative_items",
+        "version_scope"
+      ],
+      "invariant": "得到某个品质的物品、得到指定物品、得到符合BD的具体词条组合，是不同目标事件。"
+    },
+    {
+      "name": "AcquisitionRule",
+      "fields": [
+        "source_id",
+        "eligibility",
+        "loot_pool",
+        "roll_count",
+        "raw_weights",
+        "verified_sampling_semantics",
+        "conditional_dependencies",
+        "modifiers",
+        "evidence_ids",
+        "verification_state"
+      ],
+      "invariant": "原始权重不直接当作概率；客户端静态配置不自动等于在线服务器最终规则。"
+    },
+    {
+      "name": "FarmingObservation",
+      "fields": [
+        "game_context",
+        "source",
+        "difficulty",
+        "character_configuration",
+        "elapsed_time",
+        "completed_runs",
+        "eligible_opportunities",
+        "observed_drops",
+        "capture_coverage",
+        "observation_method",
+        "observed_at"
+      ],
+      "invariant": "未识别或未记录的掉落不能算作没有掉落；统计必须包含失败尝试和采集覆盖情况。"
+    },
+    {
+      "name": "FarmingEstimate",
+      "fields": [
+        "target",
+        "route",
+        "probability_basis",
+        "sample_size",
+        "assumptions",
+        "useful_items_per_hour",
+        "time_quantiles",
+        "uncertainty",
+        "ruleset_revision"
+      ],
+      "invariant": "估计、已验证概率和原始配置分开显示；平均等待时间不是保底时间。"
+    }
+  ],
+  "probability_policy": {
+    "initial_release": "只显示有证据的获取来源与条件；公式未核验时不显示伪精确概率。",
+    "geometric_model": {
+      "condition": "每次尝试独立、成功概率p固定，且目标事件及尝试单位明确时才适用。",
+      "at_least_one_after_n": "1 - (1 - p)^n",
+      "mean_attempts": "1 / p，仅适用于p>0",
+      "limitations": "保底、去重、递增概率、共享掉落池或状态相关抽样需要游戏专属模型。"
+    },
+    "empirical_estimates": "保留版本、样本量、遗漏和选择偏差说明；按同类内容分组，报告不确定区间，不将观测频率当作官方爆率。"
+  },
+  "local_evidence": {
+    "game": "deskrawl",
+    "build_id": "25690430",
+    "source": "data/extracted/deskrawl/25690430/objects.jsonl",
+    "formal_config_chain": [
+      "level0:40412",
+      "sharedassets0.assets:59808",
+      "sharedassets0.assets:60188"
+    ],
+    "confirmed_static_facts": [
+      "正式场景GameManager引用正式GameConfig，其Loot引用LootConfig。",
+      "LootConfig区分普通、精英、小首领、首领等类别，存在抽取次数、品质权重和无掉落权重。",
+      "存在等级与难度条件、符文及特殊掉落相关配置。"
+    ],
+    "unverified": [
+      "抽样执行顺序",
+      "多次抽样独立性",
+      "物品池实际筛选和归一化规则",
+      "物品发现加成如何作用",
+      "保底或其他运行时状态",
+      "在线服务器覆写",
+      "指定物品及词条组合的最终概率"
+    ],
+    "invariant": "保留测试配置与正式配置的身份区别，不混用其权重。"
+  },
+  "architecture": {
+    "frontend_fsd_feature": "farm-planning",
+    "ddd_context": "AcquisitionPlanning",
+    "ownership": "管理获取目标、路径比较和估计；通过版本化契约消费规则知识、角色快照与物品评估。",
+    "microservice_boundary": "独立业务能力；设计阶段确定契约，实现时由Windows启动器统一管理本地服务生命周期。",
+    "game_adapter": "各游戏适配器提供掉落池、条件和已验证抽样模型，不假设暗黑2、3、4共用公式。",
+    "capture": "可用时采用玩家授权的导出、手动记录或截图/OCR；不自动点击、刷图或出售物品。"
+  },
+  "acceptance_examples": [
+    "玩家当前等级不满足符文掉落条件时，显示门槛和可推进的目标。",
+    "仅有传奇品质权重时，不能展示指定传奇物品的百分比。",
+    "同一目标在高难度掉落机会较多但通关更慢时，综合比较实测效率。",
+    "某件装备当前增益较低但完成候选BD且难以重新获取时，保留建议列出两个独立理由。",
+    "升级或规则版本变化后，旧概率和实测样本不会静默复用于新版本。"
+  ]
+}

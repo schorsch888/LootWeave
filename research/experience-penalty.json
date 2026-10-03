@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "research_date": "2026-10-03",
+  "build_id": "25690430",
+  "status": "local_static_native_xp_penalty_reviewed",
+  "scope": "Read-only review of local static configuration and native XP branches. No game code execution, player saves, runtime observation or server verification.",
+  "sources": [
+    {
+      "path": "game://GameAssembly.dll",
+      "sha256": "8880d8aca431b9c60f868fe55e6a7581ce506d788b52b220891698450004cbdd"
+    },
+    {
+      "path": "game://Deskrawl_Data/sharedassets0.assets",
+      "sha256": "d10c933d76ae11e7ce30f240f3f53bdb32c3c3a0ff8c5b3d133e96e5e55c4f46"
+    },
+    {
+      "path": "game://Deskrawl_Data/level0",
+      "sha256": "09285498e91db552449788c89efcfc303da83abcd08a04f6e6124c687ed2764b"
+    },
+    {
+      "path": "repo://data/extracted/deskrawl/25690430/objects.jsonl",
+      "sha256": "998ec61646f734ee575e35204534bfe2739cc583f4e81e0313a8a3ed0219c04e"
+    },
+    {
+      "path": "repo://.tools/cpp2il/deskrawl-25690430-addresses/Assembly-CSharp.dll",
+      "sha256": "72e23907c7df62dfed36fdb4ec46207b0c12c76e10b2c8b30434fcbe090baf7e"
+    }
+  ],
+  "release_config": {
+    "object_id": "sharedassets0.assets:59808",
+    "fields": {
+      "IsDemo": 0,
+      "MaxPlayerLevel": 70,
+      "XpZeroUnderLevel": 6,
+      "XpPerBaseHealth": 1.0,
+      "XpPerLevelScale": 0.10000000149011612
+    },
+    "difficulty_exp_multipliers": [
+      {
+        "difficulty": 0,
+        "exp_multiplier": 1.0
+      },
+      {
+        "difficulty": 1,
+        "exp_multiplier": 1.5
+      },
+      {
+        "difficulty": 2,
+        "exp_multiplier": 2.0
+      }
+    ]
+  },
+  "scene_binding": {
+    "object_id": "level0:40412",
+    "field": "$.Config",
+    "target_object_id": "sharedassets0.assets:59808"
+  },
+  "native_methods": [
+    {
+      "name": "GameManager.dlu",
+      "rva": 7736112,
+      "offset": 7729968,
+      "length": 153,
+      "sha256": "3557544159e090f4f8e3f34c6a82b686ac397eeaa22895d99e975ac2f405d9cc"
+    },
+    {
+      "name": "GameManager.dlt",
+      "rva": 7734544,
+      "offset": 7728400,
+      "length": 1558,
+      "sha256": "cb7b0813e9db38d777ea61802b209a7bb4bb0e2f280c26574f4a8eb5cec58f73"
+    },
+    {
+      "name": "hc.dvq",
+      "rva": 7908032,
+      "offset": 7901888,
+      "length": 332,
+      "sha256": "d93386f08c0c5c909201a8c97a8b9a325e31d42cb7e9b412f3b9a1bc6ac40d00"
+    },
+    {
+      "name": "Player.fay",
+      "rva": 5238016,
+      "offset": 5231872,
+      "length": 86,
+      "sha256": "e332b56084b512113d0482d523d421aa485ff396bc985b7772c6bf8ee1855d61"
+    },
+    {
+      "name": "MapData.cfv",
+      "rva": 7295744,
+      "offset": 7289600,
+      "length": 142,
+      "sha256": "625dd6f243ccfd68d0a75520d7397beb106900a27b58b31c9bd91bafb7fd14a7"
+    },
+    {
+      "name": "native_round_helper",
+      "rva": 60432,
+      "offset": 57360,
+      "length": 177,
+      "sha256": "3a53b399f53fa0817ba216b13ea5a47d4b37da4912d4665604b075047fb73011"
+    }
+  ],
+  "constants": [
+    {
+      "rva": 56770352,
+      "format": "<f",
+      "value": 1.0,
+      "use": "float penalty upper clamp / bonus baseline"
+    },
+    {
+      "rva": 56770624,
+      "format": "<d",
+      "value": 1.0,
+      "use": "local XP minimum"
+    },
+    {
+      "rva": 56770552,
+      "format": "<d",
+      "value": 0.5,
+      "use": "positive rounding midpoint"
+    }
+  ],
+  "review": {
+    "GameManager.dlu": "Reads PlayerCombatController.Player.Character._level; subtracts enemy level; returns clamp((XpZeroUnderLevel - difference)/XpZeroUnderLevel, 0, 1). No paragon level used.",
+    "GameManager.dlt": "Inlining repeats the same penalty. If enemy reward is already handled (Enemy offset 0x1d0), uses zero. Otherwise, PlannedXP > 0 at offset 0x1c8 is consumed directly. Otherwise local base XP and bonuses are multiplied by penalty, rounded and clamped to at least 1 before Player.fhf.",
+    "hc.dvq": "Offline helper computes clamp((threshold - player level + map/enemy level)/threshold, 0, 1); applies base XP and supplied bonus, then rounds and clamps to at least 1. Does not establish authoritative online offline rewards.",
+    "Player.fay": "Fetches StatType 41 (XPGain), which is converted to float and used as 1 + XPGain in the local kill branch.",
+    "MapData.cfv": "Uses DifficultyTierConfig.ExpMultiplier; a separate map type branch adds a map field times a clamped integer. Tier multipliers alone do not describe every map type.",
+    "native_round_helper": "Positive midpoint path compares fractional part to 0.5 and tests integer parity before returning or adding 1; consistent with nearest-even rounding. Evidence review only; not native execution."
+  },
+  "penalty_formula": "clamp((6 - (character_level - enemy_level)) / 6, 0, 1)",
+  "ideal_multiplier_table": [
+    {
+      "enemy_levels_below_character": 0,
+      "multiplier_fraction": "1"
+    },
+    {
+      "enemy_levels_below_character": 1,
+      "multiplier_fraction": "5/6"
+    },
+    {
+      "enemy_levels_below_character": 2,
+      "multiplier_fraction": "4/6"
+    },
+    {
+      "enemy_levels_below_character": 3,
+      "multiplier_fraction": "3/6"
+    },
+    {
+      "enemy_levels_below_character": 4,
+      "multiplier_fraction": "2/6"
+    },
+    {
+      "enemy_levels_below_character": 5,
+      "multiplier_fraction": "1/6"
+    },
+    {
+      "enemy_levels_below_character": 6,
+      "multiplier_fraction": "0"
+    },
+    {
+      "enemy_levels_below_character": 7,
+      "multiplier_fraction": "0"
+    }
+  ],
+  "minimum_local_unhandled_kill_xp": 1,
+  "optimization": {
+    "objective": "actual XP per elapsed minute, including movement, recovery and deaths",
+    "comparison": "A is better than B iff XP_A / cycle_time_A > XP_B / cycle_time_B, or use observed total XP / total elapsed time for entire routes.",
+    "conditional_difficulty_break_even": "For matching enemy mix, level, bonuses, route density, non-special map rules and local branch, ignoring rounding/minimum: Nightmare beats Normal if total cycle time ratio < 1.5; Inferno1 beats Normal if < 2; Inferno1 beats Nightmare if < 4/3. Not a measured recommendation.",
+    "warning": "Same/higher enemy level gives full penalty multiplier, but higher levels can still have larger base XP. No proven globally optimal map or difficulty."
+  },
+  "limits": [
+    "Actual online PlannedXP production, server formula and server updates remain unverified.",
+    "Penalty multiplier zero does not imply zero XP in every branch: local minimum is 1, positive PlannedXP bypasses the local formula, already handled enemy reward uses zero.",
+    "Do not transfer this rule to other games/builds or to ability/rune XP without tracing their separate call paths.",
+    "Rounding, float32 intermediates and minimum XP mean percentage multipliers are not exact integer reward ratios for all inputs.",
+    "No gameplay experiment, player snapshot, drop probability, full DPS model or XP/hour benchmark was performed."
+  ],
+  "reproduction": {
+    "command": "python scripts/validate_deskrawl_xp.py --game \"$DESKRAWL_GAME_DIR\"",
+    "method": "Python standard-library source hashes, exported config/scene link, native PE mapping, method hashes and constants. Semantics were reviewed using existing local Capstone disassembly and Cpp2IL field/address metadata. Hash checks preserve reviewed evidence identity; they do not independently prove semantics."
+  },
+  "validation": {
+    "date": "2026-10-03",
+    "commands": [
+      {
+        "command": "python scripts/validate_deskrawl_xp.py --help",
+        "result": "pass; CLI inspected"
+      },
+      {
+        "command": "python scripts/validate_deskrawl_xp.py --game \"$DESKRAWL_GAME_DIR\"",
+        "result": "pass; 5 source hashes, 6 native method hashes/PE mappings, 3 constants, release config/scene binding and difficulty XP fields"
+      },
+      {
+        "command": "python scripts/check_public_docs.py",
+        "result": "pass; 30 text files, 0 findings"
+      }
+    ],
+    "manual_review": "Changed public files use logical source paths and repository-relative document links. No private media, player snapshots, game binaries or raw decompilation exports were added to public files. Native branches and field offsets were reviewed; no behavioral or server test performed."
+  }
+}

@@ -1,0 +1,226 @@
+{
+  "document_kind": "solution_design_not_implementation",
+  "research_date": "2026-10-03",
+  "decision": "针对玩家指定用途，解释一件物品的当前使用、替换、改造和未来保留价值。",
+  "constraints": {
+    "phase": "research_and_design_only",
+    "initial_game": "deskrawl",
+    "future_games": [
+      "diablo2_with_edition_disambiguation",
+      "diablo3",
+      "diablo4"
+    ],
+    "initial_platform": "Windows",
+    "distribution": "单一exe启动入口，依赖随包交付，本地服务自动管理",
+    "frontend": "React/TypeScript, Feature-Sliced Design",
+    "desktop_host": "Rust/Tauri",
+    "backend": "Python, DDD, business-capability microservices",
+    "acquisition": "规则知识来自按版本核验的本地静态资源和资料；角色与物品实例来自截图或显式可用的导出；不依赖游戏进程注入、内存、DMA或自动处置物品"
+  },
+  "auxiliary_capabilities": [
+    {
+      "name": "刷装规划与重新获取难度评估",
+      "design": "research/loot-planning.json",
+      "status": "design_only",
+      "relationship": "提供有证据的获取来源与条件；经验证的概率和实测效率用于路径比较，并将重新获取难度纳入保留理由。"
+    }
+  ],
+  "core_records": [
+    {
+      "name": "GameContext",
+      "purpose": "确定规则适用范围，不能根据游戏名字或抓取日期混合规则。",
+      "fields": [
+        "game_id",
+        "edition",
+        "content_entitlements",
+        "game_build",
+        "ruleset_id",
+        "season_or_ladder",
+        "online_or_offline",
+        "hardcore_or_normal",
+        "locale"
+      ],
+      "invariant": "不适用字段由游戏适配器声明不适用；未知版本不能静默使用最新版本。"
+    },
+    {
+      "name": "ItemInstance",
+      "purpose": "表示玩家手里这一件实际物品，区别于物品图鉴模板。",
+      "fields": [
+        "definition_id",
+        "base_type",
+        "slot",
+        "rarity",
+        "item_level",
+        "required_level",
+        "actual_affix_rolls",
+        "special_effects_and_parameters",
+        "upgrade_state",
+        "socket_state",
+        "embedded_items",
+        "trade_or_binding_state",
+        "unrevealed_properties"
+      ],
+      "invariant": "物品等级、穿戴需求和最低掉落等级分开；尚未揭示的属性与不存在的属性分开。"
+    },
+    {
+      "name": "BuildSnapshot",
+      "purpose": "描述作用于角色的完整配置及其采集时点。",
+      "fields": [
+        "character_id",
+        "class_id",
+        "character_level",
+        "account_progression",
+        "character_allocations",
+        "selected_skills",
+        "talents",
+        "paragon_configuration",
+        "equipped_items",
+        "rune_configuration",
+        "companion_configuration",
+        "other_game_specific_power_sources",
+        "observed_panel",
+        "temporary_state",
+        "revision",
+        "observed_at"
+      ],
+      "invariant": "面板是观测总量；装备、天赋等是来源。未确定归属前不得将两者再次累加。"
+    },
+    {
+      "name": "MechanicDefinition",
+      "purpose": "定义某种效果在什么条件下怎样改变技能、状态或数值。",
+      "fields": [
+        "mechanic_id",
+        "version_scope",
+        "source_kind",
+        "actor_scope",
+        "target_scope",
+        "trigger",
+        "requirements",
+        "operation",
+        "parameters_and_units",
+        "stacking_and_exclusivity",
+        "duration_or_cooldown",
+        "caps_or_breakpoints",
+        "evidence_ids"
+      ],
+      "invariant": "复杂计算由游戏专属解释器承担；同名词条不意味着跨游戏同公式。未证实规则不能补成确定规则。"
+    },
+    {
+      "name": "EvaluationIntent",
+      "purpose": "定义玩家为什么保留装备，以及在什么场景比较。",
+      "fields": [
+        "goal",
+        "target_content",
+        "enemy_scenario",
+        "survival_and_resource_requirements",
+        "allowed_build_changes",
+        "target_build_candidates",
+        "time_horizon",
+        "upgrade_budget",
+        "storage_policy"
+      ],
+      "invariant": "练级、速刷、首领、冲层和预留用途可有不同结论；未确认公式时不输出精确DPS。"
+    },
+    {
+      "name": "OwnedOptions",
+      "purpose": "判断重复物品、配套缺口和可行的改造路径。",
+      "fields": [
+        "known_owned_items",
+        "inventory_coverage",
+        "known_unlocked_powers",
+        "available_materials",
+        "available_crafting_actions",
+        "action_costs",
+        "irreversible_consequences"
+      ],
+      "invariant": "未扫描的库存不是空库存；未来BD可行性必须区分已拥有、可获得和仅假设。"
+    },
+    {
+      "name": "EvidenceRecord",
+      "purpose": "让每项输入和规则可核对、可修正、可按版本失效。",
+      "fields": [
+        "source_type",
+        "source_url_or_local_image",
+        "source_version",
+        "observed_at",
+        "raw_text_or_region",
+        "extraction_method",
+        "verification_state",
+        "conflicts",
+        "applicability"
+      ],
+      "invariant": "官方公告、PTR提案、正式补丁、非官方解释和截图推断分别标记；来源权威不等于适用于当前版本。"
+    }
+  ],
+  "derived_records": {
+    "build_archetype": "由技能、机制和装备要求构成的候选方案；不是所有装备判断的唯一事实来源。",
+    "resolved_effects": "从构筑快照解析出的生效、未生效或未知效果，保留来源以防重复。",
+    "replacement_comparison": "同一版本、场景与目标下，替换前后的配置差异；允许输出无法量化的机制变化。",
+    "retention_decision": "综合当前用途、目标BD配套、其他选定角色、改造或提取用途，以及已有替代品和持有成本。",
+    "score": "仅在规则和目的明确时计算的派生量；不作为跨游戏通用事实。"
+  },
+  "evaluation_invariants": [
+    "当前BD相关性低，不等于所有用途都无价值。",
+    "未知、未解锁、不适用和已经确认不存在必须区别。",
+    "单件属性增加可能同时移除核心特效或破坏套装，比较必须重算配置。",
+    "不根据最高元素面板、职业或技能解锁等级推断实际装备的技能。",
+    "动态效果需记录触发来源、持续时间及覆盖假设，不视为永久加成。",
+    "角色、库存与装备截图可能采自不同时刻，快照不一致时降低结论强度。",
+    "每次评估固定物品事实、配置修订、规则包和评估器版本，支持回放。",
+    "资料有冲突或关键机制不完整时，保留解释能力并暂停确定的丢弃结论。"
+  ],
+  "cross_game_boundary": {
+    "shared_capabilities": [
+      "Windows capture",
+      "OCR engine hosting",
+      "evidence storage",
+      "profile revision management",
+      "evaluation workflow",
+      "decision explanation UI"
+    ],
+    "game_specific_capabilities": [
+      "screen layout and text parsing",
+      "item identity and legal affixes",
+      "progression and build schema",
+      "effect semantics",
+      "crafting transitions",
+      "calculation formulas",
+      "mode and season applicability"
+    ],
+    "rune_semantics_examples": [
+      {
+        "game": "deskrawl",
+        "mechanism": "独立符文槽、技能和属性加成、符文套装阈值",
+        "source": "https://x1x.tw/deskrawl/runes/",
+        "scope": "非官方资料页自报build25690430；需游戏内核验"
+      },
+      {
+        "game": "diablo2_lod",
+        "mechanism": "底材类型、精确孔数、非魔法物品和符文顺序共同决定符文之语",
+        "source": "https://classic.battle.net/diablo2exp/items/runewords.shtml",
+        "scope": "暴雪旧版官方指南；不代表所有D2R新增内容均已收录"
+      },
+      {
+        "game": "diablo3",
+        "mechanism": "技能符文可以改变元素、范围或资源消耗",
+        "source": "https://eu.diablo3.blizzard.com/en-gb/class/wizard/active/blizzard",
+        "scope": "官方技能说明；具体赛季和装备规则另行匹配"
+      },
+      {
+        "game": "diablo4",
+        "mechanism": "仪式与祈唤组合，通过供奉资源触发效果",
+        "source": "https://news.blizzard.com/en-us/article/24171214/diablo-iv-patch-notes-2-1",
+        "scope": "官方2.1补丁历史机制；不能直接作为2026当前版本完整规则"
+      }
+    ]
+  },
+  "acceptance_examples": [
+    "同一件物品切换技能后，只有真实受影响的词条适用性改变。",
+    "移除组成核心机制的一件装备，即使普通属性上升也显示机制损失。",
+    "同一效果已包含在观测面板中时，不再从天赋来源重复加算。",
+    "当前角色低等级而账号已解锁巅峰时，仍正确读取该角色的巅峰分配。",
+    "同名符文系统切换游戏后，采用该游戏定义，不共享错误规则。",
+    "已有重复核心物品与尚未拥有该核心时，保留理由可以不同。",
+    "版本或关键识别字段未知时，输出缺失依据而非伪精确评分。"
+  ]
+}

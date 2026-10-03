@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "scope": "Research toolchain only; not desktop product dependencies.",
+  "build_id": "25690430",
+  "reviewed_environment": {
+    "python": "3.12",
+    "platform": "Windows x64",
+    "unity": "6000.3.6f1",
+    "il2cpp_metadata_version": 39
+  },
+  "direct_python_dependencies": {
+    "UnityPy": {
+      "version": "1.25.2",
+      "source": "https://github.com/K0lb3/UnityPy",
+      "release_metadata": "https://pypi.org/pypi/UnityPy/1.25.2/json",
+      "reference_wheel": "unitypy-1.25.2-cp312-cp312-win_amd64.whl",
+      "reference_wheel_sha256": "29c7921240b49f9affe46266382b96e18cfadb8ab81f8004fea03c7316f12989"
+    },
+    "TypeTreeGeneratorAPI": {
+      "version": "0.0.10",
+      "source": "https://github.com/UnityPy-Org/TypeTreeGeneratorAPI",
+      "release_metadata": "https://pypi.org/pypi/TypeTreeGeneratorAPI/0.0.10/json",
+      "reference_wheel": "typetreegeneratorapi-0.0.10-cp36-abi3-win_amd64.whl",
+      "reference_wheel_sha256": "e96003e973c8d52d221b4ae50f377bcaf7538f2098e437d5383a1b7f13fa72ba"
+    }
+  },
+  "cpp2il": {
+    "tool": "Cpp2IL",
+    "version": "2022.1.0-pre-release.21",
+    "url": "https://github.com/SamboyCoding/Cpp2IL/releases/download/2022.1.0-pre-release.21/Cpp2IL-2022.1.0-pre-release.21-Windows.exe",
+    "sha256": "663fb432433b4371fd1ee0ebc321a8fff2a9aac5ac4230c843f9e03ddee4e04c",
+    "release_digest": "sha256:663fb432433b4371fd1ee0ebc321a8fff2a9aac5ac4230c843f9e03ddee4e04c",
+    "size": 15137811
+  },
+  "verification": {
+    "cpp2il_local_executable_sha256_matches_official_release_digest": true,
+    "python_versions_match_installed_metadata": true,
+    "python_wheel_hash_source": "Official PyPI release metadata; records reference artifact identities, not a fresh reinstall or a newly downloaded wheel verification.",
+    "full_extraction_rerun_in_this_documentation_update": false
+  },
+  "limits": [
+    "Only the recorded build and Windows x64/Python 3.12 environment have local evidence.",
+    "Exact package versions are pinned; requirements are not a hash-enforced cross-platform dependency lock.",
+    "Project licensing does not grant rights to game assets, generated game types or third-party packages."
+  ]
+}
