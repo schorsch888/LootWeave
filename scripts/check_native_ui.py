@@ -9,6 +9,7 @@ import json
 import math
 import os
 import queue
+import re
 import socket
 import subprocess
 import threading
@@ -74,6 +75,18 @@ def record_shutdown(folder, name, states, errors=()):
         stream.write("\n")
 
 
+def record_startup(folder, host):
+    code = host.poll()
+    state = "running" if code is None else "exited"
+    exit_code = code if type(code) is int and -(2**31) <= code <= 2**32 - 1 else None
+    try:
+        with (folder / "startup.json").open("x", encoding="utf-8", newline="\n") as stream:
+            json.dump({"host_state": state, "exit_code": exit_code}, stream, indent=2)
+            stream.write("\n")
+    except OSError:
+        pass  # Diagnostics must not change startup, timeout, or cleanup behavior.
+
+
 def owned_hidden_window(pid):
     user = ctypes.WinDLL("user32", use_last_error=True)
     callback_type = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
@@ -133,7 +146,11 @@ def run(executable, resources, node, output, index):
         command = [str(node), str(ROOT / "scripts/probe_native_ui.mjs"), "--port", str(port),
                    "--output", str(folder)]
         command.append("--passive")
-        probe = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+        probe_environment = dict(os.environ)
+        probe_environment["NO_PROXY"] = "127.0.0.1,localhost,::1"
+        probe_environment["no_proxy"] = "127.0.0.1,localhost,::1"
+        probe = subprocess.Popen(command, cwd=ROOT, env=probe_environment,
+                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                                  creationflags=0x08000000)
         messages = queue.Queue()
         def read_messages():
@@ -174,6 +191,7 @@ def run(executable, resources, node, output, index):
                 "working_set_mib": round(sum(value[0] for value in memory) / 2**20, 2),
                 "private_commit_mib": round(sum(value[1] for value in memory) / 2**20, 2)}
     finally:
+        record_startup(folder, host)
         if probe and probe.poll() is None:
             probe.kill()
             probe.wait(timeout=5)
@@ -222,6 +240,82 @@ SAFE_FAILURE_CODES = frozenset({
 SAFE_PROBE_STAGES = frozenset({
     "webview_connection", "native_readiness", "native_ipc", "native_game_window_binding",
 })
+SAFE_CONNECTION_ERRORS = frozenset({
+    "connection_refused", "connection_reset", "connection_timeout", "http_unexpected_status",
+    "protocol_error", "websocket_rejected", "unknown_error",
+})
+SAFE_ENDPOINT_STATES = frozenset({"responded", "timeout", "connection_refused", "connection_error"})
+SAFE_STARTUP_CODES = frozenset({
+    "resource_directory_required", "choose_one_maintenance_operation", "packaged_runtime_missing",
+    "bundle_manifest_missing", "invalid_bundle_manifest", "bundle_integrity_failed",
+    "session_entropy_unavailable", "job_creation_failed", "job_configuration_failed",
+    "service_spawn_failed", "job_assignment_failed", "parent_job_pipe_unavailable",
+    "parent_job_handshake_failed", "service_start_timeout", "service_readiness_failed",
+    "incompatible_service", "service_url_missing", "service_health_failed", "loopback_url_required",
+})
+SAFE_PROCESS_IMAGES = (
+    "lootweave-desktop.exe", "lootweave-sidecar.exe", "msedgewebview2.exe", "conhost.exe", "WerFault.exe",
+)
+
+
+def _startup_diagnostics(folder):
+    startup = None
+    try:
+        value = json.loads((folder / "startup.json").read_text(encoding="utf-8"))
+        if isinstance(value, dict):
+            startup = value
+    except (OSError, ValueError):
+        pass
+    log = b""
+    log_available = False
+    try:
+        with (folder / "native-stderr.log").open("rb") as stream:
+            log = stream.read(1024 * 1024)
+        log_available = True
+    except OSError:
+        pass
+    codes = [code for code in sorted(SAFE_STARTUP_CODES) if code.encode("ascii") in log]
+    windows_errors = sorted({f"0x{int(match, 16):08X}"
+                             for match in re.findall(rb"0x([0-9A-Fa-f]{8})", log)})[:16]
+    marker = b"lootweave_hidden_ui_v1: --hidden-ui enabled" in log if log_available else None
+    state = startup.get("host_state") if startup is not None else None
+    exit_code = startup.get("exit_code") if startup is not None else None
+    return {
+        "hidden_ui_marker": "present" if marker is True else "absent" if marker is False else "unknown",
+        "desktop_startup_failed": "yes" if b"desktop_startup_failed" in log else "no" if log_available else "unknown",
+        "startup_codes": codes,
+        "windows_errors": windows_errors,
+        "host_state": state if isinstance(state, str) and state in {"running", "exited"} else "unknown",
+        "exit_code": exit_code if type(exit_code) is int and -(2**31) <= exit_code <= 2**32 - 1 else None,
+    }
+
+
+def _cleanup_summary(folder):
+    try:
+        cleanup = json.loads((folder / "cleanup.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(cleanup, dict) or not isinstance(cleanup.get("states"), list):
+        return None
+    counts = {name: {"total": 0, "live": 0} for name in SAFE_PROCESS_IMAGES}
+    counts["unknown_owned_process"] = {"total": 0, "live": 0}
+    total = live = 0
+    for state in cleanup["states"]:
+        if not isinstance(state, dict):
+            state = {}
+        image = state.get("image_basename")
+        name = next((item for item in SAFE_PROCESS_IMAGES
+                     if isinstance(image, str) and image.casefold() == item.casefold()),
+                    "unknown_owned_process")
+        exited = state.get("exited")
+        total += 1
+        counts[name]["total"] += 1
+        if exited is False:
+            live += 1
+            counts[name]["live"] += 1
+    errors = cleanup.get("errors")
+    return {"total": total, "live": live, "images": counts,
+            "error_count": len(errors) if isinstance(errors, list) else 0}
 
 
 def probe_failure_summary(folder):
@@ -230,14 +324,24 @@ def probe_failure_summary(folder):
     except (OSError, ValueError):
         return None
     if not isinstance(probe, dict):
-        return {"stage": "unknown_stage", "failure_code": "unknown_failure", "passed": None}
+        return {"stage": "unknown_stage", "failure_code": "unknown_failure", "passed": None,
+                "connection_error_code": "unknown", "endpoint_state": "unknown", "http_status": None}
     stage = probe.get("stage")
     failure_code = probe.get("failure_code")
     passed = probe.get("passed")
+    connection_error = probe.get("connection_error_code")
+    endpoint = probe.get("loopback_endpoint")
+    endpoint_state = endpoint.get("state") if isinstance(endpoint, dict) else None
+    http_status = endpoint.get("http_status") if isinstance(endpoint, dict) else None
     return {
         "stage": stage if isinstance(stage, str) and stage in SAFE_PROBE_STAGES else "unknown_stage",
         "failure_code": failure_code if isinstance(failure_code, str) and failure_code in SAFE_FAILURE_CODES else "unknown_failure",
         "passed": passed if type(passed) is bool else None,
+        "connection_error_code": connection_error if isinstance(connection_error, str)
+        and connection_error in SAFE_CONNECTION_ERRORS else "unknown",
+        "endpoint_state": endpoint_state if isinstance(endpoint_state, str)
+        and endpoint_state in SAFE_ENDPOINT_STATES else "unknown",
+        "http_status": http_status if type(http_status) is int and 100 <= http_status <= 599 else None,
     }
 
 
@@ -252,8 +356,8 @@ def main():
         parser.error("Requires Windows and between 1 and 100 cycles.")
     try:
         executable_bytes = args.executable.read_bytes()
-    except OSError as error:
-        parser.error(f"Cannot read host executable: {error}")
+    except OSError:
+        parser.error("Cannot read host executable.")
     if b"lootweave_hidden_ui_v1: --hidden-ui enabled" not in executable_bytes:
         parser.error("Host executable lacks the hidden-ui verification marker; rebuild the host before running this passive check.")
     output = ROOT / ".local/native-ui-check" / uuid.uuid4().hex
@@ -287,15 +391,35 @@ def main():
         safe_code = failure_code if failure_code in SAFE_FAILURE_CODES else "unknown_failure"
         print(f"Native WebView check failed (failure_code={safe_code}).", flush=True)
         if "run_folder" in locals():
+            startup = _startup_diagnostics(run_folder)
+            exit_code = str(startup["exit_code"]) if startup["exit_code"] is not None else "unknown"
+            startup_codes = ",".join(startup["startup_codes"]) or "none"
+            windows_errors = ",".join(startup["windows_errors"]) or "none"
+            print("Native startup diagnostic: "
+                  f"hidden_ui_marker={startup['hidden_ui_marker']} "
+                  f"desktop_startup_failed={startup['desktop_startup_failed']} "
+                  f"startup_codes={startup_codes} windows_errors={windows_errors} "
+                  f"host_state={startup['host_state']} exit_code={exit_code}.", flush=True)
+            cleanup = _cleanup_summary(run_folder)
+            if cleanup is not None:
+                image_summary = " ".join(
+                    f"{name}={values['total']}/{values['live']}"
+                    for name, values in cleanup["images"].items())
+                print("Native cleanup diagnostic: "
+                      f"owned_total={cleanup['total']} owned_live={cleanup['live']} "
+                      f"cleanup_errors={cleanup['error_count']} {image_summary}.", flush=True)
             probe = probe_failure_summary(run_folder)
             if probe is not None:
                 passed = str(probe["passed"]).lower() if probe["passed"] is not None else "unknown"
                 print("Native probe diagnostic: "
-                      f"stage={probe['stage']} failure_code={probe['failure_code']} passed={passed}.",
+                      f"stage={probe['stage']} failure_code={probe['failure_code']} passed={passed} "
+                      f"connection_error_code={probe['connection_error_code']} "
+                      f"endpoint_state={probe['endpoint_state']} "
+                      f"http_status={probe['http_status'] if probe['http_status'] is not None else 'unknown'}.",
                       flush=True)
     finally:
         (output / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-        print("Evidence: " + output.relative_to(ROOT).as_posix(), flush=True)
+        print("Private evidence retained.", flush=True)
     return 0 if report["passed"] else 1
 
 
