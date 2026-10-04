@@ -204,6 +204,43 @@ def run(executable, resources, node, output, index):
                "owned_cleanup_failed")
 
 
+SAFE_FAILURE_CODES = frozenset({
+    "process_snapshot_unavailable", "owned_native_window_not_unique", "passive_window_visible",
+    "passive_window_foreground", "owned_native_close_failed", "native_readiness_failed",
+    "native_flow_failed", "native_probe_exit_failed", "owned_worker_handle_unavailable",
+    "native_process_coverage_missing", "native_window_exit_failed", "native_descendant_remained",
+    "owned_process_termination_failed", "owned_cleanup_failed", "webview_connection_timeout",
+    "native_page_missing", "native_session_not_removed", "native_session_missing",
+    "native_capture_authorization_failed", "native_capture_bounds_failed",
+    "native_window_detection_authorization_failed", "native_window_binding_guard_failed",
+    "native_window_detection_contract_failed", "native_window_detection_status_failed",
+    "native_window_capture_bounds_failed", "native_browser_error", "cdp_disconnect_failed",
+    "interactive_probe_disabled", "probe_arguments_required", "probe_mode_required",
+    "CheckFailed", "OSError", "ValueError", "KeyError", "Empty", "TimeoutExpired",
+    "Error", "TimeoutError",
+})
+SAFE_PROBE_STAGES = frozenset({
+    "webview_connection", "native_readiness", "native_ipc", "native_game_window_binding",
+})
+
+
+def probe_failure_summary(folder):
+    try:
+        probe = json.loads((folder / "probe.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(probe, dict):
+        return {"stage": "unknown_stage", "failure_code": "unknown_failure", "passed": None}
+    stage = probe.get("stage")
+    failure_code = probe.get("failure_code")
+    passed = probe.get("passed")
+    return {
+        "stage": stage if isinstance(stage, str) and stage in SAFE_PROBE_STAGES else "unknown_stage",
+        "failure_code": failure_code if isinstance(failure_code, str) and failure_code in SAFE_FAILURE_CODES else "unknown_failure",
+        "passed": passed if type(passed) is bool else None,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--executable", type=Path, default=ROOT / "desktop/target/debug/lootweave-desktop.exe")
@@ -235,6 +272,7 @@ def main():
                               "Native capture tests reject invalid requests without reading any desktop pixels."]}
     try:
         for index in range(1, args.cycles + 1):
+            run_folder = output / f"run-{index:02}"
             result = run(args.executable.resolve(), args.resources.resolve(), args.node,
                          output, index)
             report["runs"].append(result)
@@ -245,7 +283,16 @@ def main():
         report["passed"] = True
     except (CheckFailed, OSError, ValueError, KeyError, queue.Empty, subprocess.TimeoutExpired) as error:
         report["failure_code"] = str(error) if isinstance(error, CheckFailed) else type(error).__name__
-        print("Native WebView check failed; private probe evidence retained.", flush=True)
+        failure_code = report["failure_code"]
+        safe_code = failure_code if failure_code in SAFE_FAILURE_CODES else "unknown_failure"
+        print(f"Native WebView check failed (failure_code={safe_code}).", flush=True)
+        if "run_folder" in locals():
+            probe = probe_failure_summary(run_folder)
+            if probe is not None:
+                passed = str(probe["passed"]).lower() if probe["passed"] is not None else "unknown"
+                print("Native probe diagnostic: "
+                      f"stage={probe['stage']} failure_code={probe['failure_code']} passed={passed}.",
+                      flush=True)
     finally:
         (output / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         print("Evidence: " + output.relative_to(ROOT).as_posix(), flush=True)
