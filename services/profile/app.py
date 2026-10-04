@@ -31,6 +31,8 @@ class Profile:
     def handle(self, method, path, body):
         if method == "GET" and path == "/v1/health":
             return {"service": "profile", "contract_version": 1}
+        if method == "GET" and path == "/v1/profiles":
+            return self.list_profiles()
         if method == "POST" and path == "/v1/snapshots/validate":
             snapshot(body.get("facts"))
             return {"valid": True}
@@ -50,6 +52,36 @@ class Profile:
             require(row is not None, "observation_not_found", 404)
             return json.loads(row[0])
         raise DomainError("not_found", 404)
+
+    def list_profiles(self, limit=20):
+        """Return each profile's highest revision, ordered by its row write time."""
+        require(type(limit) is int and 1 <= limit <= 100, "profile_limit_invalid")
+        with self.connect() as db:
+            rows = db.execute("""
+                SELECT revision.payload
+                FROM revisions AS revision
+                JOIN (
+                    SELECT profile_id, MAX(revision) AS revision
+                    FROM revisions
+                    GROUP BY profile_id
+                ) AS latest
+                  ON latest.profile_id=revision.profile_id
+                 AND latest.revision=revision.revision
+                ORDER BY revision.rowid DESC
+                LIMIT ?
+            """, (limit,)).fetchall()
+        profiles = []
+        for (encoded,) in rows:
+            result = json.loads(encoded)
+            facts = result["facts"]
+            profiles.append({
+                "profile_id": result["profile_id"],
+                "revision": result["revision"],
+                "candidate_name": facts["candidate_item"].get("name", ""),
+                "class_id": facts["class_id"],
+                "game_id": facts["context"]["game_id"],
+            })
+        return {"profiles": profiles, "limit": limit}
 
     def observe(self, body):
         observation_id = identifier(body.get("observation_id"))

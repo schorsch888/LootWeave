@@ -4,9 +4,10 @@ from __future__ import annotations
 from copy import deepcopy
 
 from contracts import CONTEXT_KEYS, digest, object_value, require, strings, timestamp
+from services.evaluation.rolls import compare_item_rolls
 
-EVALUATOR_VERSION = "0.1.4"
-EVALUATOR_VERSIONS = ("0.1.0", "0.1.1", "0.1.2", "0.1.3", EVALUATOR_VERSION)
+EVALUATOR_VERSION = "0.1.5"
+EVALUATOR_VERSIONS = ("0.1.0", "0.1.1", "0.1.2", "0.1.3", "0.1.4", EVALUATOR_VERSION)
 
 
 def intent(value: dict) -> dict:
@@ -103,8 +104,8 @@ def evaluate(profile: dict, knowledge: dict, purpose: dict, *, evaluator_version
     require(knowledge.get("pack_hash") == digest(pack), "pack_integrity_error", 409)
     require(pack.get("contract_version") == 1, "incompatible_pack_contract")
     purpose = intent(purpose)
-    strict_requirements = evaluator_version in ("0.1.3", "0.1.4")
-    uncertainty_aware = evaluator_version == "0.1.4"
+    strict_requirements = evaluator_version in ("0.1.3", "0.1.4", "0.1.5")
+    uncertainty_aware = evaluator_version in ("0.1.4", "0.1.5")
     pin = {"context": facts["context"], "profile_id": profile["profile_id"],
            "profile_revision": profile["revision"], "facts_hash": profile["facts_hash"],
            "item_instance_id": facts["candidate_item"]["instance_id"],
@@ -172,7 +173,7 @@ def evaluate(profile: dict, knowledge: dict, purpose: dict, *, evaluator_version
         if result["state"] == "unknown":
             blockers.append("unknown_condition:" + result["rule_id"])
     # Engines through 0.1.1 aggregate names; later engines preserve the actor.
-    actor_aware = evaluator_version in ("0.1.2", "0.1.3", "0.1.4")
+    actor_aware = evaluator_version in ("0.1.2", "0.1.3", "0.1.4", "0.1.5")
     active_before = {(r["actor"] if actor_aware else None, r["capability"])
                      for r in before if r["state"] == "active"}
     active_after = {(r["actor"] if actor_aware else None, r["capability"])
@@ -258,8 +259,13 @@ def evaluate(profile: dict, knowledge: dict, purpose: dict, *, evaluator_version
                                 ("gained_mechanisms", gained_mechanisms),
                                 ("missing_mechanisms", missing_mechanisms)):
             comparison[key] = [{"actor": actor, "capability": capability} for actor, capability in mechanisms]
+    scope_notice = "Synthetic mechanism check; no validated game recommendation or DPS."
+    if evaluator_version == "0.1.5":
+        comparison["item_rolls"] = compare_item_rolls(facts)
+        if not scoped:
+            scope_notice = "Confirmed item affix comparison only; no validated game recommendation or DPS."
     return {"contract_version": 1, "pin": pin, "retention": verdict,
             "comparison": comparison,
             "reasons": reasons, "blockers": blockers, "panel_policy": "observations_only",
-            "scope_notice": "Synthetic mechanism check; no validated game recommendation or DPS.",
+            "scope_notice": scope_notice,
             "limitations": pack["unknowns"]}

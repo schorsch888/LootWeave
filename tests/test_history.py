@@ -124,7 +124,7 @@ class HistoricalStorageTests(unittest.TestCase):
 
     def test_new_evaluations_pin_the_corrected_engine(self):
         result = self.evaluation.create(self.body)
-        self.assertEqual("0.1.4", EVALUATOR_VERSION)
+        self.assertEqual("0.1.5", EVALUATOR_VERSION)
         self.assertEqual(EVALUATOR_VERSION, result["pin"]["evaluator_version"])
         self.assertEqual(result, self.evaluation.replay(result["evaluation_id"])["result"])
 

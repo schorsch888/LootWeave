@@ -122,9 +122,9 @@ try {
   await page.goto(ready.url + "/#session=" + credential);
   await check("每次换装，都有依据");
   stage = "delayed_core_shell";
-  await page.locator("fieldset.draft-controls .panel textarea").first().waitFor({ state: "visible" });
+  await page.getByLabel("原始文本", { exact: true }).waitFor({ state: "visible" });
   await check("手动草稿可继续填写");
-  const earlyText = page.locator("fieldset.draft-controls .panel textarea").first();
+  const earlyText = page.getByLabel("原始文本", { exact: true });
   const initialText = await earlyText.inputValue();
   await earlyText.fill("人工草稿：核心服务就绪前也可以填写。");
   assert.equal(await page.getByRole("checkbox", { name: "我已核对原文、实例词条和完整构筑，确认这些输入。" }).isDisabled(), true,
@@ -147,6 +147,9 @@ try {
   assert.equal(await page.getByRole("heading", { name: "用实际试验比较练级路线", exact: true }).count(), 0,
     "unopened_trial_panel_was_mounted");
   results.push("initial_manual_workflow_keeps_optional_services_dormant_and_secondary_panels_unmounted");
+  // Real input is the default; this regression deliberately selects fictional data.
+  await page.getByRole("button", { name: "加载合成示例", exact: true }).click();
+  await check("当前使用合成示例");
   stage = "confirmation";
   await page.getByLabel("游戏范围", { exact: true }).waitFor({ state: "visible" });
   assert.equal(await page.getByRole("button", { name: "解释保留价值与换装变化 →" }).isEnabled(), false);
@@ -394,7 +397,7 @@ try {
   await lostPanel.getByText("仆从 · 仆从支持", { exact: true }).waitFor({ state: "visible" });
   assert.equal(await lostPanel.getByText("角色 · 仆从支持", { exact: true }).count(), 0,
     "companion_loss_presented_as_hero_loss");
-  await check("评估器 0.1.4");
+  await check("评估器 0.1.5");
   await page.locator(".result").screenshot({ path: path.join(output, "actor-comparison.png") });
   results.push("actual_companion_loss_keeps_owner_in_complete_build_and_ui");
   await page.locator("summary").filter({ hasText: "查看或编辑完整构筑数据" }).click();
@@ -421,7 +424,7 @@ try {
   await check("每次换装，都有依据");
   await page.getByRole("button", { name: "打开历史评估", exact: true }).click();
   await page.locator("summary").filter({ hasText: "查看历史冻结评估" }).click();
-  await page.locator("article.reason").filter({ hasText: "评估器版本：0.1.4" })
+  await page.locator("article.reason").filter({ hasText: "评估器版本：0.1.5" })
     .getByRole("button", { name: "查看这份冻结结果", exact: true }).last().click();
   await check("正在查看保存的冻结输入及其规则版本");
   await check("换装会丢失机制");
@@ -444,7 +447,7 @@ try {
   stage = "incompatible_scope_history";
   await page.locator("article.reason").filter({ hasText: "评估 ID：" + incompatibleScopeId })
     .getByRole("button", { name: "查看这份冻结结果", exact: true }).click();
-  await check("范围或版本不匹配，暂不能比较机制。");
+  await check("游戏机制尚未验证，或范围、版本不匹配；物品字段差异仍可查看。");
   assert.equal(await page.locator(".result .delta-grid").count(), 0,
     "incompatible_scope_shows_mechanism_delta_claims");
   await page.getByRole("button", { name: "回放验证", exact: true }).click();
@@ -473,14 +476,17 @@ try {
   results.push("responsive_layout_and_no_uncaught_browser_errors");
 
   stage = "deskrawl_simulated_native_ipc";
+  await page.getByRole("button", { name: "加载合成示例", exact: true }).click();
+  await check("当前使用合成示例");
   await page.setViewportSize({ width: 1280, height: 900 });
+  await page.locator("summary").filter({ hasText: "从截图识别装备字段" }).click();
   await page.locator("summary").filter({ hasText: "从屏幕区域读取" }).click();
   const genericCapture = page.getByRole("button", { name: "捕获所选区域并读取", exact: true });
   assert.equal(await genericCapture.count(), 1, "generic_capture_mode_missing_for_other_scopes");
   const genericSource = page.locator("label").filter({ hasText: "捕获来源" }).locator("select");
   assert.equal(await genericSource.count(), 1,
     "generic_source_selector_missing_for_other_scopes");
-  const rawTextField = page.locator("fieldset.draft-controls .panel textarea").first();
+  const rawTextField = page.getByLabel("原始文本", { exact: true });
   const originalText = await rawTextField.inputValue();
   await page.getByLabel("游戏范围", { exact: true }).fill("deskrawl");
   assert.equal(await page.locator("label").filter({ hasText: "捕获来源" }).locator("select").count(), 0,
@@ -632,7 +638,10 @@ try {
   await page.getByRole("status").filter({ hasText: "3 秒后捕获" }).waitFor({ state: "visible" });
   const requestedOcr = await ocrRequest;
   assert.equal(new URL(requestedOcr.url()).pathname, "/api/ocr/regions");
-  await check("已保留原始区域与识别原文；字段仍需逐项核对。");
+  const captureReview = page.locator(".capture-review");
+  const immutableOcrText = page.locator('.capture-review pre[aria-label="OCR 识别原文（未校正）"]');
+  await captureReview.waitFor({ state: "visible" });
+  await immutableOcrText.waitFor({ state: "visible" });
   assert.equal(ocrRequests, ocrBeforeRejectedCapture + 1, "successful_native_mock_did_not_use_real_ocr_http");
   assert.equal(await page.getByLabel("游戏范围", { exact: true }).inputValue(), "deskrawl",
     "capture_context_changed_game_scope");
@@ -658,7 +667,7 @@ try {
   await page.waitForFunction(() => document.querySelector(".capture-review img")?.naturalWidth === 800);
   assert.equal(await capturePreview.evaluate(image => image.naturalHeight), 24);
   const acceptedOcr = await (await requestedOcr.response()).json();
-  const immutableOcrText = page.locator(".capture-review pre");
+  assert.equal(await immutableOcrText.getAttribute("aria-label"), "OCR 识别原文（未校正）");
   assert.equal(await immutableOcrText.innerText(),
     acceptedOcr.raw_text || "未识别到可用文字，请手动填写原始文本。");
   await page.setViewportSize({ width: 390, height: 844 });
@@ -692,7 +701,7 @@ try {
     return button && !button.disabled;
   });
   assert.equal(await capturePreview.count(), 0, "failed_recapture_kept_previous_image");
-  assert.equal(await page.getByText("已保留原始区域与识别原文；字段仍需逐项核对。", { exact: false }).count(), 0,
+  assert.equal(await immutableOcrText.count(), 0,
     "failed_recapture_kept_previous_observation");
   assert.equal(await previewConsent.isChecked(), false, "failed_recapture_kept_previous_confirmation");
   assert.equal(await rawTextField.inputValue(), textBeforeRecapture, "failed_recapture_erased_manual_text");
@@ -705,7 +714,7 @@ try {
 
   await page.getByLabel("游戏范围", { exact: true }).fill("lootweave-fixture");
   assert.equal(await capturePreview.count(), 0, "scope_change_kept_previous_image");
-  assert.equal(await page.getByText("已保留原始区域与识别原文；字段仍需逐项核对。", { exact: false }).count(), 0,
+  assert.equal(await immutableOcrText.count(), 0,
     "scope_change_kept_old_capture_association");
   await genericSource.selectOption("deskrawl");
   await page.evaluate(() => { window.__deskrawlMockState.scenario = "multiple"; });
@@ -719,7 +728,8 @@ try {
   await windowCapture.click();
   await page.getByRole("status").filter({ hasText: "3 秒后捕获" }).waitFor({ state: "visible" });
   await mismatchOcrRequest;
-  await check("已保留原始区域与识别原文；字段仍需逐项核对。");
+  await captureReview.waitFor({ state: "visible" });
+  await immutableOcrText.waitFor({ state: "visible" });
   await rawTextField.fill("人工填写的 Deskrawl 观察文本");
   await check("采集来源为 deskrawl，请先核对游戏范围，再确认快照。");
   const confirmationCheckbox = page.getByRole("checkbox", {

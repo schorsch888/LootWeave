@@ -1,6 +1,6 @@
 export type Evidence = { id: string; kind: string; source_ref: string; captured_at: string; verification: string; conflicts: string[] };
 export type Source = { id: string; effects: string[]; evidence_ids: string[]; rank?: number; set_id?: string; actor?: string };
-export type Item = { record_kind: string; instance_id: string; name?: string; slot: string; required_level: number | null; effects: string[]; affixes: { id: string; value: number; unit: string; evidence_ids: string[] }[]; unrevealed_properties: string[]; embedded_items: Source[]; unknowns: string[]; upgrade_state: { known: boolean; level?: number }; socket_state: { known: boolean; count?: number }; evidence_ids: string[]; set_id?: string };
+export type Item = { record_kind: string; instance_id: string; name?: string; class_id?: string; slot: string; required_level: number | null; effects: string[]; affixes: { id: string; name?: string; value: number; unit: string; evidence_ids: string[] }[]; unrevealed_properties: string[]; embedded_items: Source[]; unknowns: string[]; upgrade_state: { known: boolean; level?: number }; socket_state: { known: boolean; count?: number }; evidence_ids: string[]; set_id?: string };
 export type GameContext = { game_id: string; edition: string; game_build: string; mode: string; season: string; ruleset_id: string; content_entitlements: string[] };
 export type Snapshot = { context: GameContext; class_id: string; character_level: number; captured_at: string; evidence: Evidence[]; evidence_ids: string[]; skills: Source[]; talents: Source[]; paragon: Source[]; account_unlocks: Record<string, unknown>; runes: Source[]; companions: Source[]; temporary_effects: Source[]; observed_panel: { stat: string; value: number; unit: string; source_ids: string[]; evidence_ids: string[] }[]; conditions: Record<string, string>; inventory_coverage: string; unknowns: string[]; equipped_items: Record<string, Item>; candidate_item: Item };
 export type Intent = { revision: number; scenario: string; required_capabilities: string[]; allowed_build_changes: string[]; future_builds: { skills: string[]; conditions: Record<string, string>; feasibility: string }[]; budget: Record<string, unknown> };
@@ -9,7 +9,8 @@ export type Reason = { kind?: string; rule_id?: string; capability?: string; exp
 export type Mechanism = { actor: "hero" | "companion"; capability: string };
 export type MechanismState = "active" | "inactive" | "unknown";
 export type UncertainMechanism = Mechanism & { before: MechanismState; after: MechanismState };
-export type EvaluationResult = { evaluation_id: string; retention: string; comparison: { status: string; scope_compatible?: boolean; lost_capabilities: string[]; gained_capabilities: string[]; missing_requirements: string[]; lost_mechanisms?: Mechanism[]; gained_mechanisms?: Mechanism[]; missing_mechanisms?: Mechanism[]; uncertain_mechanisms?: UncertainMechanism[]; equip_blockers: string[]; before: Reason[]; after: Reason[] }; blockers: string[]; reasons: Reason[]; scope_notice: string; limitations: string[]; pin: { profile_revision: number; pack_version: string; pack_hash: string; evaluator_version: string; intent_revision: number; context: GameContext } };
+export type ItemRollComparison = { scope: string; current_item: { instance_id: string; name?: string } | null; candidate_item: { instance_id: string; name?: string }; rows: { affix_id: string; current_value: number | null; candidate_value: number | null; current_unit: string | null; candidate_unit: string | null; delta: number | null; status: string; input_evidence_ids: string[] }[]; limitations: string[] };
+export type EvaluationResult = { evaluation_id: string; retention: string; comparison: { status: string; scope_compatible?: boolean; item_rolls?: ItemRollComparison; lost_capabilities: string[]; gained_capabilities: string[]; missing_requirements: string[]; lost_mechanisms?: Mechanism[]; gained_mechanisms?: Mechanism[]; missing_mechanisms?: Mechanism[]; uncertain_mechanisms?: UncertainMechanism[]; equip_blockers: string[]; before: Reason[]; after: Reason[] }; blockers: string[]; reasons: Reason[]; scope_notice: string; limitations: string[]; pin: { profile_revision: number; pack_version: string; pack_hash: string; evaluator_version: string; intent_revision: number; context: GameContext } };
 export type Demo = { label: string; facts: Snapshot; intent: Intent };
 
 const hash = new URLSearchParams(window.location.hash.slice(1));
@@ -39,6 +40,12 @@ const messages: Record<string, string> = {
   profile_observation_time_conflict: "该快照的原始采集时间存在冲突或无法核验，请重新核对后保存新修订；历史结果仍可回放。",
   invalid_capture_time: "原始采集时间无效，请重新采集或使用原文确认。",
   actual_roll_and_unit_required: "词条需要实际数值和单位。",
+  invalid_identifier: "请填写英文、数字或下划线组成的稳定字段标识。",
+  invalid_required_level: "请填写正整数穿戴等级，尚不清楚时留空。",
+  character_level_required: "请填写角色的实际等级。",
+  duplicate_affix_id: "同一物品的词条标识重复，请核对。",
+  source_rank_required: "已分配的技能、天赋和巅峰需要明确的非负整数等级。",
+  context_fields_required: "请填写完整游戏范围，未确认的版本请保留 unknown。",
   replay_mismatch: "回放与历史结果不同，已阻止接受该结果。",
 };
 

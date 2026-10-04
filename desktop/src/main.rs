@@ -17,24 +17,34 @@ fn option(name: &str) -> Option<PathBuf> {
         .map(|pair| PathBuf::from(&pair[1]))
 }
 
-fn verification_browser_args(
-    hidden_ui: bool,
-    port: Option<&str>,
-) -> Result<Option<String>, &'static str> {
-    let Some(port) = port else {
+// CDP is available only for an explicitly requested hidden verification window.
+// Elevated WebView2 hosts ignore environment overrides, so configure its API.
+fn hidden_browser_args(hidden: bool, args: &[String]) -> Result<Option<String>, &'static str> {
+    let mut flags = args
+        .iter()
+        .enumerate()
+        .filter(|(_, arg)| *arg == "--hidden-ui-debug-port");
+    let Some((index, _)) = flags.next() else {
         return Ok(None);
     };
-    if !hidden_ui {
-        return Err("native_verification_requires_hidden_ui");
+    if !hidden || flags.next().is_some() {
+        return Err("hidden_ui_debug_port_invalid");
     }
-    let port = if !port.is_empty() && port.bytes().all(|value| value.is_ascii_digit()) {
-        port.parse::<u16>().ok().filter(|value| *value != 0)
-    } else {
-        None
+    let value = args.get(index + 1).ok_or("hidden_ui_debug_port_invalid")?;
+    if value.is_empty() || !value.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Err("hidden_ui_debug_port_invalid");
     }
-    .ok_or("native_verification_port_invalid")?;
-    // Preserve wry's default feature exclusions when supplying app-owned arguments.
-    Ok(Some(format!("--remote-debugging-port={port} --remote-debugging-address=127.0.0.1 --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection")))
+    let port = value
+        .parse::<u16>()
+        .map_err(|_| "hidden_ui_debug_port_invalid")?;
+    if port == 0 {
+        return Err("hidden_ui_debug_port_invalid");
+    }
+    Ok(Some(format!(
+        "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection \
+         --autoplay-policy=no-user-gesture-required \
+         --remote-debugging-port={port} --remote-debugging-address=127.0.0.1"
+    )))
 }
 
 #[cfg(windows)]
@@ -163,20 +173,12 @@ fn main() {
         return;
     }
     let resource_override = option("--resource-dir");
-    let hidden_ui = std::env::args().any(|value| value == "--hidden-ui");
-    let verification_port = match std::env::var("LOOTWEAVE_NATIVE_VERIFY_PORT") {
-        Ok(value) => Some(value),
-        Err(std::env::VarError::NotPresent) => None,
-        Err(_) => {
-            eprintln!("native_verification_port_invalid");
-            std::process::exit(1);
-        }
-    };
-    let browser_args = verification_browser_args(hidden_ui, verification_port.as_deref())
-        .unwrap_or_else(|code| {
-            eprintln!("{code}");
-            std::process::exit(1);
-        });
+    let args: Vec<String> = std::env::args().collect();
+    let hidden_ui = args.iter().any(|value| value == "--hidden-ui");
+    let browser_args = hidden_browser_args(hidden_ui, &args).unwrap_or_else(|code| {
+        eprintln!("{code}");
+        std::process::exit(1);
+    });
     if hidden_ui {
         eprintln!("lootweave_hidden_ui_v1: --hidden-ui enabled");
     }
@@ -196,9 +198,15 @@ fn main() {
                 .unwrap_or(app.path().resource_dir()?.join("sidecar"));
             let runtime = supervisor::Supervisor::start(&resources, &data, policy)
                 .map_err(std::io::Error::other)?;
+            if hidden_ui {
+                eprintln!("lootweave_hidden_ui_v1: services_ready");
+            }
             let url = runtime.window_url().parse()?;
             app.manage(Mutex::new(runtime));
-            let window =
+            if hidden_ui {
+                eprintln!("lootweave_hidden_ui_v1: window_build_started");
+            }
+            let mut window =
                 tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::External(url))
                     .data_directory(data.join("webview"))
                     .title("LootWeave")
@@ -207,12 +215,13 @@ fn main() {
                     .focusable(!hidden_ui)
                     .inner_size(1250.0, 900.0)
                     .min_inner_size(700.0, 600.0);
-            let window = if let Some(args) = &browser_args {
-                window.additional_browser_args(args)
-            } else {
-                window
-            };
+            if let Some(ref arguments) = browser_args {
+                window = window.additional_browser_args(arguments);
+            }
             window.build()?;
+            if hidden_ui {
+                eprintln!("lootweave_hidden_ui_v1: webview_ready");
+            }
             Ok(())
         })
         .build(tauri::generate_context!())
@@ -229,41 +238,56 @@ fn main() {
 }
 
 #[cfg(test)]
-mod native_verification_tests {
-    use super::verification_browser_args;
-
-    #[test]
-    fn normal_and_unconfigured_hidden_hosts_receive_no_debug_arguments() {
-        assert_eq!(verification_browser_args(false, None), Ok(None));
-        assert_eq!(verification_browser_args(true, None), Ok(None));
-        assert_eq!(
-            verification_browser_args(false, Some("9222")),
-            Err("native_verification_requires_hidden_ui")
-        );
+mod hidden_probe_tests {
+    use super::hidden_browser_args;
+    fn arguments(values: &[&str]) -> Vec<String> {
+        values.iter().map(|value| value.to_string()).collect()
     }
 
     #[test]
-    fn hidden_verification_accepts_only_nonzero_u16_ports() {
-        for port in [
+    fn ordinary_and_unconfigured_hidden_launches_do_not_enable_cdp() {
+        assert_eq!(hidden_browser_args(false, &[]), Ok(None));
+        assert_eq!(hidden_browser_args(true, &[]), Ok(None));
+    }
+
+    #[test]
+    fn debug_port_requires_hidden_mode_and_one_valid_numeric_value() {
+        assert!(
+            hidden_browser_args(false, &arguments(&["--hidden-ui-debug-port", "9222"])).is_err()
+        );
+        for value in [
             "",
             "0",
-            "65536",
             "-1",
-            "+1",
-            " 9222",
-            "9222 --other-flag",
-            "https://private.invalid",
+            "+9222",
+            "65536",
+            "NaN",
+            "9222 --remote-allow-origins=*",
         ] {
-            assert_eq!(
-                verification_browser_args(true, Some(port)),
-                Err("native_verification_port_invalid")
+            assert!(
+                hidden_browser_args(true, &arguments(&["--hidden-ui-debug-port", value])).is_err()
             );
         }
-        for port in ["1", "9222", "65535"] {
-            let args = verification_browser_args(true, Some(port))
+        assert!(hidden_browser_args(true, &arguments(&["--hidden-ui-debug-port"])).is_err());
+        assert!(hidden_browser_args(
+            true,
+            &arguments(&[
+                "--hidden-ui-debug-port",
+                "9222",
+                "--hidden-ui-debug-port",
+                "9223"
+            ])
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn valid_ports_use_fixed_loopback_flags_and_keep_wry_defaults() {
+        for port in ["1", "65535"] {
+            let result = hidden_browser_args(true, &arguments(&["--hidden-ui-debug-port", port]))
                 .unwrap()
                 .unwrap();
-            assert_eq!(args, format!("--remote-debugging-port={port} --remote-debugging-address=127.0.0.1 --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection"));
+            assert_eq!(result, format!("--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --autoplay-policy=no-user-gesture-required --remote-debugging-port={port} --remote-debugging-address=127.0.0.1"));
         }
     }
 }

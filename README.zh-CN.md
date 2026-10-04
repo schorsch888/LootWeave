@@ -6,7 +6,19 @@
 
 LootWeave 是一个开源的 Windows 本地装备决策助手原型，无需玩家自行填写词条权重。仓库目前包含可运行的本地开发实现；唯一可执行的游戏知识包是合成夹具。Deskrawl 是研究对象，Diablo II、III、IV 仍是未来候选，并按版本和模式隔离规则。
 
-**当前可用的 Windows MVP 安装包 `dist/LootWeave-MVP-0.1.0-20261004-windows-x64-setup.exe` 是源码提交 `fcc9ed1` 对应的交付产物，内置 Python 和离线 WebView2 安装组件。该提交之后的隐藏测试源码和 Rust-only 宿主尚未重新打入此安装包。该安装包的本机后台启动、持久化、回放与进程回收检查已通过；两台干净机器的离线安装／卸载和真实游戏验收仍未通过。**
+## 当前源码核心流程
+
+当前源码和本地安装包启动后均显示空白真实档案。结构化表单支持录入候选物品、当前同槽装备、其他已装备物品、实际词条数值与单位，以及技能、天赋、巅峰、符文、仆从和临时效果。玩家可以修改目标与未来构筑，逐项核对 OCR 字段后再填入候选物品，并明确确认通用 `level` 表示物品可穿戴等级。SQLite 保存最新档案列表，支持重新打开。评估器 `0.1.5` 可为 research-only 游戏返回物品字段原始差异；真实机制仍会被标为 `blocked` 或 `needs_confirmation`。DPS 计算和保留／换装建议均未通过验收。
+
+**当前本地 Windows 安装包为 `dist/LootWeave-MVP-0.1.0-20261005-windows-x64-setup.exe`（225,924,955 字节；SHA-256 `72e96bcceaabf9282c3789b96bfb9d80e5d9458c75bd654bdaf8a782212b1585`），构建源提交为 `5f5af69e2ce312c7ab551cb4827a365bb1d2f899`。安装包包含空白档案、结构化装备与构筑录入、最新 SQLite 档案重开、评估器 `0.1.5` 原始同槽位装备词条差异，以及当前 Rust-only 宿主。发布宿主与冻结服务通过 11 项后台核心检查（11.386 秒），覆盖手动字段保存、幂等性、最新档案选择、mana 20→35 得出 +15 差异、保留单位不匹配和缺失字段、研究规则继续阻塞、冻结回放，以及重启后 SQLite 档案列表、精确档案重开、回放和子进程自然退出。这是后台验证，不是 GUI 测量。`2026-10-04` 安装包保留为历史产物。可见 GUI、两台干净机器上的安装／卸载、真实游戏采集与机制、DPS 和保留／换装建议仍未验收。此前记录的隐藏子进程退出超时仍未解决。**
+
+同一发布宿主还通过 `scripts/check_desktop.py --cycles 2` 的 13 项后台生命周期检查（42.698 秒），包括两次正常启动／退出、六项服务故障清理、宿主强制退出后的 Job 回收、重启恢复、重启及来源故障下的冻结回放、实例锁和备份／恢复。该检查未测量可见 GUI。
+
+## 运行性能实验
+
+[预先声明的运行实验](docs/performance-experiment.md)、[结果](docs/performance-results.md)和[选定的脱敏批次](fixtures/runtime-performance/README.md)保留了每组 20 次尝试。显式按需模式源码 `7afdd6e` 将启动后无界面的空闲私有提交内存降至 76.6 MiB，对照组最大值约为 105 MiB；但手动流程完成 P95 为 4.924 秒，未达到 <3.698 秒的要求。主要门槛未通过，因此两个启动器仍默认 eager；`--startup-policy on-demand` 仅作为显式实验选项。Knowledge 延迟解析、OCR 辅助进程复用和生产 JavaScript 拆包继续暂缓。这些测量批次早于当前真实装备流程，也没有测量可见桌面启动。
+
+历史开发包检查在源码 `2034deed` 上通过了各 20 次 eager 和显式按需生命周期／故障循环，以及 20 次隐藏被动 WebView 循环。合并后源码的匹配产物与验证在[验证记录](docs/validation.md#matching-development-package)中单独记录。这些开发机暖缓存检查不能确立发布验收。
 
 ## 了解项目
 
@@ -20,23 +32,19 @@ LootWeave 是一个开源的 Windows 本地装备决策助手原型，无需玩�
 
 React/TypeScript 前端按 feature-sliced 目录组织于 `frontend/src/{app,pages,features,entities,shared}`。Rust/Tauri Windows 宿主位于 `desktop`。profile、knowledge、evaluation、planning 和 OCR 的 Python 服务以独立 HTTP 进程运行，并使用 SQLite 存储。根目录的 `contracts`、`storage` 和 `transport` 模块提供通用基础设施；gateway 不包含领域规则。
 
-默认启动策略仍为 eager；`--startup-policy on-demand` 仅作为显式实验选项。在已测实验组中，源码 `7afdd6e` 的 20 次端到端工作流及清理周期均通过。初始空闲 private commit 为 76.609 MiB，对照组分别为 104.988 MiB 和 105.895 MiB，但主流程 P95 为 4.924 秒，高于预先声明的低于 3.698 秒门槛。默认策略已恢复，启动提速尚未验收。按需挂载面板、状态轮询和能力激活接口保留；P3 知识包延迟加载、P5 OCR helper 复用及 JavaScript 拆分已延期。详见[性能计划（英文）](docs/performance-plan.md)和[实验结果（英文）](docs/performance-results.md)。
-
-源码 `2034deed` 对应的匹配开发构建在开发机上通过检查：eager 和实验性 on-demand 策略各通过 20 轮后台生命周期／故障检查，隐藏 WebView 另通过 20 轮检查。详见[验证记录（英文）](docs/validation.md)中的构建身份和限制。M4 与干净机器发布验收仍未完成。历史 `fcc9ed1` 安装包仍是已交付产物；该开发构建不会替代或发布它。
-
 实现支持已确认的完整快照修订、将 OCR 原始观察与用户确认数据分开、解释整件替换，并可回放冻结的评估。采集成功后，核对面板会按原始像素显示 BMP 区域，原图区支持键盘滚动，并保留未经校正的 OCR 原文供对照。数字解析会拒绝分裂或残缺数字以及科学计数法片段，同时保留原文、符号和单位。原生 OCR 行文本会映射回原始文本并保留全局跨度；字段绑定到对应来源行，跨行重复字段标记为歧义，缺失或无法映射的原生行不会生成解析字段。可读的主识别结果仍是数值来源；一致的英文识别记录为 `numeric_corroboration`，只有实际恢复不可读数字时才使用 `numeric_source`。带空格的小数片段会被拒绝，使带明确单位的完整不可读主识别词项可与独立英文数字结果核对；若有分歧仍标记为歧义，所有观察仍须人工确认。更改游戏范围、采集来源、窗口绑定、区域或语言，或开始新的采集，都会清除旧图像及观察关联并要求重新确认，同时保留手动输入的文本。只有匹配当前范围和检测代次的窗口检测响应才会更新窗口列表。planning 可比较实测总经验值和完整耗时，并提供带 Wilson 95% 区间的观察采样估计。试验可手动填写实际起止角色等级，或单独填写巅峰经验类型及其起止等级，并记录覆盖相同范围的累计实际经验与完整耗时。系统只比较确认范围一致的记录；任一试验输入变化都会清除旧排名，并要求重新确认一致性。若试验保存成功但比较失败，使用相同数据重试会沿用原 trial ID。系统报告记录到的结果，不推断掉落或最优地图。
 
 新试验的经验和等级须处于精确整数范围，并产生有限的经验率。无法可靠计算的历史测量保留原始存储内容，标记为待确认并排除排名；超出计算范围的汇总同样保持待确认。相同原始输入的重试沿用 trial ID，不受派生分类变化影响，并发保存不会产生重复记录。微小的正经验率仍显示为非零值。
 
 ## 使用 Windows MVP
 
-本地安装包为 `dist/LootWeave-MVP-0.1.0-20261004-windows-x64-setup.exe`。双击安装，然后打开 LootWeave；运行安装版无需另装 Node、pnpm 或 Python。
+本地安装包为 `dist/LootWeave-MVP-0.1.0-20261005-windows-x64-setup.exe`。双击安装，然后打开 LootWeave；运行安装版无需另装 Node、pnpm 或 Python。`2026-10-04` 安装包作为较早历史版本保留。
 
-先保留默认的虚构知识包，核对示例事实并确认快照，再生成装备比较、回放保存结果。当前还可使用手动文本、截图／OCR 核对、实测经验试验和观察样本估计。安装包已包含 Deskrawl 窗口检测及采集代码；真实窗口采集成功、可见 GUI 和游戏机制仍未验收。OCR 使用 Windows 已安装的语言能力；识别不可用时可手动录入。
+当前安装包以空白档案启动。录入和比较物品／构筑事实，逐项确认 OCR 字段后再应用，保存并重开最新档案，然后查看 `0.1.5` 原始物品字段差异。虚构知识包仍可用于示例。当前还可使用手动文本、实测经验试验和观察样本估计。安装包包含 Deskrawl 窗口检测及采集代码；真实窗口采集成功、可见 GUI 和游戏机制仍未验收。OCR 使用 Windows 已安装的语言能力；识别不可用时可手动录入。完整流程和边界见[当前源码核心流程](#当前源码核心流程)。
 
 ## 本地运行
 
-要求：原生 OCR 与桌面打包需使用 Windows；Node.js 24 或更高版本；pnpm 11.19.0；Python 3.12。Python 运行时服务没有第三方运行依赖。先安装前端依赖并构建，再启动本地开发运行时：
+要求：原生 OCR 与桌面打包需使用 Windows；Node.js 24 或更高版本；pnpm 11.19.0；服务使用 Python 3.12 或更高版本（本机验证使用 3.12.14，CI 使用 3.13.16）。Python 运行时服务没有第三方运行依赖。先安装前端依赖并构建，再启动本地开发运行时：
 
 ```powershell
 pnpm --dir frontend install --frozen-lockfile
@@ -44,7 +52,7 @@ pnpm --dir frontend build
 python runtime.py
 ```
 
-Deskrawl 实时采集已加入进程、窗口检查和显式选择。区域使用客户区相对坐标，并倒计时提示手动切回游戏；检测不代表版本或机制已验证。没有启动游戏时，文本输入和历史重放仍可使用。`scripts/check_native_ui.py` 只运行隐藏、不可获得焦点的被动 DOM／IPC 检查，不执行键盘、鼠标或焦点操作。隐藏状态下的 readiness 不代表可见绘制、真实游戏窗口采集成功、键盘可达性、冷启动 GUI P95 或两机验收。该检查工具及当前 Rust-only 宿主改动尚未包含在上述安装包中。
+Deskrawl 实时采集已加入进程、窗口检查和显式选择。区域使用客户区相对坐标，并倒计时提示手动切回游戏；检测不代表版本或机制已验证。没有启动游戏时，文本输入和历史重放仍可使用。`scripts/check_native_ui.py` 是仅存在于仓库的开发工具，用于隐藏、不可获得焦点的被动 DOM／IPC 检查，不执行键盘、鼠标或焦点操作，不随安装包分发。当前 Rust-only 宿主改动已包含在安装包中。隐藏状态下的 readiness 不代表可见绘制、真实游戏窗口采集成功、键盘可达性、冷启动 GUI P95 或两机验收。
 
 Windows OCR 使用操作系统原生模型。安装英文（`en-US`）和简体中文（`zh-Hans-CN`）语言支持即可启用两种语言；若模型不可用或 OCR 失败，用户仍可手动输入并确认物品文本。
 
@@ -66,11 +74,11 @@ python scripts/build_desktop.py
 
 当前 OCR 可用一次有超时限制的英文数字局部补读，每次最多裁剪三个区域。原图、原文、可读主数值、显式正负号、单位和读数冲突继续保留；候选读数相互矛盾时，须有一致的局部补读才能解除歧义。补读失败会保留主观察供人工核对。15 项数字局部补读回归包含真实 WinRT 两区域／三区域批处理、显式符号冲突和补读失败检查。
 
-新评估使用评估器 `0.1.4`。每个角色／仆从的同一机制，只要有来源已生效就视为生效；否则，有未知来源则保留未知，全部来源未生效才视为未生效。仅“生效→未生效”判为确定丢失，仅“未生效→生效”判为确定获得。未知的所需机制会阻止结论并显示为待确认，原规则和输入来源继续保留。角色／仆从归属和范围检查保持有效。`0.1.0` 至 `0.1.3` 的 24 份冻结记录仍按原行为回放并保留版本、哈希；新的请求使用修正版。
+新评估使用评估器 `0.1.5`。每个角色／仆从的同一机制，只要有来源已生效就视为生效；否则，有未知来源则保留未知，全部来源未生效才视为未生效。仅“生效→未生效”判为确定丢失，仅“未生效→生效”判为确定获得。未知的所需机制会阻止结论并显示为待确认，原规则和输入来源继续保留。角色／仆从归属和范围检查保持有效。即使游戏仅供研究，评估仍可返回物品字段原始差异；真实机制仍为 blocked 或 needs_confirmation，DPS 计算和保留／换装建议均未通过验收。`0.1.0` 至 `0.1.4` 的冻结记录继续按原输出回放；新请求使用修正版。
 
 公开的 [v7 证据](fixtures/ocr-critical-fields-v7/README.md)包含全部原始输入、原生观察和 30 个数字补读区域。200 张 BMP 的哈希及完整清单字节均已精确复现，冻结解析器可回放每条观察。新增 7 项证据回归覆盖观察状态／图像身份篡改、缺失或变更的区域、原始词语映射及虚增汇总。[历史 v6 证据](fixtures/ocr-critical-fields-v6/README.md)保持不变；已查看的数据集不能作为后续算法的新验收集。
 
-运行时优化之前的 Python 回归运行 348 项：347 项通过、1 项 Windows 符号链接权限用例跳过（含发现用例共 34.660 秒）。TypeScript 和前端生产构建通过；直接 React 检查通过 14 项快照确认、27 项 Planning 用例及 32 张实际评估卡片，无需 DOM 或浏览器输入。新的采集时间校验在写入前拒绝来源不匹配，允许修正后重试，并保留历史内容与回放；评估器仍为 0.1.4。源码提交 `fcc9ed1` 安装包所用的宿主和冻结服务通过两轮后台启动／退出、六个服务故障、宿主强制退出回收、持久化和备份／恢复检查；包内 HTML、JavaScript、CSS 与该提交的生产构建一致。这些检查不覆盖可见 GUI 和两台干净机器验收；独立的隐藏式 native 检查通过 20 轮，并记录 CDP 断开与进程自然退出。首次出现的子进程退出超时仍待定位，证据范围见验证记录。详见[验证记录（英文）](docs/validation.md)和 [Roadmap（英文）](docs/roadmap.md)。
+当前 Python 回归通过 363 项：362 项通过、1 项 Windows 符号链接权限用例跳过（31.261 秒）。当前直接前端检查也已通过：core（15 项）、快照确认（19 项，含真实 Profile SQLite）、评估卡片（32 项）和 Planning（27 项）。当前发布宿主和冻结服务通过上述 11 项后台核心检查和 13 项后台生命周期检查。这些结果不代表可见 GUI、真实游戏采集或机制、两台干净机器安装／卸载已通过。此前记录的隐藏子进程退出超时仍未解决。证据范围见[验证记录（英文）](docs/validation.md)和 [Roadmap（英文）](docs/roadmap.md)。
 
 研究基线验证了 Deskrawl build `25690430` 中选出的 1,593 个静态对象；这不代表完整游戏机制、玩家实际装备词条或最终战斗与掉落公式已验证。复现需要合法可用的同构建游戏文件，并重新生成本地中间产物。原始游戏资源、完整提取数据库和下载工具不随仓库分发。
 
@@ -84,10 +92,10 @@ python scripts/check_architecture.py
 python scripts/check_public_docs.py
 python scripts/validate_ocr_holdout.py
 python scripts/validate_ocr_holdout.py --version v7
-python -m compileall -q services scripts contracts.py storage.py transport.py process_lifecycle.py service.py gateway.py runtime.py runtime_control.py version.py
+python -m compileall -q services scripts contracts.py storage.py transport.py service.py gateway.py runtime.py version.py
+pnpm --dir frontend check:core
 pnpm --dir frontend build
 node scripts/check_evaluation_render.mjs
-node scripts/check_frontend_runtime.mjs
 ```
 
 这些检查验证仓库约定和前端构建；不能证明游戏机制、真实截图上的 OCR 质量或干净机器安装已通过验收。完整 Rust/Tauri 测试依赖生成的桌面资源。Windows 上可使用 `python scripts/check_window_guards.py`，利用缓存的 Rust 依赖独立测试实际采集模块，无需重编译 Tauri 宿主。

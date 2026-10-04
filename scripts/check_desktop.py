@@ -213,33 +213,68 @@ class Desktop:
                 "private_commit_mib": round(sum(v[1] for v in values) / 2**20, 2)}
 
     def stop(self, forced=False):
-        if self.process.poll() is None:
-            if forced:
-                self.process.kill()
-            else:
-                self.process.stdin.close()
+        cleanup_failed = False
+        orphaned = False
+        try:
+            if self.process.poll() is None:
+                if forced:
+                    self.process.kill()
+                else:
+                    self.process.stdin.close()
+                try:
+                    self.process.wait(timeout=12)
+                except subprocess.TimeoutExpired:
+                    self.process.kill()
+                    self.process.wait(timeout=5)
+        except Exception:
+            cleanup_failed = True
             try:
-                self.process.wait(timeout=12)
-            except subprocess.TimeoutExpired:
                 self.process.kill()
                 self.process.wait(timeout=5)
+            except Exception:
+                pass  # Continue reclaiming each retained child even if host cleanup failed.
+
+        def reclaim(handle):
+            try:
+                handle.terminate()  # This is the exact retained owned-process handle.
+            except Exception:
+                pass  # TerminateProcess may race an exit; the handle wait decides reclamation.
+            try:
+                return handle.exited(5)
+            except Exception:
+                return False
+
         deadline = time.monotonic() + 5
-        orphaned = False
         for handle in self.workers:
-            if not handle.exited(max(0, deadline - time.monotonic())):
-                orphaned = True
-                handle.terminate()  # Only exact children created by this check.
-                handle.exited(5)
-            handle.close()
+            try:
+                if not handle.exited(max(0, deadline - time.monotonic())):
+                    orphaned = True
+                    cleanup_failed |= not reclaim(handle)
+            except Exception:
+                cleanup_failed = True
+                reclaim(handle)
+            finally:
+                try:
+                    handle.close()
+                except Exception:
+                    cleanup_failed = True
         self.workers = []
         self.worker_handles = {}
         self.handles_by_pid = {}
         if self.host_handle:
-            self.host_handle.close()
-            self.host_handle = None
-        self.process.stdout.close()
-        self.process.stderr.close()
+            try:
+                self.host_handle.close()
+            except Exception:
+                cleanup_failed = True
+            finally:
+                self.host_handle = None
+        for stream in (self.process.stdin, self.process.stdout, self.process.stderr):
+            try:
+                stream.close()
+            except Exception:
+                cleanup_failed = True
         expect(not orphaned, "orphan_worker_after_host_exit")
+        expect(not cleanup_failed, "owned_cleanup_failed")
 
 
 def fictional_flow(app):

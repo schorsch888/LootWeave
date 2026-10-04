@@ -13,19 +13,44 @@ export function ConfirmSnapshot({ onBusyChange, draftApplied, capture, facts, ra
     && captureMs <= 253402300799999 ? new Date(captureMs).toISOString() : undefined;
   const [checked, setChecked] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [pending, setPending] = useState<{ key: string; observationId: string; requestId: string }>();
+  const [pending, setPending] = useState<{ key: string; observationId: string; requestId: string; inputEvidenceId: string }>();
   const submit = async () => {
     if (!checked || busy || !draftApplied || !sourceMatches) return;
     setBusy(true);
     onBusyChange(true);
     const key = JSON.stringify({ capture, facts, rawText, profileId, revision });
-    const request = pending?.key === key ? pending : { key, observationId: capture?.observation_id || newId("text"), requestId: newId("confirm") };
+    const request = pending?.key === key ? pending : { key, observationId: capture?.observation_id || newId("text"), requestId: newId("confirm"), inputEvidenceId: newId("input") };
     setPending(request);
     try {
       await api("profile/observations", capture ? { ...capture, raw_text: capture.raw_text } : { observation_id: request.observationId, method: "text", raw_text: rawText });
       const confirmed = structuredClone(facts);
-      for (const evidence of confirmed.evidence) {
-        if (evidence.source_ref.startsWith("observation://")) { evidence.source_ref = "observation://" + request.observationId;  }
+      const sourceRef = "observation://" + request.observationId;
+      const addRefs = (value: { evidence_ids: string[] }, ids: string[]) => {
+        value.evidence_ids = [...new Set([...value.evidence_ids, ...ids])];
+      };
+      if (capture) {
+        let linked = confirmed.evidence.filter(evidence => evidence.source_ref === sourceRef);
+        if (!linked.length) {
+          const evidence = { id: request.inputEvidenceId, kind: "ocr_confirmation", source_ref: sourceRef,
+            captured_at: capturedAt || facts.captured_at, verification: "confirmed", conflicts: [] };
+          confirmed.evidence.push(evidence);
+          linked = [evidence];
+        }
+        addRefs(confirmed, linked.map(evidence => evidence.id));
+      } else {
+        confirmed.evidence.push({ id: request.inputEvidenceId, kind: "manual_confirmation", source_ref: sourceRef,
+          captured_at: facts.captured_at, verification: "confirmed", conflicts: [] });
+        const ids = [request.inputEvidenceId];
+        addRefs(confirmed, ids);
+        for (const item of [...Object.values(confirmed.equipped_items), confirmed.candidate_item]) {
+          addRefs(item, ids);
+          for (const affix of item.affixes) addRefs(affix, ids);
+          for (const embedded of item.embedded_items) addRefs(embedded, ids);
+        }
+        for (const sources of [confirmed.skills, confirmed.talents, confirmed.paragon, confirmed.runes,
+          confirmed.companions, confirmed.temporary_effects, confirmed.observed_panel]) {
+          for (const source of sources) addRefs(source, ids);
+        }
       }
       const result = await api<{ revision: number; facts: Snapshot; facts_hash: string; build_hash: string; observation_time_status?: string }>("profile/confirmations", {
         request_id: request.requestId, profile_id: profileId, observation_id: request.observationId,

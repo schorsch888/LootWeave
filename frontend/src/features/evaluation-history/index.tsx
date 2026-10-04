@@ -3,6 +3,8 @@ import { api } from "../../shared/api";
 import type { EvaluationResult } from "../../shared/api";
 
 type Props = {
+  disabled?: boolean;
+  onBusyChange?: (busy: boolean) => void;
   refreshKey: string;
   onSelect: (result: EvaluationResult) => void;
   onError: (message: string) => void;
@@ -11,7 +13,7 @@ type Props = {
 type EvaluationSummary = Pick<EvaluationResult, "evaluation_id" | "retention" | "pin">;
 type HistoryResponse = { evaluations: EvaluationSummary[]; limit: number };
 
-export function EvaluationHistory({ refreshKey, onSelect, onError }: Props) {
+export function EvaluationHistory({ refreshKey, onSelect, onError, disabled = false, onBusyChange }: Props) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [loadingId, setLoadingId] = useState("");
@@ -19,6 +21,9 @@ export function EvaluationHistory({ refreshKey, onSelect, onError }: Props) {
   const [loaded, setLoaded] = useState(false);
   const onErrorRef = useRef(onError);
   const requestId = useRef(0);
+  const selecting = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
 
   useEffect(() => {
     onErrorRef.current = onError;
@@ -49,14 +54,18 @@ export function EvaluationHistory({ refreshKey, onSelect, onError }: Props) {
   }, [open, refreshKey]);
 
   const selectEvaluation = async (evaluationId: string) => {
+    if (disabled || selecting.current) return;
+    selecting.current = true;
     setLoadingId(evaluationId);
+    onBusyChange?.(true);
     try {
       const result = await api<EvaluationResult>(`evaluation/evaluations/${encodeURIComponent(evaluationId)}`);
-      onSelect(result);
+      if (mounted.current) onSelect(result);
     } catch (error) {
       onErrorRef.current(error instanceof Error ? error.message : "读取冻结评估失败。");
     } finally {
-      setLoadingId("");
+      selecting.current = false;
+      if (mounted.current) { setLoadingId(""); onBusyChange?.(false); }
     }
   };
 
@@ -77,7 +86,7 @@ export function EvaluationHistory({ refreshKey, onSelect, onError }: Props) {
             <p>档案修订：{evaluation.pin.profile_revision} · 知识包版本：{evaluation.pin.pack_version}</p>
             <p>评估器版本：{evaluation.pin.evaluator_version}</p>
             <p className="muted">评估 ID：{evaluation.evaluation_id}</p>
-            <button type="button" onClick={() => void selectEvaluation(evaluation.evaluation_id)} disabled={Boolean(loadingId)}>
+            <button type="button" onClick={() => void selectEvaluation(evaluation.evaluation_id)} disabled={disabled || Boolean(loadingId)}>
               {isLoading ? "读取中…" : "查看这份冻结结果"}
             </button>
           </article>;

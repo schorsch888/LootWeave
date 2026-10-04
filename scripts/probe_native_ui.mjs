@@ -1,5 +1,6 @@
 // Probe only the WebView created by the native test harness. No screen pixels are read.
 import { createRequire } from "node:module";
+import http from "node:http";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +18,29 @@ let browser;
 let page;
 let stage = "webview_connection";
 let credential = "";
+let connectionError = "unknown_error";
+const connectionErrorCode = error => {
+  const message = String(error?.message || "");
+  if (message.includes("ECONNREFUSED")) return "connection_refused";
+  if (message.includes("ECONNRESET")) return "connection_reset";
+  if (error?.name === "TimeoutError" || message.includes("ETIMEDOUT")) return "connection_timeout";
+  if (message.includes("Unexpected status")) return "http_unexpected_status";
+  if (message.includes("Protocol error")) return "protocol_error";
+  if (message.includes("WebSocket error") || message.includes("Unexpected server response")) return "websocket_rejected";
+  return "unknown_error";
+};
+// Read only the owned loopback endpoint; never retain response URLs, paths or credentials.
+const endpointStatus = () => new Promise(resolve => {
+  const finish = value => { request.destroy(); resolve(value); };
+  const request = http.get({ hostname: "127.0.0.1", port, path: "/json/version/", agent: false }, response => {
+    response.on("error", () => {}); // A peer reset must not crash failure diagnostics.
+    const status = response.statusCode;
+    response.destroy();
+    finish({ state: "responded", http_status: Number.isInteger(status) ? status : null });
+  });
+  request.setTimeout(500, () => finish({ state: "timeout" }));
+  request.on("error", error => resolve({ state: error.code === "ECONNREFUSED" ? "connection_refused" : "connection_error" }));
+});
 const checks = [];
 const errors = [];
 const mode = "hidden_passive";
@@ -25,7 +49,11 @@ try {
   const deadline = Date.now() + 45000;
   while (!browser && Date.now() < deadline) {
     try { browser = await chromium.connectOverCDP("http://127.0.0.1:" + port, { timeout: 1500 }); }
-    catch { await new Promise(resolve => setTimeout(resolve, 200)); }
+    catch (error) { connectionError = connectionErrorCode(error); await new Promise(resolve => setTimeout(resolve, 200)); }
+  }
+  if (!browser) {
+    report.connection_error_code = connectionError;
+    report.loopback_endpoint = await endpointStatus();
   }
   expect(browser, "webview_connection_timeout");
   const pages = browser.contexts().flatMap(context => context.pages());
