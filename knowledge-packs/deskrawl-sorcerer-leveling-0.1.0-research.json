@@ -1,0 +1,36 @@
+{
+  "contract_version": 1,
+  "pack_id": "deskrawl-sorcerer-leveling",
+  "version": "0.1.0-research",
+  "context": {
+    "game_id": "deskrawl",
+    "edition": "1.0.0i",
+    "game_build": "25690430",
+    "mode": "online",
+    "season": "not_applicable",
+    "ruleset_id": "deskrawl-25690430",
+    "content_entitlements": []
+  },
+  "class_id": "sorcerer",
+  "scenario": "leveling",
+  "execution_policy": "research_only",
+  "rules": [],
+  "known_affixes": {},
+  "evidence": [
+    {
+      "id": "deskrawl-static-research",
+      "source_ref": "repo://research/extraction-validation.json",
+      "source_build": "25690430",
+      "method": "Historical local extraction and independent serialized-number checks; see research guide prerequisites.",
+      "scope": "1,593 selected static definitions; not owned items or a complete combat model.",
+      "results": "Historical reports record zero parse failures and checks for 3,080 Float, 67 Int and 196 Long fields.",
+      "unknowns": "Complete mechanics, trigger uptime, server overrides and redistribution rights of original assets remain unaccepted.",
+      "verification": "historical_research",
+      "conflicts": []
+    }
+  ],
+  "unknowns": [
+    "Executable Deskrawl mechanics have not passed the M1 evidence gate.",
+    "Static definitions cannot establish actual rolls, real DPS or final online drop probabilities."
+  ]
+}

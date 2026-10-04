@@ -1,0 +1,34 @@
+{
+  "contract_version": 1,
+  "algorithm": "sha256",
+  "packs": [
+    {
+      "file": "deskrawl-sorcerer-leveling-0.1.0-research.json",
+      "sha256": "3b396c8940c3f0bfd6f84d6652c1dbb4aea478a23af7ed7b8c3f42c828958fd0"
+    },
+    {
+      "file": "synthetic-leveling-1.0.0.json",
+      "sha256": "12752c5c6117c57b53d4b733af4020961a0b55455c02f9d94d8b7116d4279b7d"
+    },
+    {
+      "file": "deskrawl-sorcerer-leveling-0.2.0-research.json",
+      "sha256": "8a9eab9aae84fab275aca716e3643aaeec75c6a02e78fd392c3ba3f382c0eb2c"
+    },
+    {
+      "file": "deskrawl-sorcerer-leveling-0.3.0-research.json",
+      "sha256": "592e372204e60d5c5bf853b3131151ff980a9c2987c364a70520debd074c15d5"
+    },
+    {
+      "file": "deskrawl-sorcerer-leveling-0.4.0-research.json",
+      "sha256": "026d7b9ed22753aa09ae2d41ac40ca3f2daac2fe1380a6f3ca1180d8c9fdd0b8"
+    },
+    {
+      "file": "deskrawl-sorcerer-leveling-0.5.0-research.json",
+      "sha256": "6928b8f21945d15bdf5fc76624f06d868f1dc591b04c62624fb89fa843dd9607"
+    },
+    {
+      "file": "deskrawl-sorcerer-leveling-0.6.0-research.json",
+      "sha256": "f2074a0c9267271c4842113f5111d33afaf1d55c5f634bc9005c6c12aa8314e3"
+    }
+  ]
+}

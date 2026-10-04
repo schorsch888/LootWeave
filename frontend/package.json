@@ -1,0 +1,28 @@
+{
+  "name": "lootweave-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "check:acquisition": "node ../scripts/check_acquisition_ui.mjs",
+    "check:confirmation": "node ../scripts/check_confirmation_ui.mjs",
+    "check:ui": "node ../scripts/check_ui.mjs"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "@tauri-apps/api": "2.12.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.2",
+    "@tauri-apps/cli": "2.12.1",
+    "playwright": "1.62.1"
+  }
+}

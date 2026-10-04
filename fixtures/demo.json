@@ -1,0 +1,233 @@
+{
+  "label": "Entirely synthetic workflow example; not a player snapshot or Deskrawl recommendation.",
+  "facts": {
+    "context": {
+      "game_id": "lootweave-fixture",
+      "edition": "fixture-1",
+      "game_build": "1",
+      "mode": "offline",
+      "season": "not_applicable",
+      "ruleset_id": "synthetic-1",
+      "content_entitlements": []
+    },
+    "class_id": "sorcerer",
+    "character_level": 15,
+    "captured_at": "2026-01-01T00:00:00Z",
+    "evidence": [
+      {
+        "id": "demo-input",
+        "kind": "synthetic",
+        "source_ref": "observation://demo-text",
+        "captured_at": "2026-01-01T00:00:00Z",
+        "verification": "confirmed",
+        "conflicts": []
+      }
+    ],
+    "evidence_ids": [
+      "demo-input"
+    ],
+    "skills": [
+      {
+        "id": "fixture-cold-bolt",
+        "effects": [],
+        "evidence_ids": [
+          "demo-input"
+        ],
+        "rank": 1
+      }
+    ],
+    "talents": [
+      {
+        "id": "fixture-resource-talent",
+        "effects": [
+          "fixture-resource-efficiency"
+        ],
+        "evidence_ids": [
+          "demo-input"
+        ],
+        "rank": 1
+      }
+    ],
+    "paragon": [
+      {
+        "id": "fixture-survival-point",
+        "effects": [
+          "fixture-survival"
+        ],
+        "evidence_ids": [
+          "demo-input"
+        ],
+        "rank": 1
+      }
+    ],
+    "account_unlocks": {
+      "paragon": "confirmed"
+    },
+    "runes": [
+      {
+        "id": "fixture-rune-a",
+        "effects": [],
+        "evidence_ids": [
+          "demo-input"
+        ],
+        "rank": 1,
+        "set_id": "fixture-frost"
+      },
+      {
+        "id": "fixture-rune-b",
+        "effects": [],
+        "evidence_ids": [
+          "demo-input"
+        ],
+        "rank": 1,
+        "set_id": "fixture-frost"
+      }
+    ],
+    "companions": [
+      {
+        "id": "fixture-companion",
+        "effects": [
+          "fixture-companion-support"
+        ],
+        "evidence_ids": [
+          "demo-input"
+        ],
+        "rank": 1,
+        "actor": "companion"
+      }
+    ],
+    "temporary_effects": [],
+    "observed_panel": [
+      {
+        "stat": "fixture-cold-bonus",
+        "value": 25,
+        "unit": "percent_points",
+        "source_ids": [
+          "core-staff"
+        ],
+        "evidence_ids": [
+          "demo-input"
+        ]
+      }
+    ],
+    "conditions": {
+      "hero_cast": "active",
+      "mana_starved": "active",
+      "survival_required": "active",
+      "companion_present": "active",
+      "target_frozen": "unknown",
+      "buff_active": "inactive"
+    },
+    "inventory_coverage": "complete",
+    "unknowns": [],
+    "equipped_items": {
+      "weapon": {
+        "record_kind": "item_instance",
+        "instance_id": "core-staff",
+        "name": "示例：循环法杖",
+        "slot": "weapon",
+        "required_level": 1,
+        "effects": [
+          "fixture-cold-focus",
+          "fixture-mana-loop"
+        ],
+        "affixes": [
+          {
+            "id": "fixture-cold-bonus",
+            "value": 25,
+            "unit": "percent_points",
+            "evidence_ids": [
+              "demo-input"
+            ]
+          }
+        ],
+        "unrevealed_properties": [],
+        "embedded_items": [],
+        "unknowns": [],
+        "upgrade_state": {
+          "known": true,
+          "level": 0
+        },
+        "socket_state": {
+          "known": true,
+          "count": 0
+        },
+        "evidence_ids": [
+          "demo-input"
+        ],
+        "set_id": "fixture-archive"
+      },
+      "head": {
+        "record_kind": "item_instance",
+        "instance_id": "archive-hood",
+        "name": "示例：档案兜帽",
+        "slot": "head",
+        "required_level": 1,
+        "effects": [],
+        "affixes": [],
+        "unrevealed_properties": [],
+        "embedded_items": [],
+        "unknowns": [],
+        "upgrade_state": {
+          "known": true,
+          "level": 0
+        },
+        "socket_state": {
+          "known": true,
+          "count": 0
+        },
+        "evidence_ids": [
+          "demo-input"
+        ],
+        "set_id": "fixture-archive"
+      }
+    },
+    "candidate_item": {
+      "record_kind": "item_instance",
+      "instance_id": "vitality-staff",
+      "name": "示例：活力法杖",
+      "slot": "weapon",
+      "required_level": 1,
+      "effects": [
+        "fixture-vitality-support"
+      ],
+      "affixes": [
+        {
+          "id": "fixture-vitality",
+          "value": 65,
+          "unit": "points",
+          "evidence_ids": [
+            "demo-input"
+          ]
+        }
+      ],
+      "unrevealed_properties": [],
+      "embedded_items": [],
+      "unknowns": [],
+      "upgrade_state": {
+        "known": true,
+        "level": 0
+      },
+      "socket_state": {
+        "known": true,
+        "count": 0
+      },
+      "evidence_ids": [
+        "demo-input"
+      ]
+    }
+  },
+  "intent": {
+    "revision": 1,
+    "scenario": "leveling",
+    "required_capabilities": [
+      "mana_loop",
+      "archive_shield"
+    ],
+    "allowed_build_changes": [
+      "skills"
+    ],
+    "future_builds": [],
+    "budget": {}
+  }
+}
