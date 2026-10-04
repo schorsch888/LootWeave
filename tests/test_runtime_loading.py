@@ -135,13 +135,12 @@ class RuntimeLoadingTests(unittest.TestCase):
     def test_dependency_exit_during_readiness_prevents_publication(self):
         self.core()
         entered, release = threading.Event(), threading.Event()
-        from transport import Client
-        original = Client.call
-        def pause(client, *args, **kwargs):
+        from runtime import verify_service_health
+        def pause(*args, **kwargs):
             entered.set()
             self.assertTrue(release.wait(timeout=3))
-            return original(client, *args, **kwargs)
-        with mock.patch.object(Client, "call", pause):
+            return verify_service_health(*args, **kwargs)
+        with mock.patch("runtime.verify_service_health", pause):
             with ThreadPoolExecutor(max_workers=1) as pool:
                 future = pool.submit(self.runtime.ensure_service, "planning")
                 try:
@@ -188,11 +187,100 @@ class RuntimeLoadingTests(unittest.TestCase):
 
     def test_health_completion_after_deadline_cannot_publish_ready(self):
         self.core()
-        from transport import Client
-        with mock.patch.object(Client, "call", side_effect=lambda *args, **kwargs: time.sleep(.4)):
+        with mock.patch("runtime.verify_service_health", side_effect=lambda *args, **kwargs: time.sleep(.4)):
             with self.assertRaisesRegex(DomainError, "service_start_timeout"):
                 self.runtime.ensure_service("planning", deadline=time.monotonic() + .3)
         self.assertEqual("failed", self.runtime.records["planning"]["state"])
+
+    def streaming_health_command(self, mode):
+        script = r'''
+import json, os, socket, sys, threading, time
+from pathlib import Path
+listener = socket.socket()
+listener.bind(("127.0.0.1", 0))
+listener.listen()
+port = listener.getsockname()[1]
+print(json.dumps({"service": "planning", "contract_version": 1,
+                  "url": "http://127.0.0.1:" + str(port)}), flush=True)
+def serve():
+    while True:
+        with listener.accept()[0] as connection:
+            try:
+                request = b""
+                while b"\r\n\r\n" not in request and len(request) <= 8192:
+                    chunk = connection.recv(1024)
+                    if not chunk:
+                        break
+                    request += chunk
+                authenticated = ("Authorization: Bearer " + os.environ["LOOTWEAVE_SESSION_TOKEN"]).encode() in request
+                Path(sys.argv[2]).write_text(json.dumps({"authenticated": authenticated,
+                                                        "health_request": request.startswith(b"GET /v1/health HTTP/1.1\r\n")}), encoding="utf-8")
+                body = b'{"service":"planning","state":"ready"}'
+                status = b"200 OK" if authenticated and sys.argv[1] != "reject" else b"401 Unauthorized"
+                header = b"HTTP/1.1 " + status + b"\r\nContent-Length: " + str(len(body)).encode() + b"\r\nConnection: close\r\n\r\n"
+                if sys.argv[1] == "headers":
+                    for value in header:
+                        connection.sendall(bytes([value]))
+                        time.sleep(.04)
+                else:
+                    connection.sendall(header)
+                if sys.argv[1] == "body":
+                    for value in body:
+                        connection.sendall(bytes([value]))
+                        time.sleep(.04)
+                else:
+                    connection.sendall(body)
+            except OSError:
+                pass
+threading.Thread(target=serve, daemon=True).start()
+sys.stdin.buffer.read()
+listener.close()
+'''
+        marker = self.runtime.data_dir / "health-probe-fixture.json"
+        return [sys.executable, "-u", "-c", script, mode, str(marker)], marker
+
+    def check_streaming_health_deadline(self, mode):
+        self.core()
+        command, marker = self.streaming_health_command(mode)
+        budget = .6
+        started = time.monotonic()
+        with mock.patch.object(self.runtime, "service_command", return_value=command):
+            with self.assertRaisesRegex(DomainError, "service_start_timeout"):
+                self.runtime.ensure_service("planning", deadline=started + budget)
+        self.assertLess(time.monotonic() - started, 1.25)  # .6s overall budget + .5s owned cleanup + scheduling margin.
+        self.assertEqual({"authenticated": True, "health_request": True}, json.loads(marker.read_text()))
+        self.assertEqual("failed", self.runtime.records["planning"]["state"])
+        self.assertNotIn("process", self.runtime.records["planning"])
+        self.assertNotIn("planning", self.runtime.urls)
+        self.assertEqual(3, len(self.runtime.children))
+        self.assertEqual(2, self.runtime.ensure_service("planning")["generation"])
+
+    def test_slow_health_headers_obey_overall_deadline_and_reap_child(self):
+        self.check_streaming_health_deadline("headers")
+
+    def test_slow_health_body_obeys_overall_deadline_and_reaps_child(self):
+        self.check_streaming_health_deadline("body")
+
+    def test_normal_authenticated_health_still_publishes_ready(self):
+        self.core()
+        command, marker = self.streaming_health_command("normal")
+        with mock.patch.object(self.runtime, "service_command", return_value=command):
+            ready = self.runtime.ensure_service("planning", deadline=time.monotonic() + 2)
+        self.assertEqual({"authenticated": True, "health_request": True}, json.loads(marker.read_text()))
+        self.assertEqual("ready", ready["state"])
+        self.assertEqual("ready", self.runtime.records["planning"]["state"])
+        self.assertEqual(4, len(self.runtime.children))
+
+    def test_rejected_health_status_never_publishes_and_reaps_child(self):
+        self.core()
+        command, marker = self.streaming_health_command("reject")
+        with mock.patch.object(self.runtime, "service_command", return_value=command):
+            with self.assertRaisesRegex(DomainError, "service_unavailable"):
+                self.runtime.ensure_service("planning", deadline=time.monotonic() + 2)
+        self.assertEqual({"authenticated": True, "health_request": True}, json.loads(marker.read_text()))
+        self.assertEqual("failed", self.runtime.records["planning"]["state"])
+        self.assertNotIn("planning", self.runtime.urls)
+        self.assertEqual(3, len(self.runtime.children))
 
     def test_ensure_is_authenticated_and_cannot_accept_executables_or_unknown_services(self):
         for body, error in (({"service": "shell"}, "unsupported_service"),

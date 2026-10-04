@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+import http.client
+import io
 import os
 import queue
 import secrets
@@ -12,14 +14,73 @@ import threading
 import time
 import webbrowser
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from contracts import DomainError, canonical, parse_json, require
 from gateway import create_gateway
-from transport import Client
+from transport import Client, MAX_BODY
 from storage import acquire_instance_lock
 from runtime_control import CORE_SERVICES, SERVICES, START_TIMEOUT
 
 ROOT = Path(__file__).resolve().parent
+
+
+def verify_service_health(url, token, deadline):
+    """Apply the owner's absolute deadline to every HTTP header/body socket read."""
+    client = Client(url, token)  # Reuse the business client's strict loopback URL validation.
+    parsed = urlsplit(client.url)
+
+    def remaining():
+        budget = deadline - time.monotonic()
+        require(budget > 0, "service_start_timeout", 503)
+        return budget
+
+    class DeadlineReader(io.RawIOBase):
+        def __init__(self, connection):
+            super().__init__()
+            self.connection = connection
+            self.stream = connection.makefile("rb", buffering=0)
+
+        def readable(self):
+            return True
+
+        def readinto(self, buffer):
+            self.connection.settimeout(remaining())
+            return self.stream.readinto(buffer)
+
+        def close(self):
+            try:
+                self.stream.close()
+            finally:
+                super().close()
+
+    class ResponseSocket:
+        def __init__(self, connection):
+            self.connection = connection
+
+        def makefile(self, _mode):
+            return io.BufferedReader(DeadlineReader(self.connection))
+
+    channel = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=remaining())
+    channel.response_class = lambda connection, **kwargs: http.client.HTTPResponse(ResponseSocket(connection), **kwargs)
+    try:
+        channel.connect()
+        channel.sock.settimeout(remaining())
+        channel.request("GET", "/v1/health", headers={"Authorization": "Bearer " + token,
+                                                     "Connection": "close"})
+        with channel.getresponse() as response:
+            require(response.status == 200, "service_unavailable", 503)
+            raw = response.read(MAX_BODY + 1)
+            require(len(raw) <= MAX_BODY, "response_size_exceeded", 502)
+            remaining()
+            return parse_json(raw)
+    except TimeoutError:
+        raise DomainError("service_start_timeout", 503) from None
+    except (OSError, http.client.HTTPException, ValueError):
+        raise DomainError("service_start_timeout" if time.monotonic() >= deadline
+                          else "service_unavailable", 503) from None
+    finally:
+        channel.close()
 
 
 class Runtime:
@@ -199,7 +260,7 @@ class Runtime:
             url = value.get("url")
             remaining = deadline - time.monotonic()
             require(remaining > 0, "service_start_timeout", 503)
-            Client(url, self.token, timeout=min(3, remaining)).call("GET", "/v1/health")
+            verify_service_health(url, self.token, deadline)
             with self.condition:
                 self.refresh()
                 require(time.monotonic() < deadline, "service_start_timeout", 503)

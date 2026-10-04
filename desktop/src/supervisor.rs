@@ -1365,31 +1365,61 @@ mod tests {
 
     #[cfg(windows)]
     #[test]
-    fn close_reclaims_a_child_still_starting_and_rejects_new_starts() {
-        let owner = owner();
-        let executable = PathBuf::from(std::env::var_os("WINDIR").unwrap())
-            .join("System32/WindowsPowerShell/v1.0/powershell.exe");
-        let child = Command::new(executable)
+    #[ignore = "Native lifecycle child; invoked explicitly by worker-exit and close tests."]
+    fn lifecycle_child_fixture() {
+        let mode = match std::env::var("LOOTWEAVE_LIFECYCLE_FIXTURE").as_deref() {
+            Ok("exit") => "exit",
+            Ok("eof") => "eof",
+            _ => return,
+        };
+        let mut input = std::io::stdin().lock();
+        let mut byte = [0u8; 1];
+        input.read_exact(&mut byte).unwrap();
+        assert_eq!(byte, *b"1");
+        if mode == "eof" {
+            std::io::copy(&mut input, &mut std::io::sink()).unwrap();
+        }
+    }
+
+    #[cfg(windows)]
+    fn lifecycle_child(mode: &str) -> Child {
+        let fixture = concat!(module_path!(), "::lifecycle_child_fixture")
+            .split_once("::")
+            .unwrap()
+            .1;
+        Command::new(std::env::current_exe().unwrap())
             .args([
-                "-NoProfile",
-                "-NonInteractive",
-                "-Command",
-                "$pipe=[Console]::OpenStandardInput(); while ($pipe.ReadByte() -ne -1) {}; exit 0",
+                "--exact",
+                fixture,
+                "--ignored",
+                "--nocapture",
+                "--test-threads=1",
             ])
+            .env("LOOTWEAVE_LIFECYCLE_FIXTURE", mode)
             .creation_flags(0x08000000)
             .stdin(Stdio::piped())
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .spawn()
-            .unwrap();
+            .unwrap()
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn close_reclaims_a_child_still_starting_and_rejects_new_starts() {
+        let owner = owner();
+        let mut child = lifecycle_child("eof");
+        let retained;
         {
             let mut registry = owner.registry.lock().unwrap();
             registry.job.as_ref().unwrap().assign(&child).unwrap();
+            permit_service_boot(&mut child).unwrap();
             let entry = registry.services.get_mut("ocr").unwrap();
             entry.state = ServiceState::Starting;
             entry.generation = 1;
             entry.child_generation = 1;
-            entry.child = Some(Arc::new(Mutex::new(child)));
+            retained = Arc::new(Mutex::new(child));
+            entry.child = Some(retained.clone());
         }
         let caller_owner = owner.clone();
         let caller = std::thread::spawn(move || {
@@ -1402,6 +1432,7 @@ mod tests {
         assert!(owner.registry.lock().unwrap().services["ocr"]
             .child
             .is_none());
+        assert!(retained.lock().unwrap().wait().unwrap().success());
         assert_eq!(
             owner.ensure("planning", true, Instant::now() + START_TIMEOUT),
             Err("runtime_stopping")
@@ -1977,25 +2008,19 @@ mod tests {
     #[test]
     fn worker_exit_invalidates_its_route_without_respawning() {
         let owner = owner();
-        let executable = PathBuf::from(std::env::var_os("WINDIR").unwrap())
-            .join("System32/WindowsPowerShell/v1.0/powershell.exe");
-        let child = Command::new(executable)
-            .args(["-NoProfile", "-NonInteractive", "-Command", "exit 0"])
-            .creation_flags(0x08000000)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()
-            .unwrap();
+        let mut child = lifecycle_child("exit");
+        let retained;
         {
             let mut registry = owner.registry.lock().unwrap();
             registry.job.as_ref().unwrap().assign(&child).unwrap();
+            permit_service_boot(&mut child).unwrap();
             let entry = registry.services.get_mut("ocr").unwrap();
             entry.state = ServiceState::Ready;
             entry.generation = 4;
             entry.child_generation = 4;
             entry.url = Some("http://127.0.0.1:1234".into());
-            entry.child = Some(Arc::new(Mutex::new(child)));
+            retained = Arc::new(Mutex::new(child));
+            entry.child = Some(retained.clone());
         }
         owner.monitor();
         {
@@ -2012,6 +2037,7 @@ mod tests {
             assert!(registry.services["ocr"].url.is_none());
             assert_eq!(registry.services["ocr"].generation, 4);
         }
+        assert!(retained.lock().unwrap().wait().unwrap().success());
         assert_eq!(
             owner.ensure("ocr", false, Instant::now() + START_TIMEOUT),
             Err("service_exited")
