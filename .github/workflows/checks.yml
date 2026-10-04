@@ -87,6 +87,8 @@ jobs:
         run: python scripts/build_desktop.py --test-native
       - name: Verify twenty starts, each worker fault and forced host exit
         run: python scripts/check_desktop.py --cycles 20 --executable desktop/target/release/lootweave-desktop.exe
+      - name: Verify twenty experimental on-demand starts and fault recovery
+        run: python scripts/check_desktop.py --cycles 20 --startup-policy on-demand --executable desktop/target/release/lootweave-desktop.exe
       - name: Ensure the WebView2 runtime before checking the bare native host
         shell: pwsh
         run: |

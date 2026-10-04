@@ -37,7 +37,7 @@ const seedCode = [
 const seeded = spawnSync(python, ["-c", seedCode, path.join(output, "state/evaluation")],
                          { cwd: root, windowsHide: true, timeout: 10000, encoding: "utf8" });
 assert.equal(seeded.status, 0, "historical_fixture_seed_failed");
-const child = spawn(python, ["runtime.py", "--stdio-control", "--no-browser", "--data-dir", path.join(output, "state")],
+const child = spawn(python, ["runtime.py", "--stdio-control", "--no-browser", "--startup-policy", "on-demand", "--data-dir", path.join(output, "state")],
                     { cwd: root, stdio: ["pipe", "pipe", "pipe"], windowsHide: true });
 let credential = "";
 let browser;

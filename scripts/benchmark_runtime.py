@@ -48,7 +48,7 @@ def percentile(values, fraction):
 
 
 def summary(report):
-    """Strict allowlist: raw paths, credentials, inputs and error text cannot escape."""
+    """Allowlisted workflow results; comparative performance verdicts are separate."""
     cycles = report["cycles"]
     metrics = {}
     for name in METRICS:
@@ -71,7 +71,7 @@ def summary(report):
             "mode": report["mode"] if report["mode"] in ("developer", "native-headless") else "redacted",
             "runs": len(cycles), "failed_runs": len(failures), "failures": failures, "metrics": metrics,
             "cohort_completed_without_failure": len(cycles) >= 20 and not failures,
-            "acceptance_passed": len(cycles) >= 20 and not failures and not any(cycle.get("ocr_skipped") for cycle in cycles),
+            "workflow_checks_passed": len(cycles) >= 20 and not failures and not any(cycle.get("ocr_skipped") for cycle in cycles),
             "cache_condition": "warm OS caches; no cold-cache procedure",
             "gui_visibility": "excluded; headless, no WebView",
             "webview_version": "not applicable to headless cohorts",
@@ -550,7 +550,7 @@ def main():
         (output / "report-private.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         (output / "summary-review.json").write_text(json.dumps(summary(report), indent=2) + "\n", encoding="utf-8")
         print(f"Cycle {index + 1}/{args.cycles}: {'passed' if cycle['passed'] else 'FAILED'}", flush=True)
-    return 0 if summary(report)["cohort_completed_without_failure"] else 1
+    return 0 if summary(report)["workflow_checks_passed"] else 1
 
 
 if __name__ == "__main__":

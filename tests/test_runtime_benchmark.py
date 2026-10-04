@@ -29,7 +29,7 @@ class DistributionTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 benchmark.percentile([value], .5)
 
-    def test_failed_duration_remains_in_distribution_and_blocks_acceptance(self):
+    def test_failed_duration_remains_in_distribution_and_blocks_workflow_checks(self):
         report = {"cycles": [{"cycle": index + 1, "passed": True, "cleanup_passed": True,
                               "seconds": {"launch_ready": index + 1}} for index in range(20)],
                   "policy": "legacy", "mode": "developer", "cohort": "control-a"}
@@ -40,14 +40,14 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(20, result["metrics"]["launch_ready"]["samples"])
         self.assertEqual(19, result["metrics"]["launch_ready"]["p95_seconds"])
         self.assertEqual(20, result["metrics"]["launch_ready"]["max_seconds"])
-        self.assertFalse(result["acceptance_passed"])
+        self.assertFalse(result["workflow_checks_passed"])
 
-    def test_missing_ocr_is_explicit_and_prevents_full_acceptance(self):
+    def test_missing_ocr_is_explicit_and_prevents_completed_ocr_workflow(self):
         report = {"cycles": [{"cycle": index + 1, "passed": True, "ocr_skipped": "native_language_unavailable"}
                              for index in range(20)], "policy": "legacy", "mode": "developer"}
         result = benchmark.summary(report)
         self.assertTrue(result["cohort_completed_without_failure"])
-        self.assertFalse(result["acceptance_passed"])
+        self.assertFalse(result["workflow_checks_passed"])
         self.assertEqual(0, result["metrics"]["ocr_first"]["samples"])
         self.assertTrue(all(cycle["ocr_skipped"] for cycle in result["cycles"]))
 

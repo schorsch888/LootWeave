@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parent
 
 class Runtime:
     def __init__(self, data_dir: Path, token: str | None = None, front_dir=ROOT / "frontend/dist",
-                 startup_policy="on-demand"):
+                 startup_policy="eager"):
         require(startup_policy in ("eager", "on-demand"), "invalid_startup_policy")
         self.data_dir = data_dir.resolve()
         self.token = token or secrets.token_urlsafe(32)
@@ -306,7 +306,7 @@ def main():
     parser.add_argument("--data-dir", type=Path, default=ROOT / ".local")
     parser.add_argument("--no-browser", action="store_true")
     parser.add_argument("--stdio-control", action="store_true")
-    parser.add_argument("--startup-policy", choices=("eager", "on-demand"), default="on-demand")
+    parser.add_argument("--startup-policy", choices=("eager", "on-demand"), default="eager")
     args = parser.parse_args()
     stopped = threading.Event()
     signal.signal(signal.SIGINT, lambda *_: stopped.set())

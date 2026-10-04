@@ -66,8 +66,9 @@ const START_TIMEOUT: Duration = Duration::from_secs(8);
 const CONTROL_LINE_LIMIT: usize = 4096;
 type OwnedChild = Arc<Mutex<Child>>;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum StartupPolicy {
+    #[default]
     Eager,
     OnDemand,
 }
@@ -1478,7 +1479,8 @@ mod tests {
     }
 
     #[test]
-    fn startup_policy_is_allowlisted() {
+    fn startup_policy_defaults_eager_and_is_allowlisted() {
+        assert_eq!(StartupPolicy::default(), StartupPolicy::Eager);
         assert_eq!(StartupPolicy::parse("eager"), Ok(StartupPolicy::Eager));
         assert_eq!(
             StartupPolicy::parse("on-demand"),

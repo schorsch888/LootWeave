@@ -83,12 +83,13 @@ fn capture_deskrawl_region(
 
 fn main() {
     let policy = option("--startup-policy")
-        .map(|value| value.to_string_lossy().into_owned())
-        .unwrap_or_else(|| "on-demand".into());
-    let policy = supervisor::StartupPolicy::parse(&policy).unwrap_or_else(|code| {
-        eprintln!("{code}");
-        std::process::exit(1);
-    });
+        .map(|value| supervisor::StartupPolicy::parse(&value.to_string_lossy()))
+        .transpose()
+        .unwrap_or_else(|code| {
+            eprintln!("{code}");
+            std::process::exit(1);
+        })
+        .unwrap_or_default();
     let data = option("--data-dir").unwrap_or_else(|| {
         let base = std::env::var_os("LOCALAPPDATA")
             .map(PathBuf::from)

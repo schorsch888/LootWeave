@@ -1,6 +1,6 @@
 # Runtime performance plan
 
-Status: implementation and verification in progress on 2026-10-05, following the original source review at `5c88222`. P0 instrumentation/tools and P1/P2/P4 behaviors are implemented in source; new control/candidate measurements and matching package checks are required before an improvement claim. P3/P5 remain conditional. The [design](design.md) defines the architecture; [M4](roadmap.md#m4-one-entry-exe-and-local-lifecycle) retains the release gates.
+Status: source implementation and the declared development experiment completed on 2026-10-05. P0 tools, experimental P1/P2 and P4 behavior are implemented. Twenty candidate workflows/cleanup checks passed and initial idle private commit fell, but primary P95 failed the comparison rule; default promotion is deferred and both launchers retain `eager`. Explicit `--startup-policy on-demand` remains available. P3/P5 and production splitting remain deferred. Matching package checks are recorded separately in the [results](performance-results.md) and [validation record](validation.md); the [design](design.md) and [M4](roadmap.md#m4-one-entry-exe-and-local-lifecycle) retain their invariants and release gates.
 
 Reduce the wait for the usable workbench and unnecessary background resource use, while keeping first-use latency, correctness and process cleanup measurable. Start with measurement, then defer OCR and Planning startup, then separate window readiness from service readiness. Advance data loading, frontend splitting and OCR reuse only where measurements justify them.
 
@@ -32,7 +32,7 @@ The initial work needs no database migration or evaluator change. Dynamic native
 
 ## Delivery sequence
 
-Stages define reviewable contracts, observed checks and rollback points. The prerequisite implementation and coordinated runtime changes are separate PRs. P0/P1/P2/P4 source changes have focused regressions; measurements/package gates remain pending. Roles indicate responsibility without requiring named assignments before authorized work proceeds.
+Stages define reviewable contracts, observed checks and rollback points. The prerequisite implementation and runtime changes are separate PRs. P0/P1/P2/P4 have focused regressions and comparable measurements; P1/P2 contracts below describe the explicit experiment, whose default promotion was rejected by the declared latency gate. Roles indicate responsibility for future evidence and fixes.
 
 ### P0 — Establish an attributable baseline
 
@@ -150,4 +150,4 @@ Use [benchmark_runtime.py](../scripts/benchmark_runtime.py) and the [experiment 
 python scripts/benchmark_runtime.py --policy on-demand --cohort candidate --cycles 20 --source-revision <reviewed-revision>
 ```
 
-Pending decisions are P0 variability/first-use tradeoffs, P3's current pack cost and P5's separately attributable helper cost. Catalog/cache budgets and helper idle lifetime are needed only if those stages become justified. Implementation and publication follow user authorization; observed acceptance is independent of this document's existence.
+The [observed results](performance-results.md) defer default promotion because startup-tail improvement did not exceed control variability. P3 is deferred because seven-pack initialization P95 was 9.4 ms; P5 lacks isolated helper-setup and retained-cost evidence. Catalog/cache budgets and helper idle lifetime are needed only if new measurements justify those stages. M4 and visible-GUI/clean-machine acceptance remain open; publication does not establish those gates.

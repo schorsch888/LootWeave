@@ -146,7 +146,13 @@ class Desktop:
             self.opener = build_opener(ProxyHandler({}))
             status = self.status()
             self.dynamic_registry = "core_ready" in status
-            if self.dynamic_registry and startup_policy != "eager":
+            actual_policy = status.get("startup_policy")
+            if self.dynamic_registry:
+                expect(actual_policy in ("eager", "on-demand"), "native_startup_policy_invalid")
+                if startup_policy is not None:
+                    expect(actual_policy == startup_policy, "native_startup_policy_mismatch")
+            self.expect_optional_dormant = self.dynamic_registry and actual_policy == "on-demand"
+            if self.expect_optional_dormant:
                 for name in ("ocr", "planning"):
                     expect(status["services"][name]["state"] == "dormant", "optional_started_before_use")
             deadline = time.monotonic() + 30
@@ -367,7 +373,6 @@ def main():
     try:
         for index in range(args.cycles):
             app = Desktop(executable, resources, data, args.startup_policy)
-            app.expect_optional_dormant = app.dynamic_registry and args.startup_policy != "eager"
             samples.append(app.ready_seconds)
             core_samples.append(app.core_ready_seconds)
             phases.append(app.phases)

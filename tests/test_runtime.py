@@ -18,7 +18,7 @@ class RuntimeTests(unittest.TestCase):
             front=Path(directory)/"ui"
             front.mkdir()
             (front/"index.html").write_text("<html><body>synthetic</body></html>")
-            runtime = Runtime(Path(directory), front_dir=front, startup_policy="eager")
+            runtime = Runtime(Path(directory), front_dir=front)
             try:
                 with mock.patch.dict(os.environ, {"LOOTWEAVE_PARENT_JOB": "1"}):
                     runtime.start()

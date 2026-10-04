@@ -59,7 +59,7 @@ Dependency/model rights and integrity, migration backup/rollback, local API auth
 
 ### Runtime performance work
 
-The [runtime performance plan](performance-plan.md) tracks P0 timing/resource tools, P1 owner-controlled on-demand OCR/Planning, P2 shell/core readiness and P4 conditional panel mounting/serialized polling. These behaviors are implemented in source; matching packaged lifecycle checks and the [predeclared development comparison](performance-experiment.md) establish their observed scope. P3 selected-pack loading and P5 OCR helper reuse require measured cost. Frontend code splitting is deferred after an aborted-import retry failure and small entry-byte savings. These stages do not change M4's budgets; missing cold-GUI or clean-machine evidence keeps the release gate open.
+The [runtime performance plan](performance-plan.md) covers P0 timing/resource tools, experimental P1 on-demand OCR/Planning, experimental P2 shell/core readiness and P4 mount-once panels/serialized polling. In the [predeclared comparison](performance-results.md), twenty on-demand workflows/cleanup checks passed and idle private commit fell, but the primary startup P95 failed the comparison rule; default promotion is deferred and `eager` remains the default. P3 stays deferred because seven-pack initialization did not dominate; P5 lacks separately attributable helper savings. Frontend splitting is deferred after an actual failed-import retry and small entry-byte savings. Matching package checks are separate from quantitative improvement; unchanged M4 budgets still require cold-GUI and clean-machine evidence.
 
 ## M5: Acquisition, leveling and other games
 

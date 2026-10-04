@@ -26,7 +26,7 @@ class RuntimeLoadingTests(unittest.TestCase):
         front = directory / "ui"
         front.mkdir()
         (front / "index.html").write_text("<html>synthetic shell</html>", encoding="utf-8")
-        self.runtime = Runtime(directory, front_dir=front)
+        self.runtime = Runtime(directory, front_dir=front, startup_policy="on-demand")
         self.addCleanup(self.runtime.stop)
         self.runtime.start()
         self.opener = build_opener(ProxyHandler({}))
