@@ -474,17 +474,44 @@ mod tests {
 
     #[cfg(windows)]
     #[test]
+    #[ignore = "Child-process fixture; invoked explicitly by the Job Object test."]
+    fn job_boot_child_fixture() {
+        if std::env::var_os("LOOTWEAVE_JOB_BOOT_FIXTURE").as_deref()
+            != Some(std::ffi::OsStr::new("1"))
+        {
+            return;
+        }
+        let mut byte = [0u8; 1];
+        std::io::stdin().read_exact(&mut byte).unwrap();
+        assert_eq!(byte, *b"1");
+        let mut stdout = std::io::stdout().lock();
+        writeln!(stdout, "\nLOOTWEAVE_JOB_BOOT_BYTE={}", byte[0]).unwrap();
+        stdout.flush().unwrap();
+        drop(stdout);
+        // Remain alive until the assigned job is closed by the parent test.
+        loop {
+            std::thread::park();
+        }
+    }
+
+    #[cfg(windows)]
+    #[test]
     fn assigned_job_releases_boot_byte_and_reclaims_child() {
         let job = Job::create().unwrap();
-        let executable = std::path::PathBuf::from(std::env::var_os("WINDIR").unwrap())
-            .join("System32/WindowsPowerShell/v1.0/powershell.exe");
-        let mut child = Command::new(executable)
+        // Libtest omits the crate prefix; this works in Cargo and direct rustc tests.
+        let fixture = concat!(module_path!(), "::job_boot_child_fixture")
+            .split_once("::")
+            .unwrap()
+            .1;
+        let mut child = Command::new(std::env::current_exe().unwrap())
             .args([
-                "-NoProfile",
-                "-NonInteractive",
-                "-Command",
-                "$value=[Console]::OpenStandardInput().ReadByte(); Write-Output $value; Start-Sleep -Seconds 45",
+                "--exact",
+                fixture,
+                "--ignored",
+                "--nocapture",
+                "--test-threads=1",
             ])
+            .env("LOOTWEAVE_JOB_BOOT_FIXTURE", "1")
             .creation_flags(0x08000000)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
@@ -499,21 +526,38 @@ mod tests {
         let stdout = child.stdout.take().unwrap();
         let (sender, receiver) = mpsc::channel();
         let reader = std::thread::spawn(move || {
-            let mut line = String::new();
-            let result = BufReader::new(stdout).read_line(&mut line);
-            let _ = sender.send(result.map(|_| line));
+            let mut reader = BufReader::new(stdout);
+            let result = loop {
+                let mut line = String::new();
+                match reader.read_line(&mut line) {
+                    Ok(0) => break Err(std::io::Error::other("boot fixture exited before marker")),
+                    Ok(_) if line.trim() == "LOOTWEAVE_JOB_BOOT_BYTE=49" => break Ok(line),
+                    Ok(_) => continue, // Ignore the standard Rust test-harness preamble.
+                    Err(error) => break Err(error),
+                }
+            };
+            let _ = sender.send(result);
         });
         let permit = permit_service_boot(&mut child);
         let reply = receiver.recv_timeout(Duration::from_secs(5));
         let running_before_close = matches!(child.try_wait(), Ok(None));
         let closed_at = Instant::now();
         drop(job);
+        let cleanup_deadline = closed_at + Duration::from_secs(3);
+        while matches!(child.try_wait(), Ok(None)) && Instant::now() < cleanup_deadline {
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        let reclaimed = matches!(child.try_wait(), Ok(Some(_)));
+        if !reclaimed {
+            let _ = child.kill();
+        }
         child.wait().unwrap();
         let cleanup_time = closed_at.elapsed();
         reader.join().unwrap();
         assert_eq!(permit, Ok(()));
-        assert_eq!(reply.unwrap().unwrap().trim(), "49");
+        assert_eq!(reply.unwrap().unwrap().trim(), "LOOTWEAVE_JOB_BOOT_BYTE=49");
         assert!(running_before_close);
+        assert!(reclaimed, "closing the job did not reclaim the fixture child");
         assert!(cleanup_time < Duration::from_secs(3));
     }
 
