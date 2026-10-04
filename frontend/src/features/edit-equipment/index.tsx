@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { newId } from "../../shared/api";
+import { SourceList } from "../../entities/build-source";
 import type { Item, Snapshot } from "../../shared/api";
 import { canMapField, emptyItem, slots, statLabels, unitLabels } from "./model";
 import type { ObservedItemField } from "./model";
@@ -27,13 +28,15 @@ export function ItemEditor({ item, onChange, candidate = false }: { item: Item; 
     <button type="button" onClick={() => update({ affixes: [...item.affixes, { id: newId("stat"), value: Number.NaN, unit: "points", evidence_ids: [...item.evidence_ids] }] })}>添加词条</button>
     <details><summary>特殊效果、套装与未确认属性</summary>
       <label>效果标识（逐行或逗号分隔）<textarea rows={2} value={item.effects.join("\n")} onChange={e => update({ effects: entries(e.target.value) })}/></label>
-      <label className="check"><input type="checkbox" checked={!item.unknowns.includes("effects_not_reviewed")} onChange={e => update({ unknowns: e.target.checked ? item.unknowns.filter(x => x !== "effects_not_reviewed") : [...new Set([...item.unknowns, "effects_not_reviewed"])] })}/>我已核对特殊效果；没有效果时列表留空。</label>
+      <label className="check"><input type="checkbox" checked={!item.unknowns.includes("effects_not_reviewed")} onChange={e => update({ unknowns: e.target.checked ? item.unknowns.filter(x => x !== "effects_not_reviewed") : [...new Set([...item.unknowns, "effects_not_reviewed"])] })}/>我已核对特殊效果和镶嵌来源；没有效果时列表留空。</label>
       <label>套装标识<input value={item.set_id || ""} onChange={e => update({ set_id: e.target.value.trim() || undefined })}/></label>
       <label>未揭示属性<textarea rows={2} value={item.unrevealed_properties.join("\n")} onChange={e => update({ unrevealed_properties: entries(e.target.value) })}/></label>
       <label>其他待确认项<textarea rows={2} value={item.unknowns.filter(x => x !== "effects_not_reviewed").join("\n")} onChange={e => update({ unknowns: [...item.unknowns.filter(x => x === "effects_not_reviewed"), ...entries(e.target.value)] })}/></label>
     </details>
     <div className="fields"><label>强化等级<input type="number" min="0" step="1" placeholder="未知时留空" value={item.upgrade_state.known ? item.upgrade_state.level ?? 0 : ""} onChange={e => update({ upgrade_state: e.target.value ? { known: true, level: Number(e.target.value) } : { known: false } })}/></label><label>插槽数量<input type="number" min="0" step="1" placeholder="未知时留空" value={item.socket_state.known ? item.socket_state.count ?? 0 : ""} onChange={e => update({ socket_state: e.target.value ? { known: true, count: Number(e.target.value) } : { known: false } })}/></label></div>
-    {item.embedded_items.length > 0 && <p className="muted">已保留 {item.embedded_items.length} 个嵌入物品来源；可在完整构筑数据中核对。</p>}
+    <SourceList title="镶嵌物品" sources={item.embedded_items} evidenceIds={item.evidence_ids}
+      onChange={embedded_items => update({ embedded_items, unknowns: [...new Set([...item.unknowns, "effects_not_reviewed"])] })}/>
+    <p className="muted">按已确认的宝石或嵌入效果录入。更改镶嵌来源后，请重新核对特殊效果；未识别的内容仍须保留为待确认。</p>
   </div>;
 }
 
