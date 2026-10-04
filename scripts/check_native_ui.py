@@ -17,11 +17,72 @@ import time
 import uuid
 from pathlib import Path
 
-from check_desktop import CheckFailed, OwnedProcess, ROOT, expect, frozen_environment, machine
+if __package__:
+    from .check_desktop import CheckFailed, OwnedProcess, ROOT, expect, frozen_environment, machine
+else:
+    from check_desktop import CheckFailed, OwnedProcess, ROOT, expect, frozen_environment, machine
 
 
-def descendants(parent):
-    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+def _filetime_value(value):
+    return (value.dwHighDateTime << 32) | value.dwLowDateTime
+
+
+def _process_created(process):
+    kernel = process.kernel
+    kernel.GetProcessTimes.argtypes = (wintypes.HANDLE, *([ctypes.POINTER(wintypes.FILETIME)] * 4))
+    kernel.GetProcessTimes.restype = wintypes.BOOL
+    created, exited, system, user = (wintypes.FILETIME() for _ in range(4))
+    expect(bool(kernel.GetProcessTimes(process.handle, ctypes.byref(created), ctypes.byref(exited),
+                                       ctypes.byref(system), ctypes.byref(user))),
+           "owned_process_creation_time_unavailable")
+    return _filetime_value(created)
+
+
+def _process_pid(process):
+    process.kernel.GetProcessId.argtypes = (wintypes.HANDLE,)
+    process.kernel.GetProcessId.restype = wintypes.DWORD
+    pid = process.kernel.GetProcessId(process.handle)
+    expect(bool(pid), "owned_process_identity_unavailable")
+    return pid
+
+
+class HostProcess(OwnedProcess):
+    """Borrow Popen's exact handle; Popen retains responsibility for closing it."""
+    def __init__(self, host):
+        self._host = host
+        self.kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        self.kernel.WaitForSingleObject.argtypes = (wintypes.HANDLE, wintypes.DWORD)
+        self.kernel.WaitForSingleObject.restype = wintypes.DWORD
+        self.kernel.TerminateProcess.argtypes = (wintypes.HANDLE, wintypes.UINT)
+        self.handle = host._handle
+        self.pid = _process_pid(self)
+        expect(self.pid == host.pid, "owned_process_identity_unavailable")
+        self.created = _process_created(self)
+
+    def close(self):
+        self.handle = None
+        self._host = None
+
+
+def select_descendants(parents, created, root, snapshot_before):
+    """Select only complete ancestry chains with ordered creation times."""
+    if root not in created or created[root] > snapshot_before:
+        return set()
+    owned = {root}
+    while True:
+        expanded = owned | {
+            pid for pid, ancestor in parents.items()
+            if ancestor in owned and pid in created
+            and created[ancestor] <= created[pid] <= snapshot_before
+        }
+        if expanded == owned:
+            return owned - {root}
+        owned = expanded
+
+
+def descendants(parent, known=()):
+    """Return verified fixed handles, never PIDs to reopen after selection."""
+    kernel = parent.kernel
     class Entry(ctypes.Structure):
         _fields_ = [("dwSize", wintypes.DWORD), ("cntUsage", wintypes.DWORD),
                     ("th32ProcessID", wintypes.DWORD), ("th32DefaultHeapID", ctypes.c_size_t),
@@ -31,8 +92,15 @@ def descendants(parent):
     kernel.CreateToolhelp32Snapshot.argtypes = (wintypes.DWORD, wintypes.DWORD)
     kernel.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
     kernel.Process32FirstW.argtypes = (wintypes.HANDLE, ctypes.POINTER(Entry))
+    kernel.Process32FirstW.restype = wintypes.BOOL
     kernel.Process32NextW.argtypes = (wintypes.HANDLE, ctypes.POINTER(Entry))
+    kernel.Process32NextW.restype = wintypes.BOOL
     kernel.CloseHandle.argtypes = (wintypes.HANDLE,)
+    kernel.GetSystemTimeAsFileTime.argtypes = (ctypes.POINTER(wintypes.FILETIME),)
+    kernel.GetSystemTimeAsFileTime.restype = None
+    before = wintypes.FILETIME()
+    kernel.GetSystemTimeAsFileTime(ctypes.byref(before))
+    snapshot_before = _filetime_value(before)
     snapshot = kernel.CreateToolhelp32Snapshot(2, 0)
     expect(snapshot != ctypes.c_void_p(-1).value, "process_snapshot_unavailable")
     parents = {}
@@ -45,12 +113,44 @@ def descendants(parent):
             present = kernel.Process32NextW(snapshot, ctypes.byref(entry))
     finally:
         kernel.CloseHandle(snapshot)
-    owned = {parent}
+
+    # Existing validated handles also anchor children whose parent has exited.
+    # Keeping each handle open prevents its process ID from being reused.
+    known_by_pid = {process.pid: process for process in known}
+    parents.update({process.pid: process.parent_pid for process in known})
+    created = {parent.pid: parent.created,
+               **{process.pid: process.created for process in known}}
+    candidates = {parent.pid}
     while True:
-        expanded = owned | {pid for pid, ancestor in parents.items() if ancestor in owned}
-        if expanded == owned:
-            return owned - {parent}
-        owned = expanded
+        expanded = candidates | {pid for pid, ancestor in parents.items() if ancestor in candidates}
+        if expanded == candidates:
+            break
+        candidates = expanded
+
+    opened, retained = {}, set()
+    try:
+        for pid in candidates - {parent.pid} - known_by_pid.keys():
+            process = None
+            try:
+                process = OwnedProcess(pid)
+                expect(_process_pid(process) == pid, "owned_process_identity_unavailable")
+                process.pid, process.parent_pid = pid, parents[pid]
+                process.created = _process_created(process)
+                created[pid] = process.created
+                opened[pid] = process
+            except CheckFailed:
+                pass  # A short-lived candidate may have disappeared before it could be pinned.
+            finally:
+                if process is not None and pid not in opened:
+                    process.close()
+        selected = select_descendants(parents, created, parent.pid, snapshot_before)
+        result = [process for pid, process in opened.items() if pid in selected]
+        retained = {process.pid for process in result}
+        return result
+    finally:
+        for pid, process in opened.items():
+            if pid not in retained:
+                process.close()
 
 
 def owned_process_state(process):
@@ -63,8 +163,10 @@ def owned_process_state(process):
     image = ctypes.create_unicode_buffer(32768)
     size = wintypes.DWORD(len(image))
     known = kernel.QueryFullProcessImageNameW(process.handle, 0, image, ctypes.byref(size))
+    if known:
+        process.image_basename = Path(image.value).name
     return {"pid": kernel.GetProcessId(process.handle),
-            "image_basename": Path(image.value).name if known else "query_unavailable",
+            "image_basename": getattr(process, "image_basename", "query_unavailable"),
             "exited": process.exited()}
 
 
@@ -131,11 +233,10 @@ def run(executable, resources, node, output, index):
     folder.mkdir()
     port = free_port()
     env = frozen_environment()
-    env["WEBVIEW2_USER_DATA_FOLDER"] = str(folder / "webview-data")
-    env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = f"--remote-debugging-port={port} --remote-debugging-address=127.0.0.1"
     start = time.perf_counter()
     error_log = (folder / "native-stderr.log").open("wb")
-    host_args = [str(executable), "--resource-dir", str(resources), "--data-dir", str(folder / "state"), "--hidden-ui"]
+    host_args = [str(executable), "--resource-dir", str(resources), "--data-dir", str(folder / "state"),
+                 "--hidden-ui", "--hidden-ui-debug-port", str(port)]
     host = subprocess.Popen(host_args,
                             cwd=executable.parent, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                             stderr=error_log, creationflags=0x08000000)
@@ -143,6 +244,7 @@ def run(executable, resources, node, output, index):
     probe = None
     passed = False
     try:
+        handles.append(HostProcess(host))
         command = [str(node), str(ROOT / "scripts/probe_native_ui.mjs"), "--port", str(port),
                    "--output", str(folder)]
         command.append("--passive")
@@ -169,14 +271,11 @@ def run(executable, resources, node, output, index):
         expect(done.get("event") == "complete" and done.get("passed"), "native_flow_failed")
         probe.wait(timeout=5)
         expect(probe.returncode == 0, "native_probe_exit_failed")
-        handles.append(OwnedProcess(host.pid))
-        for pid in descendants(host.pid):
-            try:
-                handles.append(OwnedProcess(pid))
-            except CheckFailed:
-                pass  # A short-lived utility process may already have exited.
+        handles.extend(descendants(handles[0], handles[1:]))
         expect(len(handles) >= 8, "native_process_coverage_missing")
         memory = [handle.memory() for handle in handles if not handle.exited()]
+        for handle in handles:
+            owned_process_state(handle)  # Cache image names before natural exit hides them.
         close_window(host.pid)
         host.wait(timeout=12)
         expect(host.returncode == 0, "native_window_exit_failed")
@@ -198,11 +297,13 @@ def run(executable, resources, node, output, index):
         if probe:
             probe.stdout.close()
         if host.poll() is None:
-            for pid in descendants(host.pid):
-                try:
-                    handles.append(OwnedProcess(pid))
-                except CheckFailed:
-                    pass
+            if handles:
+                handles.extend(descendants(handles[0], handles[1:]))
+            try:
+                record_shutdown(folder, "before-cleanup.json",
+                                [owned_process_state(handle) for handle in handles])
+            except OSError:
+                pass  # Private diagnostics must not alter cleanup.
             host.kill()
             host.wait(timeout=5)
         error_log.close()
@@ -223,7 +324,8 @@ def run(executable, resources, node, output, index):
 
 
 SAFE_FAILURE_CODES = frozenset({
-    "process_snapshot_unavailable", "owned_native_window_not_unique", "passive_window_visible",
+    "process_snapshot_unavailable", "owned_process_creation_time_unavailable",
+    "owned_process_identity_unavailable", "owned_native_window_not_unique", "passive_window_visible",
     "passive_window_foreground", "owned_native_close_failed", "native_readiness_failed",
     "native_flow_failed", "native_probe_exit_failed", "owned_worker_handle_unavailable",
     "native_process_coverage_missing", "native_window_exit_failed", "native_descendant_remained",
@@ -246,7 +348,8 @@ SAFE_CONNECTION_ERRORS = frozenset({
 })
 SAFE_ENDPOINT_STATES = frozenset({"responded", "timeout", "connection_refused", "connection_error"})
 SAFE_STARTUP_CODES = frozenset({
-    "resource_directory_required", "choose_one_maintenance_operation", "packaged_runtime_missing",
+    "hidden_ui_debug_port_invalid", "resource_directory_required",
+    "choose_one_maintenance_operation", "packaged_runtime_missing",
     "bundle_manifest_missing", "invalid_bundle_manifest", "bundle_integrity_failed",
     "session_entropy_unavailable", "job_creation_failed", "job_configuration_failed",
     "service_spawn_failed", "job_assignment_failed", "parent_job_pipe_unavailable",
@@ -283,6 +386,11 @@ def _startup_diagnostics(folder):
     return {
         "hidden_ui_marker": "present" if marker is True else "absent" if marker is False else "unknown",
         "desktop_startup_failed": "yes" if b"desktop_startup_failed" in log else "no" if log_available else "unknown",
+        **{stage: marker in log if log_available else None for stage, marker in (
+            ("services_ready", b"lootweave_hidden_ui_v1: services_ready"),
+            ("window_build_started", b"lootweave_hidden_ui_v1: window_build_started"),
+            ("webview_ready", b"lootweave_hidden_ui_v1: webview_ready"),
+        )},
         "startup_codes": codes,
         "windows_errors": windows_errors,
         "host_state": state if isinstance(state, str) and state in {"running", "exited"} else "unknown",
@@ -360,6 +468,8 @@ def main():
         parser.error("Cannot read host executable.")
     if b"lootweave_hidden_ui_v1: --hidden-ui enabled" not in executable_bytes:
         parser.error("Host executable lacks the hidden-ui verification marker; rebuild the host before running this passive check.")
+    if b"hidden_ui_debug_port_invalid" not in executable_bytes:
+        parser.error("Host executable lacks the hidden-ui debugging-port validation marker; rebuild the host before running this passive check.")
     output = ROOT / ".local/native-ui-check" / uuid.uuid4().hex
     output.mkdir(parents=True)
     mode = "hidden_passive"
@@ -398,6 +508,9 @@ def main():
             print("Native startup diagnostic: "
                   f"hidden_ui_marker={startup['hidden_ui_marker']} "
                   f"desktop_startup_failed={startup['desktop_startup_failed']} "
+                  f"services_ready={str(startup['services_ready']).lower()} "
+                  f"window_build_started={str(startup['window_build_started']).lower()} "
+                  f"webview_ready={str(startup['webview_ready']).lower()} "
                   f"startup_codes={startup_codes} windows_errors={windows_errors} "
                   f"host_state={startup['host_state']} exit_code={exit_code}.", flush=True)
             cleanup = _cleanup_summary(run_folder)
