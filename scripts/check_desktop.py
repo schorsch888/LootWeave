@@ -15,6 +15,7 @@ import math
 import os
 import platform
 import queue
+import sqlite3
 import subprocess
 import threading
 import time
@@ -28,6 +29,7 @@ ROOT = Path(__file__).resolve().parents[1]
 import sys
 sys.path.insert(0, str(ROOT))
 from contracts import DomainError
+from maintenance import CAPTURE, DATABASES, ordinary, verify
 from storage import acquire_instance_lock
 WORKERS = ("profile", "knowledge", "evaluation", "planning", "ocr", "gateway")
 ENSURE_HTTP_TIMEOUT = 10  # Observe the owner's 8-second attempt plus loopback response delivery.
@@ -302,7 +304,46 @@ def cross_entry_lock(data):
         expect(error.code == "instance_already_running", "cross_entry_lock_wrong_error")
 
 
+def maintenance_inputs(data):
+    """Snapshot the supported stored inputs before the offline native backup."""
+    files = set()
+    try:
+        ordinary(data)
+        for name in DATABASES:
+            path = data / name
+            if path.exists():
+                ordinary(path.parent)
+                expect(ordinary(path).is_file(), "native_maintenance_input_invalid")
+                files.add(name)
+        captures = data / "ocr"
+        if captures.exists():
+            ordinary(captures)
+            for path in captures.iterdir():
+                name = "ocr/" + path.name
+                expect(CAPTURE.fullmatch(name) and ordinary(path).is_file(),
+                       "native_maintenance_input_invalid")
+                files.add(name)
+    except DomainError:
+        raise CheckFailed("native_maintenance_input_invalid") from None
+    expect({"profile/profile.sqlite3", "evaluation/evaluation.sqlite3"} <= files,
+           "native_maintenance_core_files_missing")
+    return files
+
+
+def maintenance_manifest(directory):
+    try:
+        manifest = verify(directory)
+    except (DomainError, sqlite3.Error):
+        raise CheckFailed("native_maintenance_integrity_failed") from None
+    expect({"profile/profile.sqlite3", "evaluation/evaluation.sqlite3"} <= set(manifest["files"]),
+           "native_maintenance_core_files_missing")
+    return manifest
+
+
 def native_maintenance(executable, resources, data, flag, other, accepted=True):
+    if accepted:
+        expect(flag in ("--backup-to", "--restore-from"), "native_maintenance_operation_invalid")
+        expected = maintenance_inputs(data) if flag == "--backup-to" else maintenance_manifest(other)
     process = subprocess.run(
         [str(executable), "--resource-dir", str(resources), "--data-dir", str(data), flag, str(other)],
         cwd=executable.parent, env=frozen_environment(), stdin=subprocess.DEVNULL,
@@ -313,9 +354,17 @@ def native_maintenance(executable, resources, data, flag, other, accepted=True):
         result = json.loads(process.stdout)
     except ValueError:
         raise CheckFailed("native_maintenance_response_invalid") from None
+    expect(isinstance(result, dict), "native_maintenance_response_invalid")
     if accepted:
-        expect(result.get("storage_version") == 1 and result.get("files", 0) >= 3,
+        manifest = maintenance_manifest(other if flag == "--backup-to" else data)
+        # SQLite backup can change database bytes; compare names for backup and
+        # the entire verified manifest for restore, where every byte is copied.
+        expect(set(manifest["files"]) == expected if flag == "--backup-to" else manifest == expected,
                "native_maintenance_files_missing")
+        expect(result.get("operation") == ("backup" if flag == "--backup-to" else "restore")
+               and type(result.get("storage_version")) is int and result["storage_version"] == 1
+               and type(result.get("files")) is int and result["files"] == len(manifest["files"]),
+               "native_maintenance_response_invalid")
     else:
         expect(result.get("error") == "instance_already_running", "active_backup_not_rejected")
     return result

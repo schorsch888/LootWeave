@@ -173,6 +173,14 @@ try {
     await assert.rejects(api("evaluation/evaluations", undefined, { signal: controller.signal }), { name: "AbortError" });
     assert.equal(requests, 1);
   });
+  const state = []; let cursor = 0;
+  globalThis.panelFixture = {
+    useState(initial) { const index = cursor++; if (!(index in state)) state[index] = initial; return [state[index], next => { state[index] = typeof next === "function" ? next(state[index]) : next; }]; },
+  };
+  const { ActivatedPanel } = await server.ssrLoadModule("/src/shared/ui/activated-panel.tsx");
+  // Finish Vite's asynchronous dependency work before intercepting global timers.
+  // Its optimizer status timers must not enter the application's fake clock.
+  await server.close();
   const realSetTimeout = globalThis.setTimeout, realClearTimeout = globalThis.clearTimeout;
   async function clockCheck(name, run) {
     await check(name, async () => {
@@ -267,11 +275,6 @@ try {
       assert.deepEqual([...timers.values()].map(timer => timer.delay), [30000]);
     } finally { poller.stop(); }
   });
-  const state = []; let cursor = 0;
-  globalThis.panelFixture = {
-    useState(initial) { const index = cursor++; if (!(index in state)) state[index] = initial; return [state[index], next => { state[index] = typeof next === "function" ? next(state[index]) : next; }]; },
-  };
-  const { ActivatedPanel } = await server.ssrLoadModule("/src/shared/ui/activated-panel.tsx");
   await check("secondary panel waits for activation and hiding retains its child identity", async () => {
     const child = { type: "synthetic-feature", key: "same-revision", props: { draft: "synthetic-draft" } };
     const render = () => { cursor = 0; return ActivatedPanel({ label: "测试面板", children: child }); };
