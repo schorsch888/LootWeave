@@ -87,5 +87,70 @@ jobs:
         run: python scripts/build_desktop.py --test-native
       - name: Verify twenty starts, each worker fault and forced host exit
         run: python scripts/check_desktop.py --cycles 20 --executable desktop/target/release/lootweave-desktop.exe
+      - name: Ensure the WebView2 runtime before checking the bare native host
+        shell: pwsh
+        run: |
+          # Building the offline NSIS installer does not execute its runtime setup.
+          # Microsoft documents these pv keys and /silent /install at:
+          # https://learn.microsoft.com/microsoft-edge/webview2/concepts/distribution
+          $ErrorActionPreference = 'Stop'
+          function Get-WebViewRuntimeVersion {
+            $runtimeKeys = @(
+              'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}',
+              'HKCU:\Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+            )
+            foreach ($runtimeKey in $runtimeKeys) {
+              $runtimeVersion = Get-ItemPropertyValue -LiteralPath $runtimeKey -Name pv -ErrorAction SilentlyContinue
+              if ($runtimeVersion -is [string] -and $runtimeVersion -match '^\d{1,5}(\.\d{1,5}){3}$') {
+                $parsedVersion = $null
+                if ([version]::TryParse($runtimeVersion, [ref]$parsedVersion) -and $parsedVersion -gt [version]'0.0.0.0') {
+                  return $runtimeVersion
+                }
+              }
+            }
+            return $null
+          }
+          $runtimeStage = 'runtime_detection'
+          $runtimeCategory = 'detection_failed'
+          try {
+            $runtimeVersion = Get-WebViewRuntimeVersion
+            $runtimeState = 'present'
+            if (-not $runtimeVersion) {
+              $runtimeStage = 'runtime_download'
+              $runtimeCategory = 'download_failed'
+              $runtimeInstaller = Join-Path $env:RUNNER_TEMP 'MicrosoftEdgeWebview2Setup.exe'
+              Invoke-WebRequest -Uri 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile $runtimeInstaller -TimeoutSec 120
+              $runtimeStage = 'runtime_signature'
+              $runtimeCategory = 'signature_invalid'
+              $runtimeSignature = Get-AuthenticodeSignature -LiteralPath $runtimeInstaller
+              if ($runtimeSignature.Status -ne 'Valid' -or -not $runtimeSignature.SignerCertificate -or
+                  $runtimeSignature.SignerCertificate.GetNameInfo([System.Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false) -ne 'Microsoft Corporation') {
+                throw 'signature_invalid'
+              }
+              $runtimeStage = 'runtime_install'
+              $runtimeCategory = 'install_failed'
+              $runtimeSetup = Start-Process -FilePath $runtimeInstaller -ArgumentList '/silent', '/install' -WindowStyle Hidden -PassThru
+              try {
+                if (-not $runtimeSetup.WaitForExit(300000)) {
+                  $runtimeCategory = 'install_timeout'
+                  $runtimeSetup.Kill()
+                  throw 'install_timeout'
+                }
+                if ($runtimeSetup.ExitCode -ne 0) { throw 'install_failed' }
+              } finally {
+                $runtimeSetup.Dispose()
+              }
+              $runtimeStage = 'runtime_verification'
+              $runtimeCategory = 'runtime_missing'
+              $runtimeVersion = Get-WebViewRuntimeVersion
+              if (-not $runtimeVersion) { throw 'runtime_missing' }
+              $runtimeState = 'installed'
+            }
+            Write-Host "WebView2 runtime: state=$runtimeState version=$runtimeVersion"
+          } catch {
+            # No raw exception, installer output, paths or machine identity enters CI logs.
+            Write-Host "WebView2 prerequisite failed: stage=$runtimeStage category=$runtimeCategory"
+            exit 1
+          }
       - name: Verify hidden WebView readiness, passive IPC and close cleanup
         run: python scripts/check_native_ui.py --cycles 20 --executable desktop/target/release/lootweave-desktop.exe

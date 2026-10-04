@@ -19,6 +19,65 @@ from pathlib import Path
 from check_desktop import CheckFailed, OwnedProcess, ROOT, expect, frozen_environment, machine
 
 
+FAILURE_STAGES = frozenset({
+    "native_host_launch", "probe_launch", "webview_connection", "native_readiness",
+    "passive_window_checks", "native_flow", "native_ipc", "native_game_window_binding",
+    "probe_exit", "process_coverage", "native_window_close", "native_process_exit",
+    "native_descendant_exit", "owned_cleanup", "unknown",
+})
+FAILURE_CATEGORIES = frozenset({
+    "webview_connection_timeout", "native_page_missing", "native_session_not_removed",
+    "native_session_missing", "native_capture_authorization_failed", "native_capture_bounds_failed",
+    "native_window_detection_authorization_failed", "native_window_binding_guard_failed",
+    "native_window_detection_contract_failed", "native_window_detection_status_failed",
+    "native_window_capture_bounds_failed", "native_browser_error", "cdp_disconnect_failed",
+    "process_snapshot_unavailable", "owned_native_window_not_unique", "passive_window_visible",
+    "passive_window_foreground", "owned_native_close_failed", "native_readiness_failed",
+    "native_flow_failed", "native_probe_exit_failed", "native_process_coverage_missing",
+    "native_window_exit_failed", "native_descendant_remained", "owned_cleanup_failed",
+    "owned_worker_handle_unavailable", "owned_worker_fault_failed", "owned_process_memory_unavailable",
+    "timeout", "os_error", "invalid_message", "probe_error", "unknown",
+})
+
+
+def safe_failure(stage, category):
+    # Exact membership, not a character filter: arbitrary tokens or DOM strings cannot escape.
+    return {"stage": stage if isinstance(stage, str) and stage in FAILURE_STAGES else "unknown",
+            "category": category if isinstance(category, str) and category in FAILURE_CATEGORIES else "unknown"}
+
+
+class NativeCheckFailed(CheckFailed):
+    def __init__(self, stage, category):
+        self.diagnostic = safe_failure(stage, category)
+        super().__init__(self.diagnostic["category"])
+
+
+def failure_category(error):
+    if isinstance(error, CheckFailed):
+        return safe_failure("unknown", str(error))["category"]
+    if isinstance(error, (queue.Empty, subprocess.TimeoutExpired)):
+        return "timeout"
+    if isinstance(error, OSError):
+        return "os_error"
+    if isinstance(error, (ValueError, KeyError, TypeError)):
+        return "invalid_message"
+    return "unknown"
+
+
+def require_probe_message(message, event, stage, category):
+    if isinstance(message, dict) and message.get("event") == event:
+        if event != "complete" or message.get("passed") is True:
+            return
+    if isinstance(message, dict) and message.get("event") == "complete" and message.get("passed") is False:
+        probe_category = message.get("failure_code")
+        if probe_category == "TimeoutError":
+            probe_category = "timeout"
+        elif probe_category == "Error":
+            probe_category = "probe_error"
+        raise NativeCheckFailed(message.get("stage"), probe_category)
+    raise NativeCheckFailed(stage, category)
+
+
 def descendants(parent):
     kernel = ctypes.WinDLL("kernel32", use_last_error=True)
     class Entry(ctypes.Structure):
@@ -123,12 +182,17 @@ def run(executable, resources, node, output, index):
     start = time.perf_counter()
     error_log = (folder / "native-stderr.log").open("wb")
     host_args = [str(executable), "--resource-dir", str(resources), "--data-dir", str(folder / "state"), "--hidden-ui"]
-    host = subprocess.Popen(host_args,
-                            cwd=executable.parent, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                            stderr=error_log, creationflags=0x08000000)
+    try:
+        host = subprocess.Popen(host_args,
+                                cwd=executable.parent, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                stderr=error_log, creationflags=0x08000000)
+    except OSError:
+        error_log.close()
+        raise NativeCheckFailed("native_host_launch", "os_error") from None
     handles = []
     probe = None
     passed = False
+    stage = "probe_launch"
     try:
         command = [str(node), str(ROOT / "scripts/probe_native_ui.mjs"), "--port", str(port),
                    "--output", str(folder)]
@@ -143,15 +207,20 @@ def run(executable, resources, node, output, index):
                 except ValueError:
                     messages.put({"event": "invalid"})
         threading.Thread(target=read_messages, daemon=True).start()
+        stage = "webview_connection"
         message = messages.get(timeout=60)
-        expect(message.get("event") == "ready", "native_readiness_failed")
+        require_probe_message(message, "ready", stage, "native_readiness_failed")
         seconds = time.perf_counter() - start
         ready = message
+        stage = "passive_window_checks"
         owned_hidden_window(host.pid)
+        stage = "native_flow"
         done = messages.get(timeout=40)
-        expect(done.get("event") == "complete" and done.get("passed"), "native_flow_failed")
+        require_probe_message(done, "complete", stage, "native_flow_failed")
+        stage = "probe_exit"
         probe.wait(timeout=5)
         expect(probe.returncode == 0, "native_probe_exit_failed")
+        stage = "process_coverage"
         handles.append(OwnedProcess(host.pid))
         for pid in descendants(host.pid):
             try:
@@ -160,9 +229,12 @@ def run(executable, resources, node, output, index):
                 pass  # A short-lived utility process may already have exited.
         expect(len(handles) >= 8, "native_process_coverage_missing")
         memory = [handle.memory() for handle in handles if not handle.exited()]
+        stage = "native_window_close"
         close_window(host.pid)
+        stage = "native_process_exit"
         host.wait(timeout=12)
         expect(host.returncode == 0, "native_window_exit_failed")
+        stage = "native_descendant_exit"
         deadline = time.monotonic() + 8
         natural_exit = all(handle.exited(max(0, deadline - time.monotonic())) for handle in handles)
         record_shutdown(folder, "natural-exit.json", [owned_process_state(handle) for handle in handles])
@@ -173,6 +245,10 @@ def run(executable, resources, node, output, index):
                 "processes_at_idle": len(memory),
                 "working_set_mib": round(sum(value[0] for value in memory) / 2**20, 2),
                 "private_commit_mib": round(sum(value[1] for value in memory) / 2**20, 2)}
+    except NativeCheckFailed:
+        raise
+    except Exception as error:
+        raise NativeCheckFailed(stage, failure_category(error)) from None
     finally:
         if probe and probe.poll() is None:
             probe.kill()
@@ -200,8 +276,8 @@ def run(executable, resources, node, output, index):
                 cleanup_states.append(owned_process_state(handle))
                 handle.close()
         record_shutdown(folder, "cleanup.json", cleanup_states, cleanup_errors)
-        expect(not cleanup_errors and all(state["exited"] for state in cleanup_states),
-               "owned_cleanup_failed")
+        if cleanup_errors or not all(state["exited"] for state in cleanup_states):
+            raise NativeCheckFailed("owned_cleanup", "owned_cleanup_failed")
 
 
 def main():
@@ -243,9 +319,12 @@ def main():
         report["max_idle_working_set_mib"] = max(run["working_set_mib"] for run in report["runs"])
         report["max_idle_private_commit_mib"] = max(run["private_commit_mib"] for run in report["runs"])
         report["passed"] = True
-    except (CheckFailed, OSError, ValueError, KeyError, queue.Empty, subprocess.TimeoutExpired) as error:
+    except Exception as error:
         report["failure_code"] = str(error) if isinstance(error, CheckFailed) else type(error).__name__
-        print("Native WebView check failed; private probe evidence retained.", flush=True)
+        diagnostic = error.diagnostic if isinstance(error, NativeCheckFailed) else safe_failure("unknown", failure_category(error))
+        report["failure_diagnostic"] = diagnostic
+        print("Native WebView check failed: stage=" + diagnostic["stage"]
+              + " category=" + diagnostic["category"] + "; private probe evidence retained.", flush=True)
     finally:
         (output / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         print("Evidence: " + output.relative_to(ROOT).as_posix(), flush=True)
