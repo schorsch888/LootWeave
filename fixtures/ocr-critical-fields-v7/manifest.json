@@ -1,0 +1,6219 @@
+{
+  "dataset_version": "synthetic-critical-fields-v7",
+  "partition": "holdout",
+  "seed_identity": "synthetic-critical-fields-v7/holdout/2026-10-04",
+  "generator_sha256": "55e88d9fd7e5b15023eb9c16c61880b53f58ff2d3c0f34475b31cdf19d60231d",
+  "truth_method": "Exact renderer inputs; manually inspect review-sheet.bmp against this manifest before accepting.",
+  "lawful_scope": "Original synthetic text; locally rendered with installed Windows fonts. No game or player material.",
+  "font_names": {
+    "en-US": "segoeui.ttf",
+    "zh-Hans-CN": "msyh.ttc"
+  },
+  "font_sha256": {
+    "en-US": "8134dbcd09e7b123c9a7f229d49cffbcb01352cc72ea5e1076b65d0dca9f73cd",
+    "zh-Hans-CN": "d79c55e68b1131eea0cc1c47be4f572d964f28c682e143db2ad09c1e4cb07a3f"
+  },
+  "samples": [
+    {
+      "id": "region-000",
+      "image": "images/region-000.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "clean",
+      "text": "Level: 70\nVitality: +873 points\nArmor: -40.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 70,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 873,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -40.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "272b3c70c6cd7791f6af5f995d8ff06ceed6a7469d7e1dee6b160e6f8f5eb3ae"
+    },
+    {
+      "id": "region-001",
+      "image": "images/region-001.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "clean",
+      "text": "Level: 77\nVitality: -510 points\nArmor: -18.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 77,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -510,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -18.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "bcbe7810c6523a8acba7c417bb32cad2f02c9571eef47608c38a16915231f0b8"
+    },
+    {
+      "id": "region-002",
+      "image": "images/region-002.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "clean",
+      "text": "Level: 47\nVitality: -188 points\nArmor: +27.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 47,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -188,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 27.8,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "b5c864efa5793f96b6fe52f2e7841a58c5402ceed20a396c4d1a78f76f2401f6"
+    },
+    {
+      "id": "region-003",
+      "image": "images/region-003.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "clean",
+      "text": "Level: 89\nVitality: -170 points\nArmor: -21.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 89,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -170,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -21.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "9c53bd0b10f1c87520c67e0d65afed725a26684b12c12c53728f9a8efda72cb3"
+    },
+    {
+      "id": "region-004",
+      "image": "images/region-004.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "clean",
+      "text": "Level: 27\nVitality: -508 points\nArmor: -31.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 27,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -508,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -31.8,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "f2c3edb56b1f0b6bee14bd87c7ff9a080766af9effe62e4d6a7e811c14416aa5"
+    },
+    {
+      "id": "region-005",
+      "image": "images/region-005.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "low_contrast",
+      "text": "Level: 41\nVitality: +442 points\nArmor: +37.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 41,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 442,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 37.4,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "287de0d1a26c55a4335cea2a78a21d64ac8803a5040f4fcd5a717f392cd198f6"
+    },
+    {
+      "id": "region-006",
+      "image": "images/region-006.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "low_contrast",
+      "text": "Level: 30\nVitality: +310 points\nArmor: -32.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 30,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 310,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -32.3,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "b02aef2c3ea81977e4b896eafbc2091dc998443e45d03a4234499161e098c098"
+    },
+    {
+      "id": "region-007",
+      "image": "images/region-007.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "low_contrast",
+      "text": "Level: 87\nVitality: +356 points\nArmor: -21.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 87,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 356,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -21.9,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "57eb19a83d2d0c4d87b717d8a5b3c8599e3bf97f62610ae04d9b68ded09e5906"
+    },
+    {
+      "id": "region-008",
+      "image": "images/region-008.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "low_contrast",
+      "text": "Level: 7\nVitality: -510 points\nArmor: -26.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 7,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -510,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -26.0,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "18a95ec4e0dd0a361e13dd5c2f5439790f728d6cd1742bbd6d20784ca31cb099"
+    },
+    {
+      "id": "region-009",
+      "image": "images/region-009.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "low_contrast",
+      "text": "Level: 12\nVitality: -121 points\nArmor: -6.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 12,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -121,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -6.8,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "aab95f9f13ee85d92b6c7b779ed0673ed1a828d8daa990a40feed1a2152fbfed"
+    },
+    {
+      "id": "region-010",
+      "image": "images/region-010.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "blurred",
+      "text": "Level: 62\nVitality: +483 points\nArmor: -40.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 62,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 483,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -40.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "19d72e84c1cd5886c4bb24716bd533d9a519a98aca2ae6ddec10b90cb259dea9"
+    },
+    {
+      "id": "region-011",
+      "image": "images/region-011.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "blurred",
+      "text": "Level: 97\nVitality: -846 points\nArmor: +29.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 97,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -846,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 29.6,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "4205fc49c74219afb74f33744e89b749ad162b84806d189090967a1dcaf9aa1c"
+    },
+    {
+      "id": "region-012",
+      "image": "images/region-012.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "blurred",
+      "text": "Level: 70\nVitality: -858 points\nArmor: +39.1%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 70,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -858,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 39.1,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "a70d3613aa3596b32210deb3c1e9eedf39bd0cc8d4be45febea19db36d7918d0"
+    },
+    {
+      "id": "region-013",
+      "image": "images/region-013.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "blurred",
+      "text": "Level: 72\nVitality: +677 points\nArmor: -23.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 72,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 677,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -23.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "1891846cbb6bc91f3a5ac5a020f49aed7456495dc374b01a9828abbfc1eacece"
+    },
+    {
+      "id": "region-014",
+      "image": "images/region-014.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "blurred",
+      "text": "Level: 85\nVitality: +269 points\nArmor: +38.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 85,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 269,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 38.7,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "f30d35fcf801060e1dc0e2fc4215eaa8110bb3981624b096aabcae8914605d01"
+    },
+    {
+      "id": "region-015",
+      "image": "images/region-015.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "downsampled",
+      "text": "Level: 35\nVitality: -593 points\nArmor: +38.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 35,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -593,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 38.5,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "7f05eebf997a0bba94602f16959cbd26d01581c4b93b20394828a3424f3475e2"
+    },
+    {
+      "id": "region-016",
+      "image": "images/region-016.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "downsampled",
+      "text": "Level: 68\nVitality: +273 points\nArmor: +11.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 68,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 273,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 11.9,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "135cf2d1a4e4eb0472033214624b19199a0ebf38417755e2f568e14c96016bd6"
+    },
+    {
+      "id": "region-017",
+      "image": "images/region-017.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "downsampled",
+      "text": "Level: 70\nVitality: +130 points\nArmor: -40.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 70,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 130,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -40.0,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "6d7f22875a51aa7c0fba2beea63d58ecc7c7be1a840ba224071468101616c921"
+    },
+    {
+      "id": "region-018",
+      "image": "images/region-018.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "downsampled",
+      "text": "Level: 53\nVitality: +273 points\nArmor: -37.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 53,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 273,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -37.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "5795f3e5aa8bbca65102849ea5fed69103a5e5efd31c8ab67ba3efb0dc3b450f"
+    },
+    {
+      "id": "region-019",
+      "image": "images/region-019.bmp",
+      "language": "en-US",
+      "scale": 0.75,
+      "quality": "downsampled",
+      "text": "Level: 38\nVitality: -398 points\nArmor: +4.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 38,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -398,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 4.0,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "8844e92fbb3928ad76150061b105123fd2ade223018f3089fccccb9c33e5cae2"
+    },
+    {
+      "id": "region-020",
+      "image": "images/region-020.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "clean",
+      "text": "Level: 76\nVitality: -821 points\nArmor: +11.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 76,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -821,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 11.7,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "0693e2fd7f9fbc1ddc1786e5e0702f73ca19b537a30ad679d2a9ce2d9c6256ad"
+    },
+    {
+      "id": "region-021",
+      "image": "images/region-021.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "clean",
+      "text": "Level: 5\nVitality: +41 points\nArmor: +31.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 5,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 41,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 31.5,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "ef5c2124a1dd199d1ddf5fd9ee61c7820769f493018b9b61911771200ec72f8e"
+    },
+    {
+      "id": "region-022",
+      "image": "images/region-022.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "clean",
+      "text": "Level: 38\nVitality: -103 points\nArmor: -5.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 38,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -103,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -5.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "cc23c021e1df5f79cbb1d9561eb1a855891bd4d53f6a6c4345dc9e77af381db6"
+    },
+    {
+      "id": "region-023",
+      "image": "images/region-023.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "clean",
+      "text": "Level: 64\nVitality: +902 points\nArmor: -20.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 64,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 902,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -20.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "82afa44e1ff5cdda3a908f0dcf1c867d6879b797e418785ac7884828680f4e3d"
+    },
+    {
+      "id": "region-024",
+      "image": "images/region-024.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "clean",
+      "text": "Level: 59\nVitality: +199 points\nArmor: -11.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 59,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 199,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -11.0,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "308a6c14d1642e341cb6509466ac518b0dfddd548bb2a5deb73f50fed0243d0a"
+    },
+    {
+      "id": "region-025",
+      "image": "images/region-025.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "low_contrast",
+      "text": "Level: 92\nVitality: +374 points\nArmor: -7.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 92,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 374,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -7.3,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "f3fa9310eb035610f7595cfd8853ffcb46da3ec5bc7bf0d4deb2e65853f5dce7"
+    },
+    {
+      "id": "region-026",
+      "image": "images/region-026.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "low_contrast",
+      "text": "Level: 98\nVitality: +883 points\nArmor: -11.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 98,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 883,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -11.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "bdc17f7955cda2cd4c2a5311b42c1a79c6e577a2737ce6e696228a27ef24fe87"
+    },
+    {
+      "id": "region-027",
+      "image": "images/region-027.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "low_contrast",
+      "text": "Level: 52\nVitality: -464 points\nArmor: +36.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 52,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -464,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 36.6,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "cd532bd778d8d51b810181ecdcfa332f5621e92d5d2f8102e92e9352ba50e578"
+    },
+    {
+      "id": "region-028",
+      "image": "images/region-028.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "low_contrast",
+      "text": "Level: 34\nVitality: -721 points\nArmor: +34.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 34,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -721,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 34.6,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "ce496e8430d270909b8f84aaabc35df2c1817482ae616c3575ec8e9f0e157c0c"
+    },
+    {
+      "id": "region-029",
+      "image": "images/region-029.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "low_contrast",
+      "text": "Level: 94\nVitality: +108 points\nArmor: -34.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 94,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 108,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -34.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "249f415097058e6c978eadddb43a0cb48ff4fc1739e5d557f3c451475c6bf07b"
+    },
+    {
+      "id": "region-030",
+      "image": "images/region-030.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "blurred",
+      "text": "Level: 55\nVitality: +585 points\nArmor: +9.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 55,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 585,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 9.4,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "7d9c5e02b8805c1283325ffbad8062d850d608a576f3ca967c0b6d8047ea2b07"
+    },
+    {
+      "id": "region-031",
+      "image": "images/region-031.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "blurred",
+      "text": "Level: 77\nVitality: +560 points\nArmor: -20.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 77,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 560,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -20.3,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "c55f97c640fc86ba4ce894ef5f14ea8af3f2302b24ddc3911b0f75648a05ef52"
+    },
+    {
+      "id": "region-032",
+      "image": "images/region-032.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "blurred",
+      "text": "Level: 64\nVitality: -315 points\nArmor: +36.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 64,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -315,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 36.6,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "8f2604d255674f408816af03afb00d58fd2f340e2729c887ea5483fc6a33bafe"
+    },
+    {
+      "id": "region-033",
+      "image": "images/region-033.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "blurred",
+      "text": "Level: 10\nVitality: +547 points\nArmor: +37.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 10,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 547,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 37.2,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "49ac51c205f1f529d9f9088aa245cc10320051d14b27056b915d195931413792"
+    },
+    {
+      "id": "region-034",
+      "image": "images/region-034.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "blurred",
+      "text": "Level: 91\nVitality: -687 points\nArmor: -4.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 91,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -687,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -4.3,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "8f8fe19927815f8abea46684cb7b34e6f18a27429a66ff9125f5fd76f9270874"
+    },
+    {
+      "id": "region-035",
+      "image": "images/region-035.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "downsampled",
+      "text": "Level: 30\nVitality: -345 points\nArmor: +2.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 30,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -345,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 2.5,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "8a6995e6c81ee911d9053b3477064c9d533943ca74d19c51d7304df59c334b7d"
+    },
+    {
+      "id": "region-036",
+      "image": "images/region-036.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "downsampled",
+      "text": "Level: 16\nVitality: -854 points\nArmor: -6.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 16,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -854,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -6.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "4ed7e5ce339aa00e29da6fcc072d4564475eb1d8c4c8d12f556c6eefbe05864a"
+    },
+    {
+      "id": "region-037",
+      "image": "images/region-037.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "downsampled",
+      "text": "Level: 30\nVitality: -509 points\nArmor: -10.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 30,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -509,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -10.8,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "5d4753c82a91b38fd53100b28ceeaf72999fd0008a9bc88678c64b97c415387f"
+    },
+    {
+      "id": "region-038",
+      "image": "images/region-038.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "downsampled",
+      "text": "Level: 77\nVitality: -835 points\nArmor: +8.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 77,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -835,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 8.9,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "97214d04b3a1f9d556d6a0583e5bee6587520fb79c5d44c65b547d00d4d76873"
+    },
+    {
+      "id": "region-039",
+      "image": "images/region-039.bmp",
+      "language": "en-US",
+      "scale": 1.0,
+      "quality": "downsampled",
+      "text": "Level: 4\nVitality: +796 points\nArmor: +9.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 4,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 796,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 9.3,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "96afa2e3580db24fe33ee53ecb6cdc5497f72db85120ceed83a861b2791c8c64"
+    },
+    {
+      "id": "region-040",
+      "image": "images/region-040.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "clean",
+      "text": "Level: 49\nVitality: -655 points\nArmor: -35.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 49,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -655,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -35.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "9976dd5ffaee16a3e7b228e170f15b26d3e7afff01fa758490bf249020ac9c9f"
+    },
+    {
+      "id": "region-041",
+      "image": "images/region-041.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "clean",
+      "text": "Level: 22\nVitality: +668 points\nArmor: -38.1%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 22,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 668,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -38.1,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "b69e22254a24e972dbe6dca1a8542a98d845227cfa5bfbccbca2aee16dd04426"
+    },
+    {
+      "id": "region-042",
+      "image": "images/region-042.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "clean",
+      "text": "Level: 53\nVitality: -675 points\nArmor: -2.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 53,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -675,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -2.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "6eb3a82380fdac1c1e127dd80329841e7664f1c7acdc7b68cf2c34b4a56b179e"
+    },
+    {
+      "id": "region-043",
+      "image": "images/region-043.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "clean",
+      "text": "Level: 3\nVitality: -483 points\nArmor: +32.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 3,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -483,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 32.8,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "dd460997321dea49b5d6dd7b221327cd742bfc2851ab53b6fe267089e207ab1a"
+    },
+    {
+      "id": "region-044",
+      "image": "images/region-044.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "clean",
+      "text": "Level: 26\nVitality: +332 points\nArmor: +12.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 26,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 332,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 12.8,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "001a3ed281960b95bef882c73618788426401c8a57e3086577e01f9931f30abd"
+    },
+    {
+      "id": "region-045",
+      "image": "images/region-045.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "low_contrast",
+      "text": "Level: 53\nVitality: -438 points\nArmor: -19.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 53,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -438,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -19.8,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "7646a6ebeea7930a50855fe183cf9abcf05e1972800de9b36d752c686763a9b8"
+    },
+    {
+      "id": "region-046",
+      "image": "images/region-046.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "low_contrast",
+      "text": "Level: 41\nVitality: +744 points\nArmor: +27.1%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 41,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 744,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 27.1,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "37666ff9c2765b4b787a03566df94a1fee0961cba316e23353649540688f9f6b"
+    },
+    {
+      "id": "region-047",
+      "image": "images/region-047.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "low_contrast",
+      "text": "Level: 55\nVitality: -112 points\nArmor: -26.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 55,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -112,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -26.3,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "be8687c90da8e5aa09781e3be618061c9df27405ecbafe4f8fe7609fdd0f29d3"
+    },
+    {
+      "id": "region-048",
+      "image": "images/region-048.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "low_contrast",
+      "text": "Level: 3\nVitality: +445 points\nArmor: +35.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 3,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 445,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 35.8,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "da9f8e82b319f26222edccdd1143f1d6cf0d97dcd92b7b8387d582fd1b67212c"
+    },
+    {
+      "id": "region-049",
+      "image": "images/region-049.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "low_contrast",
+      "text": "Level: 60\nVitality: -425 points\nArmor: +15.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 60,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -425,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 15.0,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "34dedc3a005180b8ca9325f2b38481ff7c7f377fc7ecf97cc5e07f024429a288"
+    },
+    {
+      "id": "region-050",
+      "image": "images/region-050.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "blurred",
+      "text": "Level: 17\nVitality: +665 points\nArmor: +32.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 17,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 665,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 32.5,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "3043c97de2a17d50b1e977b9fe0850039eb9782fb1df5265703f4543b2125f9c"
+    },
+    {
+      "id": "region-051",
+      "image": "images/region-051.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "blurred",
+      "text": "Level: 44\nVitality: +900 points\nArmor: -8.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 44,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 900,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -8.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "cb6ea687291a729c986a3c44357cdfb6326c2bd69dd0c4cc3b8ee483c56d65ec"
+    },
+    {
+      "id": "region-052",
+      "image": "images/region-052.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "blurred",
+      "text": "Level: 31\nVitality: +127 points\nArmor: -20.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 31,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 127,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -20.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "181ef74a66e98ef70e9f30a6c1d93ace311b358356a193fcac784ee1761a1f21"
+    },
+    {
+      "id": "region-053",
+      "image": "images/region-053.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "blurred",
+      "text": "Level: 67\nVitality: +360 points\nArmor: -26.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 67,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 360,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -26.9,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "fe946f7575595067e9fc5b52a73a1eac2329a102a1f16f92726bf6abc59ac8b1"
+    },
+    {
+      "id": "region-054",
+      "image": "images/region-054.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "blurred",
+      "text": "Level: 53\nVitality: -538 points\nArmor: -37.1%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 53,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -538,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -37.1,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "fd1d641254b2e8737221cf523dfe9f3ab1ad051ade5df5a7e5cc96f9050fe17d"
+    },
+    {
+      "id": "region-055",
+      "image": "images/region-055.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "downsampled",
+      "text": "Level: 57\nVitality: -109 points\nArmor: -10.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 57,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -109,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -10.3,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "cd473d3742946b561af1659cdde9ae4da141a6f5d69d99b475159984d72db32f"
+    },
+    {
+      "id": "region-056",
+      "image": "images/region-056.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "downsampled",
+      "text": "Level: 12\nVitality: +150 points\nArmor: -3.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 12,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 150,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -3.8,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "774c4c26a6e147175579899397e77498f8a3555c463f8b1cda0db5b7028e4920"
+    },
+    {
+      "id": "region-057",
+      "image": "images/region-057.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "downsampled",
+      "text": "Level: 39\nVitality: +610 points\nArmor: -3.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 39,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 610,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -3.5,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "17e454d06e2dda24a68149bbbab97921137460593099ed7cab6772a6033f230e"
+    },
+    {
+      "id": "region-058",
+      "image": "images/region-058.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "downsampled",
+      "text": "Level: 69\nVitality: +156 points\nArmor: -29.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 69,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 156,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -29.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "b8ec31676e2149d100535934ea33a23bde7ae962ddddfe3a09d6dd965c27c470"
+    },
+    {
+      "id": "region-059",
+      "image": "images/region-059.bmp",
+      "language": "en-US",
+      "scale": 1.25,
+      "quality": "downsampled",
+      "text": "Level: 5\nVitality: -573 points\nArmor: -25.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 5,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -573,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -25.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "6feedd71e9916392c3742b28e68868867b31ebac523325ed29ab6afce83ca46a"
+    },
+    {
+      "id": "region-060",
+      "image": "images/region-060.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "clean",
+      "text": "Level: 82\nVitality: -266 points\nArmor: +9.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 82,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -266,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 9.2,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "124c6e421964ef4ba241d8af76f299d784dcdff880827091bf652459517906b5"
+    },
+    {
+      "id": "region-061",
+      "image": "images/region-061.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "clean",
+      "text": "Level: 83\nVitality: +37 points\nArmor: -29.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 83,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 37,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -29.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "cf7021d4429c75dee1d91850b49ad31be41d474fa94d95d9856fd8ad7fe35bd4"
+    },
+    {
+      "id": "region-062",
+      "image": "images/region-062.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "clean",
+      "text": "Level: 67\nVitality: -414 points\nArmor: -4.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 67,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -414,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -4.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "54ac53b33a012454d17f868d41727e5d1db9184593cc9d53864bfb87162b6912"
+    },
+    {
+      "id": "region-063",
+      "image": "images/region-063.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "clean",
+      "text": "Level: 98\nVitality: -719 points\nArmor: +27.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 98,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -719,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 27.8,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "4fd7050707e01c4d8b7be2ae3d39471bf92ec4c844c426506ab76bcbed2bc128"
+    },
+    {
+      "id": "region-064",
+      "image": "images/region-064.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "clean",
+      "text": "Level: 80\nVitality: +98 points\nArmor: -11.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 80,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 98,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -11.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "2d220ef8d37e541650a5f84d375e6532f44027ed6e3f82c654c6b69291d4af6e"
+    },
+    {
+      "id": "region-065",
+      "image": "images/region-065.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "low_contrast",
+      "text": "Level: 74\nVitality: +417 points\nArmor: +21.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 74,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 417,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 21.3,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "e648192c4c8227a48825af19f653bcd8834099181bd45ff4c052ebc8cc3811a6"
+    },
+    {
+      "id": "region-066",
+      "image": "images/region-066.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "low_contrast",
+      "text": "Level: 33\nVitality: -942 points\nArmor: +29.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 33,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -942,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 29.9,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "1b5167ef2849174f0cd6614a35432f0a751a66aadb85abb148209b5cefb1796b"
+    },
+    {
+      "id": "region-067",
+      "image": "images/region-067.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "low_contrast",
+      "text": "Level: 83\nVitality: -652 points\nArmor: -21.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 83,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -652,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -21.9,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "c3bfc4e221d3d56f5fe3da7a5e2b91a61b79c691323d9a30d9ae7fbef1eba9ba"
+    },
+    {
+      "id": "region-068",
+      "image": "images/region-068.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "low_contrast",
+      "text": "Level: 68\nVitality: +735 points\nArmor: -32.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 68,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 735,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -32.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "f08ac30ea1aabda8f6930cdb4bd1be2bc0a04de877d412564715d3aeff4a5773"
+    },
+    {
+      "id": "region-069",
+      "image": "images/region-069.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "low_contrast",
+      "text": "Level: 29\nVitality: -259 points\nArmor: +4.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 29,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -259,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 4.6,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "0d938fbed0902cd308504b9e00b5f541217fcf95299398709e5253748bf7b44b"
+    },
+    {
+      "id": "region-070",
+      "image": "images/region-070.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "blurred",
+      "text": "Level: 41\nVitality: +362 points\nArmor: +17.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 41,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 362,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 17.9,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "fff4e4ab6ff61ce99c95cdf4492b469908a247124e94f7d71ba61c45bec56e09"
+    },
+    {
+      "id": "region-071",
+      "image": "images/region-071.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "blurred",
+      "text": "Level: 68\nVitality: +720 points\nArmor: +21.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 68,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 720,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 21.0,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "e38d00075dde3cd8d0639e412bbbb8363046cd43bd2f353dfe7e2b3fccb2f1c2"
+    },
+    {
+      "id": "region-072",
+      "image": "images/region-072.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "blurred",
+      "text": "Level: 2\nVitality: +63 points\nArmor: -33.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 2,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 63,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -33.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "e1e95fb09a74366ddcc99ac0f103ffe221b081437d1ba0e5f08437857f3c9a61"
+    },
+    {
+      "id": "region-073",
+      "image": "images/region-073.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "blurred",
+      "text": "Level: 24\nVitality: -354 points\nArmor: -37.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 24,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -354,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -37.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "5f5695d48e571244cccc1292c1731192df0d030e113fadb076b705f51277407d"
+    },
+    {
+      "id": "region-074",
+      "image": "images/region-074.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "blurred",
+      "text": "Level: 2\nVitality: -42 points\nArmor: +2.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 2,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -42,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 2.0,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "a4500b3c3d60e0f424fe48f63c37b197603030b415e95a1d5f3d6cefa7826fe8"
+    },
+    {
+      "id": "region-075",
+      "image": "images/region-075.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "downsampled",
+      "text": "Level: 3\nVitality: +773 points\nArmor: -18.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 3,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 773,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -18.3,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "627e014c5952bbfb37371411cf33daa9442646f47579d5b6e0819c7f56fb6cbf"
+    },
+    {
+      "id": "region-076",
+      "image": "images/region-076.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "downsampled",
+      "text": "Level: 4\nVitality: +482 points\nArmor: -31.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 4,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 482,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -31.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "a001f3b2c5a5622c5f0b267e270b651c7c762494ab538f7f6aaab5e655f50a11"
+    },
+    {
+      "id": "region-077",
+      "image": "images/region-077.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "downsampled",
+      "text": "Level: 63\nVitality: -703 points\nArmor: -40.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 63,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -703,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -40.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "350c222228bf7848a9c671653b695495d379dc819a046c19aba4f23610923135"
+    },
+    {
+      "id": "region-078",
+      "image": "images/region-078.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "downsampled",
+      "text": "Level: 33\nVitality: -192 points\nArmor: -11.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 33,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -192,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -11.8,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "155c1215a12dd1785640dea68e0fbc7e8c8dccb926ea5c61db8c8e7f9238ef3e"
+    },
+    {
+      "id": "region-079",
+      "image": "images/region-079.bmp",
+      "language": "en-US",
+      "scale": 1.5,
+      "quality": "downsampled",
+      "text": "Level: 63\nVitality: -671 points\nArmor: -32.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 63,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -671,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -32.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "f6d5760a62472512a70b7ed4922002f872c74b3298c91855ce091336fb0e694a"
+    },
+    {
+      "id": "region-080",
+      "image": "images/region-080.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "clean",
+      "text": "Level: 49\nVitality: +125 points\nArmor: -36.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 49,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 125,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -36.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "3a208e6d75871061699f60fe8cef21c6be33d68ca9e055e64d5331b48ca274bf"
+    },
+    {
+      "id": "region-081",
+      "image": "images/region-081.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "clean",
+      "text": "Level: 78\nVitality: +572 points\nArmor: -26.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 78,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 572,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -26.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "c5cc0933bde2d9fdb61ae2809b12f1543a2f43d76842abe2e9f4553622f8c430"
+    },
+    {
+      "id": "region-082",
+      "image": "images/region-082.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "clean",
+      "text": "Level: 3\nVitality: -54 points\nArmor: +37.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 3,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -54,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 37.3,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "bc3b61c2c68d580cf275bdc7c5d841affcd283a8311ea80554012302115ab918"
+    },
+    {
+      "id": "region-083",
+      "image": "images/region-083.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "clean",
+      "text": "Level: 49\nVitality: -257 points\nArmor: +32.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 49,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -257,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 32.5,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "67d65071e8fee6032e93966d883684032ad0ff61fd0a09b48bcf749dfd3d5808"
+    },
+    {
+      "id": "region-084",
+      "image": "images/region-084.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "clean",
+      "text": "Level: 63\nVitality: -617 points\nArmor: -31.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 63,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -617,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -31.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "c74c5d253cc8511dabff01f898208e71767d910aac0c6a077eb395e02e2eee5a"
+    },
+    {
+      "id": "region-085",
+      "image": "images/region-085.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "low_contrast",
+      "text": "Level: 53\nVitality: +641 points\nArmor: +30.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 53,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 641,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 30.9,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "1c4a514072a6fa8417c982c101646a5b3bc0139d1901fccaf645479c3f08caf6"
+    },
+    {
+      "id": "region-086",
+      "image": "images/region-086.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "low_contrast",
+      "text": "Level: 74\nVitality: -534 points\nArmor: +12.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 74,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -534,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 12.2,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "36aaee79c1e688f7fe4b50654de3312df6769cd1bbc0f6af20a6db2f19807338"
+    },
+    {
+      "id": "region-087",
+      "image": "images/region-087.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "low_contrast",
+      "text": "Level: 55\nVitality: +385 points\nArmor: -23.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 55,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 385,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -23.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "e948475648fe858fac2bcd26361881569693995c6293d1136faaddfc11838506"
+    },
+    {
+      "id": "region-088",
+      "image": "images/region-088.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "low_contrast",
+      "text": "Level: 71\nVitality: +863 points\nArmor: -8.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 71,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 863,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -8.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "0afcf21c7d5c662bfe06e2ce15f6418ab81db0037149283ed221bca78386ebbc"
+    },
+    {
+      "id": "region-089",
+      "image": "images/region-089.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "low_contrast",
+      "text": "Level: 44\nVitality: -731 points\nArmor: +33.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 44,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -731,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 33.6,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "e48e4a2c672c8725e3fa22c01e4b409583824115b273d4edf476f390fe19856b"
+    },
+    {
+      "id": "region-090",
+      "image": "images/region-090.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "blurred",
+      "text": "Level: 98\nVitality: +86 points\nArmor: -21.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 98,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 86,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -21.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "9c1c9cc94b890a2c6cc18b8b0263eed9cf7c63ffc9c012833dace7b0c84f499a"
+    },
+    {
+      "id": "region-091",
+      "image": "images/region-091.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "blurred",
+      "text": "Level: 47\nVitality: -563 points\nArmor: -9.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 47,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -563,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -9.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "a5855ffb184ae2525a9276fc2954ecfa8fe6a3df204ea418ed240e532399fc50"
+    },
+    {
+      "id": "region-092",
+      "image": "images/region-092.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "blurred",
+      "text": "Level: 41\nVitality: +778 points\nArmor: -25.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 41,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 778,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -25.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "5bdb3f46489398acf7492880685fb48834b04cc6b415d3026b9c0f507bd70ed1"
+    },
+    {
+      "id": "region-093",
+      "image": "images/region-093.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "blurred",
+      "text": "Level: 47\nVitality: +370 points\nArmor: +34.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 47,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 370,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 34.3,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "22500c6ddcb29901ad244b1853c5c49429ca92cf1636e8c4671e110034c8039c"
+    },
+    {
+      "id": "region-094",
+      "image": "images/region-094.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "blurred",
+      "text": "Level: 83\nVitality: -709 points\nArmor: -20.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 83,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -709,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -20.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "5795b019c06715ab8bfb4bb9155b6765ff4d3bdf8c6f031f684dd9370f8292b8"
+    },
+    {
+      "id": "region-095",
+      "image": "images/region-095.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "downsampled",
+      "text": "Level: 57\nVitality: -21 points\nArmor: -5.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 57,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -21,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -5.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "da7f093f47972bb5dd1e5d09497b3bb45f0497cb612d3c494b6c78edf3b4b443"
+    },
+    {
+      "id": "region-096",
+      "image": "images/region-096.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "downsampled",
+      "text": "Level: 3\nVitality: -262 points\nArmor: -39.1%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 3,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -262,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -39.1,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "26ffa4d9088a84a8d107169f02b1795bb5314c0b15ae83b44ce2bb614d047fc6"
+    },
+    {
+      "id": "region-097",
+      "image": "images/region-097.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "downsampled",
+      "text": "Level: 62\nVitality: +224 points\nArmor: -13.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 62,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 224,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -13.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "6ba6abbe327507ff4177ee93f2b8c3c07a309b54dc5f31f5b3657133d2554291"
+    },
+    {
+      "id": "region-098",
+      "image": "images/region-098.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "downsampled",
+      "text": "Level: 25\nVitality: +738 points\nArmor: +16.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 25,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 738,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 16.2,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "56f1aac57b4b90c106c6336fe406348242056533bf2097bba689c98d025a1d3a"
+    },
+    {
+      "id": "region-099",
+      "image": "images/region-099.bmp",
+      "language": "en-US",
+      "scale": 2.0,
+      "quality": "downsampled",
+      "text": "Level: 37\nVitality: -424 points\nArmor: +7.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 37,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -424,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 7.0,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "ef4c9d3cf96fda9d89ed93482e64155b1d5909fc8c7f62310636a3116aba45c2"
+    },
+    {
+      "id": "region-100",
+      "image": "images/region-100.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "clean",
+      "text": "等级： 24\n活力： -589 点\n护甲： +31.1%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 24,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -589,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 31.1,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "0748669ccbbfbfa5ec3b4f5ce47863437ec01d63dcc6c5347226c6352d286ae1"
+    },
+    {
+      "id": "region-101",
+      "image": "images/region-101.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "clean",
+      "text": "等级： 75\n活力： +26 点\n护甲： +4.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 75,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 26,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 4.4,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "b8a0675837b988eb83035ddf6003c4791bed719fbf3340cafbfb40ed5c94265b"
+    },
+    {
+      "id": "region-102",
+      "image": "images/region-102.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "clean",
+      "text": "等级： 45\n活力： -796 点\n护甲： -35.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 45,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -796,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -35.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "676b94363634482fbed01f99c2f99d6c58b82ddfc21ba3506383a2b2eb2895be"
+    },
+    {
+      "id": "region-103",
+      "image": "images/region-103.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "clean",
+      "text": "等级： 90\n活力： +741 点\n护甲： +10.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 90,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 741,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 10.4,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "f4bf53f951f471d96bacfd588d95e25c18620e3fa3fb1e28aa8de51f46c52be1"
+    },
+    {
+      "id": "region-104",
+      "image": "images/region-104.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "clean",
+      "text": "等级： 41\n活力： -522 点\n护甲： +10.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 41,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -522,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 10.9,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "8adf05d271d49020d679222a1c43b4a557c3788d5e0f100764aaf974340f501b"
+    },
+    {
+      "id": "region-105",
+      "image": "images/region-105.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "low_contrast",
+      "text": "等级： 99\n活力： -399 点\n护甲： +21.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 99,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -399,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 21.6,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "313e242c69fc7bb0bf54e42bd93cbb378d517148cce958a624df3da6efae5c58"
+    },
+    {
+      "id": "region-106",
+      "image": "images/region-106.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "low_contrast",
+      "text": "等级： 97\n活力： -584 点\n护甲： -22.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 97,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -584,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -22.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "6a8abd22faeeed66feeda6332ee36fd479f66a19d4b3cb34028a4180c850858e"
+    },
+    {
+      "id": "region-107",
+      "image": "images/region-107.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "low_contrast",
+      "text": "等级： 27\n活力： +347 点\n护甲： +34.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 27,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 347,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 34.0,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "ecda2ba850ff4711826ecca60ca607d3b1e7404fc06317abcf51bbb048f57ada"
+    },
+    {
+      "id": "region-108",
+      "image": "images/region-108.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "low_contrast",
+      "text": "等级： 56\n活力： +945 点\n护甲： +13.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 56,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 945,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 13.4,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "98cd825e95b597c1f5b519327c30733269ab8800f736e69136c0b0247b086a1b"
+    },
+    {
+      "id": "region-109",
+      "image": "images/region-109.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "low_contrast",
+      "text": "等级： 84\n活力： -386 点\n护甲： -3.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 84,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -386,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -3.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "177e4b3794375e42460f188b6b562f4698bbeca5082e8699af9e669ee6da7f66"
+    },
+    {
+      "id": "region-110",
+      "image": "images/region-110.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "blurred",
+      "text": "等级： 72\n活力： +24 点\n护甲： -19.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 72,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 24,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -19.3,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "23494744318b06b91b9970301e6ad869efd70482870c3561ca5ba46deebae8e4"
+    },
+    {
+      "id": "region-111",
+      "image": "images/region-111.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "blurred",
+      "text": "等级： 6\n活力： +482 点\n护甲： -37.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 6,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 482,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -37.0,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "446ddbf781c28670f917472eec2662488a09814323e2b885c36373f67d7d4dd7"
+    },
+    {
+      "id": "region-112",
+      "image": "images/region-112.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "blurred",
+      "text": "等级： 12\n活力： +32 点\n护甲： +34.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 12,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 32,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 34.0,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "ec0a5dcac9a0e90b93d99bf1886bb54f19cce83a544fd79792823e4ef55aef97"
+    },
+    {
+      "id": "region-113",
+      "image": "images/region-113.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "blurred",
+      "text": "等级： 81\n活力： +802 点\n护甲： -36.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 81,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 802,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -36.3,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "d5150a66f048dfed5e72059888585c2ece4ba954965bddb7757328b4c9adc301"
+    },
+    {
+      "id": "region-114",
+      "image": "images/region-114.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "blurred",
+      "text": "等级： 85\n活力： +82 点\n护甲： +5.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 85,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 82,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 5.0,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "849488142af3d1d5baad218d0b9b38c6f3fcdc268e473a00a2c549869a716e7a"
+    },
+    {
+      "id": "region-115",
+      "image": "images/region-115.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "downsampled",
+      "text": "等级： 18\n活力： +215 点\n护甲： -33.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 18,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 215,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -33.9,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "79fa059b6affaf943b4fe4210f994cfe65f0aac999fd6516012a4423dc8af46c"
+    },
+    {
+      "id": "region-116",
+      "image": "images/region-116.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "downsampled",
+      "text": "等级： 40\n活力： -915 点\n护甲： -11.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 40,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -915,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -11.9,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "2daf0679ab79dce7332d53b52aedc8519a626d8f703a1b106cb221c854d268f8"
+    },
+    {
+      "id": "region-117",
+      "image": "images/region-117.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "downsampled",
+      "text": "等级： 83\n活力： +832 点\n护甲： +12.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 83,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 832,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 12.6,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "e2eb9f3bc8315757bffa176572baa9549fec93766c68edf9747b82eb58f7512f"
+    },
+    {
+      "id": "region-118",
+      "image": "images/region-118.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "downsampled",
+      "text": "等级： 92\n活力： -44 点\n护甲： +25.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 92,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -44,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 25.5,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "a4d2b6b5c25c5ef256e689cf123911755b645bbc699cefea9163ce82f0983388"
+    },
+    {
+      "id": "region-119",
+      "image": "images/region-119.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 0.75,
+      "quality": "downsampled",
+      "text": "等级： 50\n活力： +111 点\n护甲： +34.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 50,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 111,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 34.7,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 368,
+      "height": 122,
+      "image_sha256": "0dd6d64cc92c677b321de40bcf366c2ecdb5a8c9cd8d72d2f7bbd90635acd3f9"
+    },
+    {
+      "id": "region-120",
+      "image": "images/region-120.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "clean",
+      "text": "等级： 73\n活力： -337 点\n护甲： +14.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 73,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -337,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 14.3,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "b1fcf6d0a00e0f5fab81777d7b9cd3c798c523506dc3610c24777f2ee44dc45b"
+    },
+    {
+      "id": "region-121",
+      "image": "images/region-121.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "clean",
+      "text": "等级： 9\n活力： +684 点\n护甲： -16.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 9,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 684,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -16.5,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "14958a6e85e62b2bf428fe6a291f993af1c78cca0e21ef05f75883141d8e8c13"
+    },
+    {
+      "id": "region-122",
+      "image": "images/region-122.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "clean",
+      "text": "等级： 46\n活力： -530 点\n护甲： -26.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 46,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -530,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -26.5,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "e6169a2af9df4e5ab4e1be9e049034a831c6671921a60f05bc2126c548b07d8c"
+    },
+    {
+      "id": "region-123",
+      "image": "images/region-123.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "clean",
+      "text": "等级： 80\n活力： -487 点\n护甲： +7.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 80,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -487,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 7.4,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "4be12e5fd7a6d55ee9fa5fe89da640b6096a38e4ce9fda1d3a1303d7638d5bd8"
+    },
+    {
+      "id": "region-124",
+      "image": "images/region-124.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "clean",
+      "text": "等级： 41\n活力： -849 点\n护甲： -13.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 41,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -849,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -13.3,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "f422c75261be45955610792250c76fddc99101104848356c1ed3c2aae8f3196c"
+    },
+    {
+      "id": "region-125",
+      "image": "images/region-125.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "low_contrast",
+      "text": "等级： 86\n活力： -178 点\n护甲： -27.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 86,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -178,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -27.9,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "a3d2a072c3e745b27623160c4d5834d72e41ba4f88e2282951c2535ea1002792"
+    },
+    {
+      "id": "region-126",
+      "image": "images/region-126.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "low_contrast",
+      "text": "等级： 59\n活力： -828 点\n护甲： -34.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 59,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -828,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -34.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "8721d2bd03b33eabf9098cb8e239fa4098565b43de3c1ce3b508a45a02b9c892"
+    },
+    {
+      "id": "region-127",
+      "image": "images/region-127.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "low_contrast",
+      "text": "等级： 11\n活力： +700 点\n护甲： -23.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 11,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 700,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -23.9,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "c42465de391291c7223d2fbf54a8052b2dc34f50e2665afa01b2ca85ff330e4b"
+    },
+    {
+      "id": "region-128",
+      "image": "images/region-128.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "low_contrast",
+      "text": "等级： 37\n活力： +328 点\n护甲： +16.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 37,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 328,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 16.8,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "bc5c7800c8a8516bc4c6b75501342d3bee9647d1702f9d4b6651ffff96c6330a"
+    },
+    {
+      "id": "region-129",
+      "image": "images/region-129.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "low_contrast",
+      "text": "等级： 37\n活力： +719 点\n护甲： -19.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 37,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 719,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -19.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "2a6daab1cb3f90161b7ae415e58ef3fc7e7f998e3ad2478032caff0fa7fc48ab"
+    },
+    {
+      "id": "region-130",
+      "image": "images/region-130.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "blurred",
+      "text": "等级： 30\n活力： +84 点\n护甲： -29.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 30,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 84,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -29.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "653f98bec880a87a1ca943a9a3bee0fcc7f6f198f68d3119d25663f40df6c49a"
+    },
+    {
+      "id": "region-131",
+      "image": "images/region-131.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "blurred",
+      "text": "等级： 2\n活力： -886 点\n护甲： +15.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 2,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -886,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 15.2,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "f5f5d19e6bffdb8565f5ff733b1c46b0d34b8083590ee5213c62cddee44ea039"
+    },
+    {
+      "id": "region-132",
+      "image": "images/region-132.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "blurred",
+      "text": "等级： 25\n活力： -254 点\n护甲： +18.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 25,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -254,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 18.8,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "4f3cce044cd5146169846285842887560caf5e12dd3cdcdfeb77dcc44fd8af02"
+    },
+    {
+      "id": "region-133",
+      "image": "images/region-133.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "blurred",
+      "text": "等级： 26\n活力： -496 点\n护甲： +3.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 26,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -496,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 3.0,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "ecf8b374ddb299c046d71503766d877cb00ed262b31f20417239a45be2ab72f4"
+    },
+    {
+      "id": "region-134",
+      "image": "images/region-134.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "blurred",
+      "text": "等级： 55\n活力： -551 点\n护甲： +12.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 55,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -551,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 12.2,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "c4792eaecda35eacb1327c57546e9cb3a0e630b4af0b8011c4ca76defe88d8c8"
+    },
+    {
+      "id": "region-135",
+      "image": "images/region-135.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "downsampled",
+      "text": "等级： 98\n活力： -670 点\n护甲： +24.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 98,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -670,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 24.3,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "cf6a7deb1aeb8f8311babff3cb5bb89bbee4ae15c392cfc9b565d7b696871913"
+    },
+    {
+      "id": "region-136",
+      "image": "images/region-136.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "downsampled",
+      "text": "等级： 24\n活力： +154 点\n护甲： +18.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 24,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 154,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 18.5,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "1f3a3559e395956651110e23b2c0d5c9b0cd05721e2880463e0fa9f834d80d93"
+    },
+    {
+      "id": "region-137",
+      "image": "images/region-137.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "downsampled",
+      "text": "等级： 6\n活力： +262 点\n护甲： +8.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 6,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 262,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 8.3,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "75af03e4ba5ce3b4e25999eb401fa4b4f36a07656c553fb78588393434420764"
+    },
+    {
+      "id": "region-138",
+      "image": "images/region-138.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "downsampled",
+      "text": "等级： 43\n活力： +268 点\n护甲： +2.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 43,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 268,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 2.4,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "5457a97041a4a0cba7be5abe181886ab48a7fbf43b206e7964c30bd3d7b53a86"
+    },
+    {
+      "id": "region-139",
+      "image": "images/region-139.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.0,
+      "quality": "downsampled",
+      "text": "等级： 37\n活力： -422 点\n护甲： -17.1%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 37,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -422,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -17.1,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 490,
+      "height": 162,
+      "image_sha256": "082483f23de8846d6fea48e1d64f1c5ae6b3945e2d98814da866d33c9552fb03"
+    },
+    {
+      "id": "region-140",
+      "image": "images/region-140.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "clean",
+      "text": "等级： 45\n活力： -265 点\n护甲： -36.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 45,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -265,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -36.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "bdf6a0d2e86017f90c77deeb7004f1187dae6030dcc3a26d57c7d5c76973b077"
+    },
+    {
+      "id": "region-141",
+      "image": "images/region-141.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "clean",
+      "text": "等级： 97\n活力： +788 点\n护甲： -33.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 97,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 788,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -33.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "0afd236d6ec964aada04c7f70ef6ac5b3620d570b32f3170b341147abfaca131"
+    },
+    {
+      "id": "region-142",
+      "image": "images/region-142.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "clean",
+      "text": "等级： 68\n活力： +539 点\n护甲： +11.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 68,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 539,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 11.4,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "bc23af2b1fb747227c9035b44b47fcdbceaff9db7207632d997784be9e57cc53"
+    },
+    {
+      "id": "region-143",
+      "image": "images/region-143.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "clean",
+      "text": "等级： 25\n活力： -210 点\n护甲： -28.1%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 25,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -210,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -28.1,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "0ad01fd2e35142b554b059d27e40fee886bae23a9bddeffd81c224e4eef76d6d"
+    },
+    {
+      "id": "region-144",
+      "image": "images/region-144.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "clean",
+      "text": "等级： 86\n活力： +293 点\n护甲： +35.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 86,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 293,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 35.0,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "43e47ccde5ba1391b5209bb40ef40549a85cab293e3c8ea6fc96d12640594697"
+    },
+    {
+      "id": "region-145",
+      "image": "images/region-145.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "low_contrast",
+      "text": "等级： 78\n活力： +580 点\n护甲： -27.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 78,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 580,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -27.8,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "52c15dbdc1675c0546e145fca446cbea991fc3c816d4b8f63ff9676f25e0c5a6"
+    },
+    {
+      "id": "region-146",
+      "image": "images/region-146.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "low_contrast",
+      "text": "等级： 64\n活力： +40 点\n护甲： +38.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 64,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 40,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 38.3,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "5c6ae7e23980db400d27bdc3b474ab27ef608ac7b485f1664dd4e95929fd5e99"
+    },
+    {
+      "id": "region-147",
+      "image": "images/region-147.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "low_contrast",
+      "text": "等级： 85\n活力： -426 点\n护甲： -20.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 85,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -426,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -20.9,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "f3c731bd4241f0a555e61178ecfff584bca00ad5a0fae55bcd251e2e30e9344a"
+    },
+    {
+      "id": "region-148",
+      "image": "images/region-148.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "low_contrast",
+      "text": "等级： 94\n活力： +457 点\n护甲： -17.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 94,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 457,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -17.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "7a65cf3041598573e8f947929fcd80e6228d0febe16ab9d7066ea835530a3efc"
+    },
+    {
+      "id": "region-149",
+      "image": "images/region-149.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "low_contrast",
+      "text": "等级： 50\n活力： -626 点\n护甲： +17.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 50,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -626,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 17.4,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "345c9878831a07507edbbb71dc052211fa0eac507a821fc498c5a9f6e1811dd2"
+    },
+    {
+      "id": "region-150",
+      "image": "images/region-150.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "blurred",
+      "text": "等级： 18\n活力： +432 点\n护甲： -22.1%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 18,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 432,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -22.1,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "6f4d51a617f6ac75e2d45fa37e22830e7ba4793edc115f917e3a0e588f53ef02"
+    },
+    {
+      "id": "region-151",
+      "image": "images/region-151.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "blurred",
+      "text": "等级： 51\n活力： -570 点\n护甲： -39.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 51,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -570,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -39.5,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "0e3d031f2bae49b57902f5609ef1ffd2923604fa187b830adf2b809175641623"
+    },
+    {
+      "id": "region-152",
+      "image": "images/region-152.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "blurred",
+      "text": "等级： 76\n活力： +646 点\n护甲： +1.3%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 76,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 646,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 1.3,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "7c2fac3ae8ec1b82ce694c27fa181f327a6212321f0ae719eab03d40c19f6062"
+    },
+    {
+      "id": "region-153",
+      "image": "images/region-153.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "blurred",
+      "text": "等级： 97\n活力： -780 点\n护甲： -14.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 97,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -780,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -14.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "29629dead57898376d775ebce15facf839bc8a5f3255a5c3f7f5395291e84558"
+    },
+    {
+      "id": "region-154",
+      "image": "images/region-154.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "blurred",
+      "text": "等级： 2\n活力： -873 点\n护甲： +34.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 2,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -873,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 34.4,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "36b746213768884472e3e66926cca1ae4f1a64feb24a3691d84c95b888a1d2c4"
+    },
+    {
+      "id": "region-155",
+      "image": "images/region-155.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "downsampled",
+      "text": "等级： 32\n活力： +950 点\n护甲： +32.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 32,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 950,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 32.4,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "253be6dd2136db4122f36a47e704235ddf5db28c3f042a2f6af46a9ca613d5dd"
+    },
+    {
+      "id": "region-156",
+      "image": "images/region-156.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "downsampled",
+      "text": "等级： 78\n活力： -94 点\n护甲： +12.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 78,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -94,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 12.7,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "40dcbb39a7e36d624df9cae10d761d2456564bd10241ee31cffd1b745e977c3a"
+    },
+    {
+      "id": "region-157",
+      "image": "images/region-157.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "downsampled",
+      "text": "等级： 17\n活力： -674 点\n护甲： -26.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 17,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -674,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -26.8,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "bc8b331daa1d498a4beda16cdd42134644612e011ba6621d2f0db29b3a0a8b81"
+    },
+    {
+      "id": "region-158",
+      "image": "images/region-158.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "downsampled",
+      "text": "等级： 87\n活力： +856 点\n护甲： +17.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 87,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 856,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 17.9,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "5da67675b6e5153758a9a56262b188b7c70b03ea3aeedb723a69c2c9c7ff219b"
+    },
+    {
+      "id": "region-159",
+      "image": "images/region-159.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.25,
+      "quality": "downsampled",
+      "text": "等级： 82\n活力： -857 点\n护甲： -20.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 82,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -857,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -20.5,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 612,
+      "height": 202,
+      "image_sha256": "b0eb22e2f211a5d6834ed7b8b00e3d6cd498db71d9b8253a5068c504b8b3b69b"
+    },
+    {
+      "id": "region-160",
+      "image": "images/region-160.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "clean",
+      "text": "等级： 43\n活力： +303 点\n护甲： -18.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 43,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 303,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -18.5,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "2a55fb014c562ac9874afe47872538ca45fa06814afef46ee068f1a0a9fa93f9"
+    },
+    {
+      "id": "region-161",
+      "image": "images/region-161.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "clean",
+      "text": "等级： 21\n活力： -76 点\n护甲： +38.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 21,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -76,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 38.9,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "7b71bb95b2c062c865a2c220a675f8a29f5f61f98f52765c4d226461d4b42b9a"
+    },
+    {
+      "id": "region-162",
+      "image": "images/region-162.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "clean",
+      "text": "等级： 63\n活力： +774 点\n护甲： -36.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 63,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 774,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -36.5,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "ee8ca5a716f0ef957c324de44001a7e5d17f147b911eff15ee07797cb813050d"
+    },
+    {
+      "id": "region-163",
+      "image": "images/region-163.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "clean",
+      "text": "等级： 9\n活力： -394 点\n护甲： +4.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 9,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -394,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 4.6,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "ada84a62772ccab61b1bfc49a3bdf31fc7aa96f4b22b2f16c1a97616a28b828d"
+    },
+    {
+      "id": "region-164",
+      "image": "images/region-164.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "clean",
+      "text": "等级： 51\n活力： +508 点\n护甲： +40.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 51,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 508,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 40.5,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "7fafb02b1e6f5049c2b1d75b45faf63709aec24a2d0d8a50c654e97dd10cde87"
+    },
+    {
+      "id": "region-165",
+      "image": "images/region-165.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "low_contrast",
+      "text": "等级： 26\n活力： +917 点\n护甲： -18.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 26,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 917,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -18.9,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "70fc69ab1f112877d98e216065b1f66d3287324b239bc3dafd0c0c05162984e8"
+    },
+    {
+      "id": "region-166",
+      "image": "images/region-166.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "low_contrast",
+      "text": "等级： 47\n活力： +162 点\n护甲： -24.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 47,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 162,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -24.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "b9d0b2ad2efcba942e1e9fa8879db88827721351e30dbbe8ffa669fbb65424e3"
+    },
+    {
+      "id": "region-167",
+      "image": "images/region-167.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "low_contrast",
+      "text": "等级： 39\n活力： -881 点\n护甲： +9.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 39,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -881,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 9.4,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "e89e78737922094f9410721a435a09f26c21959fa821eaecc2e511bb32f5ec9d"
+    },
+    {
+      "id": "region-168",
+      "image": "images/region-168.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "low_contrast",
+      "text": "等级： 21\n活力： +138 点\n护甲： -14.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 21,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 138,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -14.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "b34911560bb327ecbedfc9e95ad9df22b223d01f1525e83ef36d2e81342cd05d"
+    },
+    {
+      "id": "region-169",
+      "image": "images/region-169.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "low_contrast",
+      "text": "等级： 2\n活力： -586 点\n护甲： -37.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 2,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -586,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -37.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "fafa695321f6b44ab295df7612fd3048d0e6499962e03346ace0c85a0aad742a"
+    },
+    {
+      "id": "region-170",
+      "image": "images/region-170.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "blurred",
+      "text": "等级： 32\n活力： -722 点\n护甲： -6.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 32,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -722,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -6.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "f5120b0ab66fcceebdf7a61f1dc84e015b0dee7495f558c25087950a46ff1fdb"
+    },
+    {
+      "id": "region-171",
+      "image": "images/region-171.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "blurred",
+      "text": "等级： 7\n活力： +254 点\n护甲： -15.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 7,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 254,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -15.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "94eb259d9723156cb2be7c22910e05b61485deba5755348053ade09151372cb2"
+    },
+    {
+      "id": "region-172",
+      "image": "images/region-172.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "blurred",
+      "text": "等级： 14\n活力： +493 点\n护甲： -16.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 14,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 493,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -16.0,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "ae8d6fdd9adf56ca5e0295a5e0d9d3a97b2b0da1019cf7cc6119bb3a6d589b90"
+    },
+    {
+      "id": "region-173",
+      "image": "images/region-173.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "blurred",
+      "text": "等级： 24\n活力： +475 点\n护甲： -14.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 24,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 475,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -14.0,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "481a453856e9a0db6ec0d9b4cf9619feca188e45b6ac690215e1f588dcc43a02"
+    },
+    {
+      "id": "region-174",
+      "image": "images/region-174.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "blurred",
+      "text": "等级： 76\n活力： +425 点\n护甲： +18.5%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 76,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 425,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 18.5,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "e410fec33baed2f645a7ea783f5c3bf09d70a903edb05808bac1d5ee89f65900"
+    },
+    {
+      "id": "region-175",
+      "image": "images/region-175.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "downsampled",
+      "text": "等级： 68\n活力： -702 点\n护甲： -8.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 68,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -702,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -8.0,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "50acd39feae22936194a99e36b65140868a63576061ecab97321df9755b4abaf"
+    },
+    {
+      "id": "region-176",
+      "image": "images/region-176.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "downsampled",
+      "text": "等级： 46\n活力： -567 点\n护甲： +26.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 46,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -567,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 26.2,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "4fad4e60eb8ffa42028122f2e41f600c9b48ffe3fc6860028f5f2dbb21510032"
+    },
+    {
+      "id": "region-177",
+      "image": "images/region-177.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "downsampled",
+      "text": "等级： 35\n活力： +204 点\n护甲： -26.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 35,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 204,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -26.0,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "a56eda136333f4861feea7a0c1d3e6d38689f19d49ffd45f1ca4dfbca83d87cb"
+    },
+    {
+      "id": "region-178",
+      "image": "images/region-178.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "downsampled",
+      "text": "等级： 10\n活力： -889 点\n护甲： +33.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 10,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -889,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 33.0,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "311ad3598bb33613d8dd9bc9ef0ec63c845a88906fab812e15768cb827f5d825"
+    },
+    {
+      "id": "region-179",
+      "image": "images/region-179.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 1.5,
+      "quality": "downsampled",
+      "text": "等级： 88\n活力： -698 点\n护甲： -19.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 88,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -698,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -19.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 735,
+      "height": 243,
+      "image_sha256": "ffa58aecba2aaa6c9b3866f9b6c2c3b7c0ccd7d4de7f5e4dcc6940c68b68d430"
+    },
+    {
+      "id": "region-180",
+      "image": "images/region-180.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "clean",
+      "text": "等级： 66\n活力： -213 点\n护甲： -27.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 66,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -213,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -27.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "ced8c38999a53150e430334728715a23cd097c592baae642542f86658f338755"
+    },
+    {
+      "id": "region-181",
+      "image": "images/region-181.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "clean",
+      "text": "等级： 95\n活力： +682 点\n护甲： -3.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 95,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 682,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -3.0,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "169d262b484fa18296c73e383ced426530d2b6b0a31c5239d1688cf716d0aca1"
+    },
+    {
+      "id": "region-182",
+      "image": "images/region-182.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "clean",
+      "text": "等级： 61\n活力： +207 点\n护甲： -22.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 61,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 207,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -22.6,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "d640173f23670eac2bec319ee7c911f75d6692963b51c821b5da2f1d3ed582b0"
+    },
+    {
+      "id": "region-183",
+      "image": "images/region-183.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "clean",
+      "text": "等级： 54\n活力： +747 点\n护甲： +13.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 54,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 747,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 13.6,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "715d679c6f72b89fe5af6a1503924f3173c8254d25fe4bb1b1351f78efe5b077"
+    },
+    {
+      "id": "region-184",
+      "image": "images/region-184.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "clean",
+      "text": "等级： 9\n活力： +663 点\n护甲： -25.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 9,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 663,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -25.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "e9b2e96a235067c692d3645d0c4a5cfae1312a51515c2f14a71dd7f3d9baa554"
+    },
+    {
+      "id": "region-185",
+      "image": "images/region-185.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "low_contrast",
+      "text": "等级： 27\n活力： -677 点\n护甲： -23.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 27,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -677,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -23.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "daafa3f8dac88aad22681c0cc36ffe9605a5bdddd4d0dd64433693db7caa0a62"
+    },
+    {
+      "id": "region-186",
+      "image": "images/region-186.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "low_contrast",
+      "text": "等级： 11\n活力： -446 点\n护甲： +20.6%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 11,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -446,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 20.6,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "1f88bf8f13b8ee8f367516adfb41c709db26cb9a4b3d74948192ac395e107bd1"
+    },
+    {
+      "id": "region-187",
+      "image": "images/region-187.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "low_contrast",
+      "text": "等级： 40\n活力： -842 点\n护甲： -8.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 40,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -842,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -8.7,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "125cbdce517e284fd50826fd32724617389bf71afd5ef51be9825df168346f2c"
+    },
+    {
+      "id": "region-188",
+      "image": "images/region-188.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "low_contrast",
+      "text": "等级： 3\n活力： -174 点\n护甲： -37.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 3,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -174,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -37.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "ec8f6c50819dc593fce0a1e0c9b945033d9e7efcc6516e7a48ad9b06218567dc"
+    },
+    {
+      "id": "region-189",
+      "image": "images/region-189.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "low_contrast",
+      "text": "等级： 95\n活力： +358 点\n护甲： -10.8%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 95,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 358,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -10.8,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "828ad2d6f9ed4e78775df816d8e0c392d45d1a8e66f89a265f1de9afdbbef354"
+    },
+    {
+      "id": "region-190",
+      "image": "images/region-190.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "blurred",
+      "text": "等级： 28\n活力： +304 点\n护甲： +18.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 28,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 304,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 18.7,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "d92c9a738062846b788b4cc5e20d274981be69878ce6d5babd074edd7b109399"
+    },
+    {
+      "id": "region-191",
+      "image": "images/region-191.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "blurred",
+      "text": "等级： 34\n活力： -204 点\n护甲： +20.7%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 34,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -204,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 20.7,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "a1e63aefaff26294070f4b1650b5b82da30453f768c0cffe6eefbd42e92704cc"
+    },
+    {
+      "id": "region-192",
+      "image": "images/region-192.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "blurred",
+      "text": "等级： 27\n活力： -751 点\n护甲： -20.1%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 27,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -751,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -20.1,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "9b6cafd241ee17c429cda8f556b878bf2fccaf2b7c83f4feaf5b6ec1232828c3"
+    },
+    {
+      "id": "region-193",
+      "image": "images/region-193.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "blurred",
+      "text": "等级： 56\n活力： -217 点\n护甲： +39.9%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 56,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -217,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": 39.9,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "00375a153a487e58b31f4f68eab2352e0c8be1e8e7b8feffadbd7614c095051a"
+    },
+    {
+      "id": "region-194",
+      "image": "images/region-194.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "blurred",
+      "text": "等级： 11\n活力： -392 点\n护甲： -39.1%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 11,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -392,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -39.1,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "3499b07837bda740197959f7f9e580159f7a25e292a8ffe5eb73e7ac6ccf6e9f"
+    },
+    {
+      "id": "region-195",
+      "image": "images/region-195.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "downsampled",
+      "text": "等级： 69\n活力： +369 点\n护甲： -18.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 69,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 369,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -18.0,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "43655eac37951d4019b40fa81c93de0e8ba220482ffe3812a4691ae7e0ab21f1"
+    },
+    {
+      "id": "region-196",
+      "image": "images/region-196.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "downsampled",
+      "text": "等级： 98\n活力： +592 点\n护甲： +38.0%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 98,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 592,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": 38.0,
+          "unit": "%",
+          "sign": "+"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "7bfc1c728359bdc389b0a7752283ebf5e8b3e35b7a3b6d0b4fb807c95fb20111"
+    },
+    {
+      "id": "region-197",
+      "image": "images/region-197.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "downsampled",
+      "text": "等级： 73\n活力： -528 点\n护甲： -21.1%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 73,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -528,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -21.1,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "3f9c68438fd3091b66f28b4019f7bb0c1c98c39807386fb40627211bac0406cc"
+    },
+    {
+      "id": "region-198",
+      "image": "images/region-198.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "downsampled",
+      "text": "等级： 47\n活力： +919 点\n护甲： -15.4%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 47,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": 919,
+          "unit": "points",
+          "sign": "+"
+        },
+        {
+          "field": "armor",
+          "value": -15.4,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "187eb93ceb30c8649ff5313d32a3951163b7d07f23659f708d6a27faad56cd89"
+    },
+    {
+      "id": "region-199",
+      "image": "images/region-199.bmp",
+      "language": "zh-Hans-CN",
+      "scale": 2.0,
+      "quality": "downsampled",
+      "text": "等级： 26\n活力： -58 点\n护甲： -9.2%",
+      "expected": [
+        {
+          "field": "level",
+          "value": 26,
+          "unit": "level",
+          "sign": ""
+        },
+        {
+          "field": "vitality",
+          "value": -58,
+          "unit": "points",
+          "sign": "-"
+        },
+        {
+          "field": "armor",
+          "value": -9.2,
+          "unit": "%",
+          "sign": "-"
+        }
+      ],
+      "width": 980,
+      "height": 324,
+      "image_sha256": "ed2d8e881347851072a66cea774c712b806ba9c4adfb1402687ef9bf0b4455c4"
+    }
+  ],
+  "truth_hash": "c6ab5608f97c2f727ecc1b5a9c9fc869eec0b641ea2593291b0aae060ac34cc6"
+}

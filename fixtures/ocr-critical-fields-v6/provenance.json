@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "dataset_version": "synthetic-critical-fields-v6",
+  "archived_at_utc": "2026-10-04T06:26:42.747368+00:00",
+  "files_sha256": {
+    "manifest.json": "a1eb2620d23c0ba17d950f29f7f83f4dfb44eedfdfeb306f7e00db48a13abf0e",
+    "observations.json": "2878a6a29b956a50f00a4c1f193de1fb48bd41b5e8ec9df173bf7d1219992980",
+    "report.json": "21cce6a25650d1f5e04148b8b71ea89339c147380286005dcf18508a77c8d06a",
+    "parser-source.py": "cd3868433f60eb6e4676c43cf0badb147b7e708fc9118cf4ed60cf234bfc9b87"
+  },
+  "generator_sha256": "1d371e6fb38c46742f3688717e9ac7bde23ea12ca08b2b0948f5acbac8734a37",
+  "truth_hash": "8b1948c474dc028f2f99c83ae5be36fe02db41b116d6a1e59f531984f4880b21",
+  "render_environment": {
+    "pillow": "12.3.0",
+    "freetype": "2.14.3"
+  },
+  "examined_after_measurement": true,
+  "independent_human_truth_review": "pending",
+  "m2_accepted": false,
+  "scope": "Original synthetic text and recorded native OCR observations only; no game assets, player data, fonts or machine paths.",
+  "future_use": "Historical evaluation/replay only. Any changed parser, model or renderer needs a fresh unseen acceptance holdout."
+}

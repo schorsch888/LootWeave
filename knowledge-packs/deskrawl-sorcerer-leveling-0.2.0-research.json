@@ -1,0 +1,53 @@
+{
+  "contract_version": 1,
+  "pack_id": "deskrawl-sorcerer-leveling",
+  "version": "0.2.0-research",
+  "context": {
+    "game_id": "deskrawl",
+    "edition": "1.0.0i",
+    "game_build": "25690430",
+    "mode": "online",
+    "season": "not_applicable",
+    "ruleset_id": "deskrawl-25690430",
+    "content_entitlements": []
+  },
+  "class_id": "sorcerer",
+  "scenario": "leveling",
+  "execution_policy": "research_only",
+  "rules": [],
+  "known_affixes": {},
+  "evidence": [
+    {
+      "id": "deskrawl-static-research",
+      "source_ref": "repo://research/extraction-validation.json",
+      "source_build": "25690430",
+      "method": "Historical local extraction and independent serialized-number checks; see research guide prerequisites.",
+      "scope": "1,593 selected static definitions; not owned items or a complete combat model.",
+      "results": "Historical reports record zero parse failures and checks for 3,080 Float, 67 Int and 196 Long fields.",
+      "unknowns": "Complete mechanics, trigger uptime, server overrides and redistribution rights of original assets remain unaccepted.",
+      "verification": "historical_research",
+      "conflicts": []
+    },
+    {
+      "id": "deskrawl-frostwyrm-native-review",
+      "source_ref": "repo://research/deskrawl-frostwyrm.json",
+      "source_build": "25690430",
+      "method": "Selected local serialized graph, generated field layouts and manual review of nine source-hashed native methods. Repeatable checker verifies source identity and graph, not online behavior.",
+      "scope": "Staff template resources.assets:4972, effect resources.assets:4793 and ability sharedassets0.assets:59839 for this build; Sorcerer leveling remains unaccepted.",
+      "results": "The candidate applies a +1 per-ability deflection count and Random targeting. Reviewed initialization, hit and redirect branches connect that count to conditional projectile continuation.",
+      "unknowns": "Equipment rebuild, ownership/override paths, stacking, complete target eligibility and online behavior are unresolved. No executable rule or DPS claim.",
+      "verification": "historical_research",
+      "conflicts": []
+    }
+  ],
+  "unknowns": [
+    "Executable Deskrawl mechanics have not passed the M1 evidence gate.",
+    "Static definitions cannot establish actual rolls, real DPS or final online drop probabilities.",
+    "Full Player equipment reset/rebuild, unequip and repeated-apply lifecycle.",
+    "Complete actor ownership and context override paths.",
+    "Legal source combinations, nrs ownership and stacking interactions.",
+    "Complete target eligibility, range, collision and damage behavior.",
+    "Online server overrides and agreement between client branches and observed behavior.",
+    "The remaining M1 Sorcerer leveling mechanisms, independently reviewed cases and replay acceptance."
+  ]
+}

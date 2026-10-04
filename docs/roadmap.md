@@ -1,8 +1,8 @@
 # Roadmap
 
-The public deliverable is a design and research baseline, including selected evidence records and read-only research tools. This is not a shipped desktop product. **M1–M5 are unimplemented; their case counts, accuracy thresholds and performance budgets are proposed acceptance targets, not measured results.** Product implementation requires explicit authorization. No delivery dates are committed before estimation.
+The repository contains a local implementation plus selected research evidence and read-only tools. **M1–M5 are partially implemented; real-game and release gates remain unaccepted.** Synthetic fixtures, domain/process tests and local builds are implementation evidence, not a shipped game-support release. See the [implementation record](implementation.md). No delivery dates are committed before estimation.
 
-All implementation stages must preserve the FSD frontend, DDD backend microservices organized by business capability, Rust + Python stack, and Windows single-EXE entry point. React/TypeScript, Tauri, the Rust/Python responsibility split, deployment, and packaging remain proposals to validate.
+All implementation stages must preserve the FSD frontend, DDD backend microservices organized by business capability, Rust + Python stack, and Windows single-EXE entry point. React/TypeScript, Tauri and the Rust/Python split are implemented; packaging, clean-machine deployment and real-game support require their remaining gates.
 
 | Stage | Dependencies | Deliverables | Accountable role |
 | --- | --- | --- | --- |
@@ -13,15 +13,15 @@ All implementation stages must preserve the FSD frontend, DDD backend microservi
 | M4: Windows EXE trial | M2/M3 end-to-end flow and service contracts | Bundled installer, Rust process supervision and clean-machine validation | Desktop/release lead |
 | M5: Acquisition, leveling and other games | Stable M4 and independently validated capability rules | Acquisition/leveling guidance, statistical estimates and isolated game adapters | Acquisition lead; adapter lead per game |
 
-Assign one named owner and an independent reviewer before starting each stage. M1/M2 work may overlap after their shared contracts stabilize; a minimal packaging feasibility check may start earlier. Each gate record must state scope/version, deliverables, reproducible checks, environment, sample coverage, targets versus observations, failures, unknowns and rollback. Unresolved critical assumptions keep the gate at **No-go**.
+Per user direction, implementation and local validation proceed without requiring a named owner or independent reviewer assignment. The accountable roles describe responsibility; real-game observations and release-environment evidence remain required for their respective acceptance claims. M1/M2 work may overlap after their shared contracts stabilize; a minimal packaging feasibility check may start earlier. Each gate record must state scope/version, deliverables, reproducible checks, environment, sample coverage, targets versus observations, failures, unknowns and rollback. Unresolved critical assumptions keep the gate at **No-go**.
 
 ## M0: Current baseline
 
 Local research recorded strict parsing of 1,593 selected static objects from Deskrawl build `25690430`, with zero recorded parse errors, and independent conversion checks for 3,080 Float, 67 Int and 196 Long fields. The selection includes 336 ItemData definitions, including non-equipment, 124 AbilityData definitions, including non-player abilities, 185 talents, 119 runes, 13 rune sets and 36 gems. These counts describe definitions, not supported product features. Static XP-penalty branches and their configuration binding were also reviewed locally; server behavior and measured route efficiency remain unresolved.
 
-Selected reports, source identities and read-only tools are public; [research reproduction](research.md) documents their inputs and limits. Game assets, full generated databases and downloaded tools are excluded, so source checks require lawfully available matching game files. The repository ships no product rule pack, OCR flow, equipment evaluator or EXE. Field completeness and numerical conversion do not establish complete mechanics, real item rolls, DPS or final drop probabilities.
+Selected reports, source identities and read-only tools are public; [research reproduction](research.md) documents their inputs and limits. Game assets, full generated databases and downloaded tools are excluded, so source checks require lawfully available matching game files. The repository has a synthetic executable pack, OCR confirmation flow and capability evaluator. Its Deskrawl pack is research-only; a real-game release is not accepted. Field completeness and numerical conversion do not establish complete mechanics, real item rolls, DPS or final drop probabilities.
 
-**Baseline acceptance:** publish necessary documentation, selective evidence and the research toolchain; check links, privacy, dependency setup and the separation of current facts from future targets. **Go:** prepare M1 contracts and lawful synthetic fixtures. **No-go:** claim source verification without matching inputs, redistribute game resources without authorization, or claim a working application. If the evidence boundary cannot be established, retain only the documented method and limitations.
+**Baseline acceptance:** publish necessary documentation, selective evidence and the research toolchain; check links, privacy, dependency setup and the separation of current facts from future targets. **Go:** prepare M1 contracts and lawful synthetic fixtures. **No-go:** claim source verification without matching inputs, redistribute game resources without authorization, or claim an accepted real-game application. If the evidence boundary cannot be established, retain only the documented method and limitations.
 
 ## M1: Versioned rules and public evidence
 
@@ -33,7 +33,7 @@ Start with one validated Deskrawl online Sorcerer leveling scenario. Deliver a v
 
 ## M2: Capture, confirmation and snapshots
 
-Deliver text entry, Windows region capture, an independent OCR worker, original-text/region mapping, confirmation and separately stored Profile revisions. Cover equipment, skills, talents, paragon, runes, companions and observation time. Store observations separately from confirmed facts; unnamed icons cannot establish identity. Capture failure must leave the text path usable.
+Deliver text entry, Windows region capture, an independent OCR worker, original-text/region mapping, confirmation and separately stored Profile revisions. Cover equipment, skills, talents, paragon, runes, companions and observation time. Store observations separately from confirmed facts; unnamed icons cannot establish identity. Deskrawl capture must first detect the running process and bind an explicitly chosen window, then recheck identity, foreground, visibility and client geometry. Capture failure must leave the text path usable.
 
 **Acceptance targets:** at least 200 lawful, publishable synthetic or anonymized screenshot regions in a labeled holdout set excluded from tuning. Critical-field accuracy is at least 95% over **all** labeled critical fields; rejection, missing fields and nonrecognition count as incorrect. Numeric fields must match sign and unit as well as value. Report accuracy, rejection and unflagged-error rates by language, scaling and image quality. Every flagged ambiguity enters confirmation; all 10 cross-time snapshot cases trigger consistency checks. Manual ground truth must also expose errors that OCR failed to flag.
 
@@ -49,7 +49,9 @@ Deliver the EquipmentEvaluation service, condition resolution, replacement withi
 
 ## M4: One-entry EXE and local lifecycle
 
-Validate the proposed Tauri sidecar, Python directory bundle, NSIS installer and offline WebView2 dependencies. The main EXE must start the local services without a separate user-installed Python runtime. A failed minimal packaging check reopens the desktop-host choice.
+Validate the Tauri sidecar, Python directory bundle, NSIS installer and offline WebView2 dependencies. The main EXE must start the local services without a separate user-installed Python runtime. A failed minimal packaging check reopens the desktop-host choice.
+
+Two-environment acceptance remains unpassed: no second clean machine or VM is currently available. Earlier developer-host lifecycle tests and an installer build do not close this gate.
 
 **Acceptance targets:** install, launch, uninstall and complete the offline core flow on at least two clean Windows x64 environments using standard accounts without preinstalled Python. Test WebView2 present, missing and offline cases. Twenty start/exit cycles leave no orphan processes; each service-crash case offers bounded recovery or explicit degradation. On disclosed hardware, OS, models and inputs: cold-start P95 ≤15 seconds over 20 runs, OCR P95 ≤3 seconds over 100 regions, and total idle memory ≤700 MiB. Budget changes require measured evidence.
 
@@ -67,4 +69,4 @@ Adapt Diablo II, III and IV separately, identifying version branch, season and m
 
 **Go:** release an independently accepted capability within its validated scope. **No-go:** old sources, matching system names, client weights or static levels stand in for current online mechanics or optimal routes. Disable the affected game/capability after patches or sampling failures while preserving lawful historical replay.
 
-See the [design](design.md) for system boundaries, the [README](../README.md) for repository status, and [AGENTS.md](../AGENTS.md) for collaboration and publication rules.
+See the [design](design.md) for boundaries, the [README](../README.md) for status, and the [implementation record](implementation.md) for executable checks and limits.
