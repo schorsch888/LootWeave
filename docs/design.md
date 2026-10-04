@@ -1,6 +1,6 @@
 # Design baseline
 
-The goal is to explain an item's use, replacement, and retention value from its game version, actual rolls, complete build, and intended use. The project is in research and design; no product is runnable. Publish what readers need to understand, reproduce, validate, and maintain it. Delivery gates are in the [roadmap](roadmap.md).
+The goal is to explain an item's use, replacement, and retention value from its game version, actual rolls, complete build, and intended use. A local development implementation runs with synthetic rules; real-game support and desktop release gates remain unaccepted. See the [implementation record](implementation.md). Publish what readers need to understand, reproduce, validate, and maintain it. Delivery gates are in the [roadmap](roadmap.md).
 
 ## Current state and boundaries
 
@@ -9,7 +9,7 @@ The goal is to explain an item's use, replacement, and retention value from its 
 | Locally reported fact | Research reports record parsing and serialized-number validation for 1,593 selected static objects from Deskrawl build `25690430` |
 | Evidence limitation | Selected reports and independent tools describe the method and results. Full reproduction requires lawfully obtained matching game files and regenerated intermediates; no bundled source assets or product acceptance claim |
 | Requirements | Local Windows product, one EXE launch entry, FSD frontend, DDD backend microservices organized by business capability, Rust + Python; no player-supplied stat weights |
-| Proposal | React/TypeScript frontend, Tauri/Rust host, Python business services and OCR worker; implementation and distribution remain unvalidated |
+| Implementation | React/TypeScript FSD frontend, Tauri/Rust host and independent Python business/OCR services; synthetic behavior is tested, distribution and game acceptance remain under validation |
 | Unknowns | Complete combat formulas, trigger uptime, online overrides, and final drop probabilities; complete serialized fields do not establish complete mechanics |
 
 The first validation scenario is online Deskrawl sorcerer leveling. Static definitions for four classes do not mean recommendations for all four are validated. Diablo II, III, and IV require separate edition, season, version, and mode research; similarly named systems do not share formulas by default.
@@ -21,6 +21,8 @@ Text or screenshot observations become confirmed equipment and build facts befor
 A replacement recomputes the complete configuration: skills, talents, paragon, legendary effects, rune sets, companions, resource cycles, and survival requirements. Until formulas are independently validated, explain mechanism changes without claiming true DPS or percentage improvement.
 
 Acquisition planning can later explain sources, eligibility, prerequisites, and reacquisition difficulty. Compare routes using comparable measured outcomes and complete elapsed time. Raw weights are not final probabilities for a particular item.
+
+For real-time Deskrawl capture, confirm the process and explicitly select its window. Bind the region to the client area and recheck process identity, visibility, minimization, foreground and geometry at capture time. OS process/window metadata is separate from game memory. Game absence or capture failure must preserve text input and historical replay; a detected window does not verify a game version or its rules.
 
 Do not inject into the game, access process memory or DMA, modify game files or player saves, automate gameplay, or sell/dispose of items.
 
@@ -36,7 +38,7 @@ Do not inject into the game, access process memory or DMA, modify game files or 
 | MechanicDefinition | Effect source, actor/target, triggers, conditions, parameters/units, stacking/exclusions, duration, version, and evidence IDs |
 | EvidenceRecord | Source/version, capture or extraction method, OCR region/text, player confirmation, verification state, conflicts, and applicability; linked to both rules and input facts |
 
-Conditions use active, inactive, and unknown states. Unknown triggers are not assumed active. Preserve sources for temporary buffs and panel totals; do not add equipment or talent contributions again before attribution is resolved. Unnamed icons, class, unlock level, or the highest elemental panel value cannot establish the actual build.
+Conditions use active, inactive, and unknown states. Unknown triggers are not assumed active. Aggregate capability state separately for each actor: any active provider establishes presence; otherwise any unknown provider keeps it unknown; all inactive providers establish absence. An unknown state cannot establish a definite loss, gain or unmet requirement. Show uncertain before/after states with their rule and input sources, and retain blockers until confirmation. Preserve sources for temporary buffs and panel totals; do not add equipment or talent contributions again before attribution is resolved. Unnamed icons, class, unlock level, or the highest elemental panel value cannot establish the actual build.
 
 Store observations, confirmed facts, and derived results separately. Unrecognized affixes, ambiguity, conflicting rules, or unrevealed properties block a definite discard conclusion. Check consistency across capture times. Recognition reliability and mechanic evidence are separate; do not invent uncalibrated confidence percentages.
 
@@ -44,7 +46,7 @@ Each evaluation pins the game context, item/build/intent revisions, knowledge pa
 
 ## Local architecture
 
-The FSD frontend, DDD backend microservices, and use of both Rust and Python are requirements. The component breakdown below proposes framework choices and language responsibilities; validate those choices along with deployment and packaging.
+The FSD frontend, DDD backend microservices, and use of both Rust and Python are requirements. The component breakdown below is implemented; remaining deployment, distribution and game-support gates need validation.
 
 | Component | Responsibility and boundary |
 | --- | --- |
@@ -55,21 +57,21 @@ The FSD frontend, DDD backend microservices, and use of both Rust and Python are
 | GameKnowledge service | Versioned mechanics, evidence, adapters, and KnowledgePacks |
 | EquipmentEvaluation service | Conditional effects, complete-build comparison, retention reasons, and replay |
 
-The three business services own independent APIs, domain models, and storage. They communicate through versioned contracts rather than reading one another's databases. Initial deployment is entirely local under a Rust supervisor; one desktop distribution can bundle independently deployable services. OCR and capture are infrastructure, not class-specific services. Docker/Kubernetes are not required. Acquisition planning may become a separate business context when its scope is validated.
+Profile, Knowledge, Evaluation and Planning own independent APIs, domain models and storage. They communicate through versioned contracts rather than reading one another's databases. Initial deployment is entirely local under a Rust supervisor; one desktop distribution can bundle independently deployable services. OCR and capture are infrastructure, not class-specific services. Docker/Kubernetes are not required. Planning is a separate context for measured XP/time trials, source eligibility and sample estimates; real-game source adapters remain unaccepted.
 
 Flow: capture → confirm observations → Profile revision → compatible knowledge pack → pinned evaluation request → explanation/comparison. Use revision checks, idempotent writes, and bounded timeouts; failures must not duplicate confirmations or silently change rule versions.
 
-Use FSD layers and slices only when needed. Cross-slice imports target strictly lower layers; compose sibling slices above them, with App/Shared exceptions. A public API does not waive dependency rules. The [official FSD layer reference](https://fsd.how/docs/reference/layers/) supports this structure; project checks are not implemented.
+Use FSD layers and slices only when needed. Cross-slice imports target strictly lower layers; compose sibling slices above them, with App/Shared exceptions. A public API does not waive dependency rules. The [official FSD layer reference](https://fsd.how/docs/reference/layers/) supports this structure; scripts/check_architecture.py checks project imports.
 
-Tauri is the proposed Python-sidecar host. Its [sidecar documentation](https://v2.tauri.app/develop/sidecar/) covers Python CLI/API binaries built with PyInstaller. A directory bundle would include runtimes/models and avoid per-process unpacking. The proposed NSIS Setup.exe installs a main EXE that starts local components. Validate WebView2 detection and offline installation; the [official Windows installer reference](https://v2.tauri.app/distribute/windows-installer/) documents NSIS and `offlineInstaller`. These establish feasibility, not project delivery.
+Tauri is the implemented Rust desktop host. Its [sidecar documentation](https://v2.tauri.app/develop/sidecar/) covers Python CLI/API binaries built with PyInstaller. The directory bundle embeds CPython and avoids per-worker unpacking. OCR models are installed Windows capabilities. The configured NSIS Setup.exe installs a main EXE that starts local components. Validate WebView2 detection and offline installation; the [official Windows installer reference](https://v2.tauri.app/distribute/windows-installer/) documents NSIS and `offlineInstaller`. Configuration and local checks do not establish a clean-machine release.
 
-Electron with Rust/Python is a viable alternative with another desktop runtime to maintain. Prefer Tauri provisionally and revisit after the smallest packaging experiment. A single-process desktop could be simpler but does not meet the required FSD/business-service boundaries. Remote hosting has no current requirement.
+Tauri is the current host choice. A failed packaging gate reopens that choice. Remote hosting has no current requirement.
 
 Bind local APIs to loopback and validate session authorization and caller origin; keep credentials out of logs. Handle instance locks, port conflicts, health timeouts, retries, and child-process cleanup. Preserve text confirmation when OCR fails. Validate knowledge-update source, hash, and contract compatibility; back up before storage migrations. Rollback must not let old services read incompatible new storage.
 
 ## Deskrawl leveling route planning
 
-This is a proposed Deskrawl-specific capability. Treat map and difficulty as one candidate; combine versioned entry rules with confirmed unlock status. Exclude confirmed inaccessible/unavailable entries; unknown access requires confirmation. Static enemy levels, placeholders, or map counts cannot establish playable routes or XP per minute.
+Measured-route comparison is implemented in Planning; Deskrawl-specific map/entry rules remain unaccepted. Treat map and difficulty as one candidate; combine versioned entry rules with confirmed unlock status. Exclude confirmed inaccessible/unavailable entries; unknown access requires confirmation. Static enemy levels, placeholders, or map counts cannot establish playable routes or XP per minute.
 
 Start with manual trial records. Compare cumulative **actual XP / complete elapsed time** under the same version, mode, character level, build, XP bonuses, and leveling objective. Include movement, waiting, recovery, and deaths. Across comparable trials use total XP divided by total time, retain variation and trial counts, and describe a single trial as such.
 

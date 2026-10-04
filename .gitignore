@@ -62,3 +62,6 @@ __pycache__/
 *.temp
 Thumbs.db
 Desktop.ini
+
+# Generated desktop schemas
+/desktop/gen/

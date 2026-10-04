@@ -1,0 +1,708 @@
+{
+  "schema_version": 1,
+  "record_id": "deskrawl-frostwyrm-module-pointers-build-25690430",
+  "research_date": "2026-10-04",
+  "build_id": "25690430",
+  "context": {
+    "game_id": "deskrawl",
+    "edition": "1.0.0i",
+    "game_build": "25690430",
+    "mode": "online",
+    "season": "not_applicable",
+    "ruleset_id": "deskrawl-25690430",
+    "content_entitlements": []
+  },
+  "class_id": "sorcerer",
+  "scenario": "leveling",
+  "status": "reviewed_static_native_only",
+  "scope": "Selected static/native lifecycle and metadata-slot evidence, with an original metadata image and two token-indexed x64 module method pointers. No game execution, memory/save access or online experiment. Registration-root use, class-vtable materialization, indirect dispatch and all live equipment events remain unaccepted.",
+  "sources": [
+    {
+      "path": "game://Deskrawl_Data/resources.assets",
+      "sha256": "a72f27e706b4f7a4b2a38c42b4f78f4f54138065fb770244e8f8b801f6ba0adb"
+    },
+    {
+      "path": "game://Deskrawl_Data/sharedassets0.assets",
+      "sha256": "d10c933d76ae11e7ce30f240f3f53bdb32c3c3a0ff8c5b3d133e96e5e55c4f46"
+    },
+    {
+      "path": "game://GameAssembly.dll",
+      "sha256": "8880d8aca431b9c60f868fe55e6a7581ce506d788b52b220891698450004cbdd"
+    },
+    {
+      "path": "game://Deskrawl_Data/il2cpp_data/Metadata/global-metadata.dat",
+      "sha256": "a0c1a47a95a2498d2b6df54756ec85e51c203e4b9b8833802af679d1badc7933"
+    },
+    {
+      "path": "repo://data/extracted/deskrawl/25690430/objects.jsonl",
+      "sha256": "998ec61646f734ee575e35204534bfe2739cc583f4e81e0313a8a3ed0219c04e"
+    },
+    {
+      "path": "repo://.tools/cpp2il/deskrawl-25690430-addresses/Assembly-CSharp.dll",
+      "sha256": "72e23907c7df62dfed36fdb4ec46207b0c12c76e10b2c8b30434fcbe090baf7e"
+    },
+    {
+      "path": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/Player.cs",
+      "sha256": "217fc9f33e846bb9e1cd3e1c82dd6ae7b38cfb8f7a2532f793e2af6a04791eec"
+    },
+    {
+      "path": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/AbilityProjectile.cs",
+      "sha256": "b73f1f3216166c3af885b547dd71ed91ad40a4ec053c01ab3c508ba11997de05"
+    },
+    {
+      "path": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/SpawnProjectileEffect.cs",
+      "sha256": "003f97af1779f4a54df45c02febe29c7ceae32e793f67e6e189b37ef041d51a0"
+    },
+    {
+      "path": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/EquipmentEffect_AbilityProjectileDeflect.cs",
+      "sha256": "bfcde239c8284c61e82e82c079c78e33bd2031bc5e139aa6851402e88357414a"
+    },
+    {
+      "path": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/DeflectTargeting.cs",
+      "sha256": "2b86c88affa6b47dbefac2f4ef422e9ce10de15017479194fcf88230825f66ab"
+    },
+    {
+      "path": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/EquipmentEffectBehavior.cs",
+      "sha256": "1d00095d4f906f38e3cf7f0b046cc8541ba25c64c12059840e0b052ce8e7e09d"
+    }
+  ],
+  "objects": [
+    {
+      "object_id": "resources.assets:4972",
+      "class_name": "ItemData",
+      "name": "LegendaryStaff1",
+      "byte_size": 252,
+      "fields": {
+        "Rarity": 3,
+        "EquipSlot": 1,
+        "UsableClasses": 2,
+        "MinDropLevel": 15,
+        "EquipmentEffects": [
+          {
+            "m_FileID": 0,
+            "m_PathID": 4793
+          }
+        ]
+      }
+    },
+    {
+      "object_id": "resources.assets:4793",
+      "class_name": "EquipmentEffect_AbilityProjectileDeflect",
+      "name": "LegendaryStaff1",
+      "byte_size": 68,
+      "fields": {
+        "Ability": {
+          "m_FileID": 2,
+          "m_PathID": 59839
+        },
+        "Deflects": 1,
+        "Targeting": 1
+      }
+    },
+    {
+      "object_id": "sharedassets0.assets:59839",
+      "class_name": "AbilityData",
+      "name": "SorcererBasicAttack2",
+      "byte_size": 992,
+      "fields": {
+        "LevelRequirement": 15,
+        "TargetCount": 1
+      }
+    }
+  ],
+  "links": [
+    {
+      "source_id": "resources.assets:4972",
+      "field": "$.EquipmentEffects[0]",
+      "raw": {
+        "m_FileID": 0,
+        "m_PathID": 4793
+      },
+      "target_id": "resources.assets:4793"
+    },
+    {
+      "source_id": "resources.assets:4793",
+      "field": "$.Ability",
+      "raw": {
+        "m_FileID": 2,
+        "m_PathID": 59839
+      },
+      "target_id": "sharedassets0.assets:59839"
+    }
+  ],
+  "managed_effects": [
+    {
+      "object_id": "sharedassets0.assets:59839",
+      "registry_version": 2,
+      "rid": 8722919646112776517,
+      "type": {
+        "class": "SpawnProjectileEffect",
+        "ns": "",
+        "asm": "Assembly-CSharp"
+      },
+      "fields": {
+        "TravelMode": 0,
+        "NumProjectiles": 1,
+        "PierceTargets": 0,
+        "MaxPierceCount": 0,
+        "RehitInterval": 0.0,
+        "HitAllInRadius": 0
+      }
+    }
+  ],
+  "field_layouts": [
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/Player.cs",
+      "type": "Player",
+      "field": "nrq",
+      "field_type": "readonly Dictionary<AbilityData, Int32>",
+      "offset": 736
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/Player.cs",
+      "type": "Player",
+      "field": "nrr",
+      "field_type": "readonly Dictionary<AbilityData, DeflectTargeting>",
+      "offset": 744
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/Player.cs",
+      "type": "Player",
+      "field": "nrs",
+      "field_type": "readonly Dictionary<AbilityData, Int32>",
+      "offset": 752
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/AbilityProjectile.cs",
+      "type": "AbilityProjectile",
+      "field": "lls",
+      "field_type": "int",
+      "offset": 60
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/AbilityProjectile.cs",
+      "type": "AbilityProjectile",
+      "field": "llt",
+      "field_type": "DeflectTargeting",
+      "offset": 64
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/AbilityProjectile.cs",
+      "type": "AbilityProjectile",
+      "field": "llv",
+      "field_type": "readonly HashSet<Character>",
+      "offset": 72
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/SpawnProjectileEffect.cs",
+      "type": "SpawnProjectileEffect",
+      "field": "TravelMode",
+      "field_type": "ProjectileTravelMode",
+      "offset": 56
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/SpawnProjectileEffect.cs",
+      "type": "SpawnProjectileEffect",
+      "field": "PierceTargets",
+      "field_type": "bool",
+      "offset": 69
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/SpawnProjectileEffect.cs",
+      "type": "SpawnProjectileEffect",
+      "field": "MaxPierceCount",
+      "field_type": "int",
+      "offset": 72
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/SpawnProjectileEffect.cs",
+      "type": "SpawnProjectileEffect",
+      "field": "RehitInterval",
+      "field_type": "float",
+      "offset": 144
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/SpawnProjectileEffect.cs",
+      "type": "SpawnProjectileEffect",
+      "field": "HitAllInRadius",
+      "field_type": "bool",
+      "offset": 148
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/EquipmentEffect_AbilityProjectileDeflect.cs",
+      "type": "EquipmentEffect_AbilityProjectileDeflect",
+      "field": "Ability",
+      "field_type": "AbilityData",
+      "offset": 24
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/EquipmentEffect_AbilityProjectileDeflect.cs",
+      "type": "EquipmentEffect_AbilityProjectileDeflect",
+      "field": "Deflects",
+      "field_type": "int",
+      "offset": 32
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/EquipmentEffect_AbilityProjectileDeflect.cs",
+      "type": "EquipmentEffect_AbilityProjectileDeflect",
+      "field": "Targeting",
+      "field_type": "DeflectTargeting",
+      "offset": 36
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/Player.cs",
+      "type": "Player",
+      "field": "nqx",
+      "field_type": "readonly List<EquipmentEffectBehavior>",
+      "offset": 592
+    }
+  ],
+  "enums": [
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/DeflectTargeting.cs",
+      "type": "DeflectTargeting",
+      "name": "Nearest",
+      "value": 0
+    },
+    {
+      "source_ref": "repo://.tools/cpp2il/deskrawl-25690430-types/DiffableCs/Assembly-CSharp/DeflectTargeting.cs",
+      "type": "DeflectTargeting",
+      "name": "Random",
+      "value": 1
+    }
+  ],
+  "native_image_base": 6442450944,
+  "native_methods": [
+    {
+      "name": "EquipmentEffect_AbilityProjectileDeflect.bxz",
+      "rva": 7172688,
+      "offset": 7166544,
+      "length": 897,
+      "sha256": "9c9b5910c59cd1431384c1fbb7525425765c4ea3de17f6e00dfdcf2a4ef99771"
+    },
+    {
+      "name": "EquipmentEffect_AbilityProjectileDeflect.bya",
+      "rva": 4373536,
+      "offset": 4367392,
+      "length": 3,
+      "sha256": "b6cbececf1b07e74f37d57710c68c31f0b92cb08d51093252b321b07542e177b"
+    },
+    {
+      "name": "Player.fcv",
+      "rva": 5261680,
+      "offset": 5255536,
+      "length": 295,
+      "sha256": "d86954f44ce38334e412732435a24275c0ddd70b8c9b9e077e10700639552e43"
+    },
+    {
+      "name": "Player.fcx",
+      "rva": 5262288,
+      "offset": 5256144,
+      "length": 592,
+      "sha256": "2a7df7f8a3c2a35c26518ec7ccce6076cf032d86fb6b9f1bebe643c1214d1752"
+    },
+    {
+      "name": "AbilityProjectile.zq",
+      "rva": 4959392,
+      "offset": 4953248,
+      "length": 3634,
+      "sha256": "470b0ad7a3ea5f9a6f803142c20d67cc6776affb088217446b903589275755e2"
+    },
+    {
+      "name": "AbilityProjectile.bak",
+      "rva": 4981664,
+      "offset": 4975520,
+      "length": 284,
+      "sha256": "31be149534d7be4cbdbce3234925c1f043be3a2d03c942b51de3955d35f56656"
+    },
+    {
+      "name": "AbilityProjectile.bam",
+      "rva": 4982480,
+      "offset": 4976336,
+      "length": 546,
+      "sha256": "4abd4099343a49f63dcab490925ebb3ab54122ffd012d8ea24c14803f1e8b9d2"
+    },
+    {
+      "name": "AbilityProjectile.ban",
+      "rva": 4983040,
+      "offset": 4976896,
+      "length": 1643,
+      "sha256": "b9c07818886add67f9e265a17a40e40344d688a7b689f0ac519056d92ee2d7ba"
+    },
+    {
+      "name": "AbilityProjectile.bal",
+      "rva": 4981952,
+      "offset": 4975808,
+      "length": 526,
+      "sha256": "e7b027424a3764040d1103ee5cef88fe1b4536b36a042ff52454c26c852a995a"
+    },
+    {
+      "name": "Player.fbk",
+      "rva": 5239392,
+      "offset": 5233248,
+      "length": 5680,
+      "sha256": "5548250c5685fb600e269792ddc21a025a9cef83819f642b38da6a041dc09082"
+    },
+    {
+      "name": "Player.fbl",
+      "rva": 5245088,
+      "offset": 5238944,
+      "length": 3952,
+      "sha256": "028c210e5bf2da51fd1ec58e2886f57a51d0cdc5132fce769519da78d1a425b0"
+    },
+    {
+      "name": "Player.fcj",
+      "rva": 5256416,
+      "offset": 5250272,
+      "length": 1512,
+      "sha256": "3c5b13cd712c5125bd5e0f21d2f4ad4e0dad17b11e16a406916a050e738c1c8b"
+    },
+    {
+      "name": "Player.fck",
+      "rva": 5257936,
+      "offset": 5251792,
+      "length": 483,
+      "sha256": "2d47759043c8f9cd425841c05e7fabbcb0799e3ffe3c4b5ef3b19ec5ad00e95d"
+    },
+    {
+      "name": "Player.fcl",
+      "rva": 5258432,
+      "offset": 5252288,
+      "length": 7,
+      "sha256": "6eee6795b7da258e03ef7631f42ec27d3560617572fea70fb62753b82706e5a0"
+    },
+    {
+      "name": "native_dictionary_clear",
+      "rva": 19162880,
+      "offset": 19156736,
+      "length": 99,
+      "sha256": "ff977fe9281f3a1f6d51b83ede2c9871e084ffc2b84dbdca5b819e66c03c8cd8",
+      "unwind_info_rva": 57842840,
+      "bounds_source": "pe_exception_directory"
+    }
+  ],
+  "native_review": [
+    {
+      "method": "EquipmentEffect_AbilityProjectileDeflect.bxz",
+      "rvas": [
+        7173269
+      ],
+      "finding": "For the specified AbilityData key, the apply path adds Deflects to Player.nrq and writes Targeting to Player.nrr. The selected effect stores Deflects=1 and Targeting=1 (Random).",
+      "limits": "Dictionary updates alone do not establish complete equipment recalculation or legal duplicate equipment."
+    },
+    {
+      "method": "EquipmentEffect_AbilityProjectileDeflect.bya",
+      "rvas": [
+        4373536
+      ],
+      "finding": "This method consists of an immediate return; no direct inverse dictionary update is present.",
+      "limits": "The selected rebuild body performs separate dictionary clearing. This empty callback alone does not establish unequip correctness or a defect; all live event routes and virtual slot mapping remain unaccepted."
+    },
+    {
+      "method": "Player.fcv",
+      "rvas": [
+        5261944
+      ],
+      "finding": "The normal ability query adds per-ability entries from nrq and nrs; missing entries contribute zero.",
+      "limits": "The source and lifecycle of nrs are not fully reviewed."
+    },
+    {
+      "method": "Player.fcx",
+      "rvas": [
+        5262541,
+        5262548,
+        5262725,
+        5262789
+      ],
+      "finding": "A positive nrs value returns targeting mode 1; otherwise the per-ability nrr entry is queried with mode 0 as the fallback.",
+      "limits": "Random mode is not necessarily supplied only by this staff."
+    },
+    {
+      "method": "AbilityProjectile.zq",
+      "rvas": [
+        4962325,
+        4962334,
+        4962364,
+        4962369
+      ],
+      "finding": "In the reviewed Player path, initialization sums nrq and nrs into projectile field lls (0x3C), then queries Player.fcx for llt (0x40).",
+      "limits": "Other context/override paths exist. Complete actor ownership and every spawn path are not accepted."
+    },
+    {
+      "method": "AbilityProjectile.bak",
+      "rvas": [
+        4981664
+      ],
+      "finding": "With RehitInterval=0, the hit-recording path inserts the target into the projectile already-hit set llv (0x48).",
+      "limits": "Positive RehitInterval uses a different path; the current skill definition stores zero."
+    },
+    {
+      "method": "AbilityProjectile.bal",
+      "rvas": [
+        4982020,
+        4982338,
+        4982342,
+        4982349
+      ],
+      "finding": "The reviewed hit path records the hit. After travel/rehit/radius/pierce gates, a positive lls calls bam; successful redirection keeps the projectile active.",
+      "limits": "This is a conditional continuation path, not a guarantee that every hit finds an extra target."
+    },
+    {
+      "method": "AbilityProjectile.bam",
+      "rvas": [
+        4982531,
+        4982713,
+        4982776
+      ],
+      "finding": "The redirect path calls ban to obtain a valid target, updates the context target and decrements lls only on the successful branch.",
+      "limits": "Target availability, actual collisions, damage and server changes require runtime evidence."
+    },
+    {
+      "method": "AbilityProjectile.ban",
+      "rvas": [
+        4983261,
+        4983953,
+        4984309,
+        4984331,
+        4984535
+      ],
+      "finding": "Mode 1 selects the Random branch. It filters the target pool against the already-hit set and another eligibility predicate, then obtains an index for the remaining candidates.",
+      "limits": "The complete eligibility predicate and online target population are not independently validated."
+    },
+    {
+      "method": "Player.fcl",
+      "rvas": [
+        5258434
+      ],
+      "finding": "The public no-argument entry clears its second argument register and tail-jumps to Player.fbk.",
+      "limits": "Call sites for every live equipment change have not been traced."
+    },
+    {
+      "method": "Player.fck",
+      "rvas": [
+        5258274,
+        5258291,
+        5258331
+      ],
+      "finding": "The previous effect list nqx is traversed through virtual slot offset 0x188, then cleared.",
+      "limits": "The virtual slot mapping and every callback side effect need independent review; this record checks direct native links only."
+    },
+    {
+      "method": "Player.fbk",
+      "rvas": [
+        5240167,
+        5240363,
+        5240368,
+        5240422,
+        5240454,
+        5242509,
+        5242530,
+        5242588
+      ],
+      "finding": "The selected body calls fck before clearing nrq through the native helper and clearing nrr inline. Later it invokes a valid effect through virtual offset 0x178, records it in nqx and calls fcj for the selected equipped entry.",
+      "limits": "This is evidence of a rebuild body, not proof that all equip/unequip events reach it. Template cloning, duplicate-source eligibility and virtual dispatch are not accepted."
+    },
+    {
+      "method": "Player.fcj",
+      "rvas": [
+        5256416
+      ],
+      "finding": "This helper takes an EquipSlotId and ItemData; the selected rebuild loop calls it after the observed effect callback.",
+      "limits": "The complete item-stat calculation and all effect factories are outside this review."
+    },
+    {
+      "method": "Player.fbl",
+      "rvas": [
+        5246119,
+        5246142
+      ],
+      "finding": "A separate recalculation body loads nrs and calls the same dictionary-clearing helper before subsequent application paths.",
+      "limits": "All triggers, contributing talents and actor ownership for this pool remain unaccepted; it is not interchangeable with staff equipment effects."
+    },
+    {
+      "method": "native_dictionary_clear",
+      "rvas": [
+        19162890,
+        19162936,
+        19162942,
+        19162947,
+        19162959
+      ],
+      "finding": "The reviewed helper clears backing arrays when nonempty, writes count/free-count zero and the free-list sentinel -1, then increments the version. PE exception metadata independently bounds this native procedure.",
+      "limits": "This establishes the selected native helper body, not an executed online lifecycle experiment."
+    }
+  ],
+  "candidate_mechanism": {
+    "item_template_id": "resources.assets:4972",
+    "effect_definition_id": "resources.assets:4793",
+    "requires_ability_id": "sharedassets0.assets:59839",
+    "field_increment": 1,
+    "selected_targeting": "Random",
+    "interpretation": "The staff is a candidate dependency for an extra Ice Shards redirection. It is not an owned item, confirmed online rule, guaranteed extra hit or DPS estimate. The selected native body rebuilds from cleared counters; event coverage and observed online behavior remain unaccepted.",
+    "execution_status": "research_only"
+  },
+  "online_validation": "not_performed",
+  "unknowns": [
+    "Every live equip/unequip/reload route, runtime registration-root use, native class layout and indirect-dispatch binding, template cloning and duplicate-source eligibility. Selected metadata slots and two ordinary module pointer entries are checked separately.",
+    "Complete actor ownership and context override paths.",
+    "Legal source combinations, nrs ownership and stacking interactions.",
+    "Complete target eligibility, range, collision and damage behavior.",
+    "Online server overrides and agreement between client branches and observed behavior.",
+    "The remaining M1 Sorcerer leveling mechanisms, independently reviewed cases and replay acceptance."
+  ],
+  "previous_record": {
+    "source_ref": "repo://research/deskrawl-frostwyrm-method-slots.json",
+    "sha256": "f283c95585195681fcfe753353aae5bf8bb98c1907fb1eded32f40f86d8b4261"
+  },
+  "native_links": [
+    {
+      "source_method": "Player.fcl",
+      "instruction_rva": 5258434,
+      "kind": "tail_jump",
+      "target_method": "Player.fbk"
+    },
+    {
+      "source_method": "Player.fbk",
+      "instruction_rva": 5240167,
+      "kind": "call",
+      "target_method": "Player.fck"
+    },
+    {
+      "source_method": "Player.fbk",
+      "instruction_rva": 5240363,
+      "kind": "call",
+      "target_method": "native_dictionary_clear"
+    },
+    {
+      "source_method": "Player.fbk",
+      "instruction_rva": 5242588,
+      "kind": "call",
+      "target_method": "Player.fcj"
+    },
+    {
+      "source_method": "Player.fbl",
+      "instruction_rva": 5246142,
+      "kind": "call",
+      "target_method": "native_dictionary_clear"
+    }
+  ],
+  "metadata_method_slots": {
+    "source_ref": "game://Deskrawl_Data/il2cpp_data/Metadata/global-metadata.dat",
+    "metadata_version": 39,
+    "layout_scope": "Metadata v39 with two-byte type/type-definition/generic indices and four-byte parameter indices; other layouts are rejected.",
+    "schema_sources": [
+      "https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LibCpp2IL/Metadata/Il2CppGlobalMetadataHeader.cs",
+      "https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LibCpp2IL/Metadata/Il2CppMethodDefinition.cs",
+      "https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LibCpp2IL/Metadata/Il2CppTypeDefinition.cs",
+      "https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LibCpp2IL/MetadataUsage.cs",
+      "https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LibCpp2IL/Metadata/Il2CppImageDefinition.cs"
+    ],
+    "types": [
+      {
+        "type_index": 5759,
+        "name": "EquipmentEffectBehavior",
+        "namespace": "",
+        "method_start": 42299,
+        "method_count": 5,
+        "vtable_start": 79188,
+        "vtable_count": 8,
+        "methods": [
+          {
+            "method_index": 42299,
+            "name": "bxz",
+            "declaring_type_index": 5759,
+            "token": 100664441,
+            "flags": 1478,
+            "implementation_flags": 0,
+            "slot": 4,
+            "parameter_count": 1,
+            "vtable_method_definition": false
+          },
+          {
+            "method_index": 42300,
+            "name": "bya",
+            "declaring_type_index": 5759,
+            "token": 100664442,
+            "flags": 1478,
+            "implementation_flags": 0,
+            "slot": 5,
+            "parameter_count": 1,
+            "vtable_method_definition": false
+          }
+        ]
+      },
+      {
+        "type_index": 5766,
+        "name": "EquipmentEffect_AbilityProjectileDeflect",
+        "namespace": "",
+        "method_start": 42325,
+        "method_count": 3,
+        "vtable_start": 79259,
+        "vtable_count": 8,
+        "methods": [
+          {
+            "method_index": 42325,
+            "name": "bxz",
+            "declaring_type_index": 5766,
+            "token": 100664467,
+            "flags": 198,
+            "implementation_flags": 0,
+            "slot": 4,
+            "parameter_count": 1,
+            "vtable_method_definition": true
+          },
+          {
+            "method_index": 42326,
+            "name": "bya",
+            "declaring_type_index": 5766,
+            "token": 100664468,
+            "flags": 198,
+            "implementation_flags": 0,
+            "slot": 5,
+            "parameter_count": 1,
+            "vtable_method_definition": true
+          }
+        ]
+      }
+    ],
+    "finding": "The selected base declarations use slots 4 (bxz) and 5 (bya). The concrete deflection-effect type uses the same slots, and its metadata vtable maps each slot to that type's own corresponding method definition.",
+    "limits": "The native class vtable base and runtime pointer materialization are not independently accepted. Matching metadata slot numbers and selected native call displacements does not establish every indirect dispatch, legal duplicates, equip/unequip trigger or online outcome.",
+    "image": {
+      "image_index": 3,
+      "name": "Assembly-CSharp.dll",
+      "assembly_index": 3,
+      "type_start": 5530,
+      "type_count": 1174
+    }
+  },
+  "native_module_methods": {
+    "module_rva": 49603152,
+    "module_name_rva": 49603288,
+    "module_name": "Assembly-CSharp.dll",
+    "method_pointer_count": 7831,
+    "method_pointers_rva": 59989008,
+    "methods": [
+      {
+        "token": 100664467,
+        "pointer_index": 1170,
+        "method_index": 42325,
+        "native_method": "EquipmentEffect_AbilityProjectileDeflect.bxz"
+      },
+      {
+        "token": 100664468,
+        "pointer_index": 1171,
+        "method_index": 42326,
+        "native_method": "EquipmentEffect_AbilityProjectileDeflect.bya"
+      }
+    ],
+    "source_ref": "game://GameAssembly.dll",
+    "pointer_size": 8,
+    "layout_scope": "Selected x64 Il2CppCodeGenModule 24-byte prefix; recorded v39 metadata image and ordinary nongeneric method token indices. Not a full module/registration/class reader.",
+    "schema_sources": [
+      "https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LibCpp2IL/BinaryStructures/Il2CppCodeGenModule.cs",
+      "https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LibCpp2IL/Il2CppBinary.cs"
+    ],
+    "finding": "The original image contains both selected types. Its named native module table maps method tokens 0x06000493/0x06000494 at indices 1170/1171 to the already hashed bxz/bya bodies.",
+    "limits": "These are two ordinary static method pointer entries. The runtime registration root, actual class-vtable materialization, generic/adjustor dispatch, every equipment trigger and online behavior remain unaccepted."
+  }
+}

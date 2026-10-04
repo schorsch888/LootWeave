@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "dataset_version": "synthetic-critical-fields-v6",
+  "partition": "holdout",
+  "truth_hash": "8b1948c474dc028f2f99c83ae5be36fe02db41b116d6a1e59f531984f4880b21",
+  "generator_sha256": "1d371e6fb38c46742f3688717e9ac7bde23ea12ca08b2b0948f5acbac8734a37",
+  "adapter_sha256": {
+    "services/ocr/app.py": "20a4f10cb307d753ae324ab58e0952f4e77e767564264a49b00a7e04dad2d4b9",
+    "services/ocr/domain.py": "cd3868433f60eb6e4676c43cf0badb147b7e708fc9118cf4ed60cf234bfc9b87",
+    "scripts/windows_ocr.ps1": "92de35f78aec48eb2c04b091444ff96e96ae322f947d9c1895bd5b41f07c7396"
+  },
+  "environment": {
+    "os": "Windows",
+    "os_version": "10.0.26300",
+    "architecture": "AMD64",
+    "python": "3.12.14",
+    "ocr_languages": [
+      "de-DE",
+      "en-US",
+      "zh-Hans-CN"
+    ],
+    "font_names": {
+      "en-US": "segoeui.ttf",
+      "zh-Hans-CN": "msyh.ttc"
+    }
+  },
+  "scope": "Independent synthetic holdout, excluded from tuning. Three fields only; no claims about game UI, affix names, icons or arbitrary layouts.",
+  "denominator": "All labeled critical fields; missing, rejection, wrong value, lost sign and wrong unit count as incorrect.",
+  "unflagged_definition": "Incorrect parsed fields not marked ambiguous. Every OCR observation still requires human confirmation.",
+  "truth_review": "Pending manual review against rendered inputs; this measurement alone does not accept an M2 gate.",
+  "overall": {
+    "regions": 200,
+    "critical_fields": 600,
+    "correct_fields": 550,
+    "accuracy": 0.9166666666666666,
+    "rejected_or_missing_fields": 50,
+    "rejection_rate": 0.08333333333333333,
+    "unflagged_errors": 0,
+    "unflagged_error_rate": 0.0
+  },
+  "by_dimension": {
+    "language": {
+      "en-US": {
+        "regions": 100,
+        "critical_fields": 300,
+        "correct_fields": 298,
+        "accuracy": 0.9933333333333333,
+        "rejected_or_missing_fields": 2,
+        "rejection_rate": 0.006666666666666667,
+        "unflagged_errors": 0,
+        "unflagged_error_rate": 0.0
+      },
+      "zh-Hans-CN": {
+        "regions": 100,
+        "critical_fields": 300,
+        "correct_fields": 252,
+        "accuracy": 0.84,
+        "rejected_or_missing_fields": 48,
+        "rejection_rate": 0.16,
+        "unflagged_errors": 0,
+        "unflagged_error_rate": 0.0
+      }
+    },
+    "scale": {
+      "0.75": {
+        "regions": 40,
+        "critical_fields": 120,
+        "correct_fields": 112,
+        "accuracy": 0.9333333333333333,
+        "rejected_or_missing_fields": 8,
+        "rejection_rate": 0.06666666666666667,
+        "unflagged_errors": 0,
+        "unflagged_error_rate": 0.0
+      },
+      "1.0": {
+        "regions": 40,
+        "critical_fields": 120,
+        "correct_fields": 109,
+        "accuracy": 0.9083333333333333,
+        "rejected_or_missing_fields": 11,
+        "rejection_rate": 0.09166666666666666,
+        "unflagged_errors": 0,
+        "unflagged_error_rate": 0.0
+      },
+      "1.25": {
+        "regions": 40,
+        "critical_fields": 120,
+        "correct_fields": 108,
+        "accuracy": 0.9,
+        "rejected_or_missing_fields": 12,
+        "rejection_rate": 0.1,
+        "unflagged_errors": 0,
+        "unflagged_error_rate": 0.0
+      },
+      "1.5": {
+        "regions": 40,
+        "critical_fields": 120,
+        "correct_fields": 113,
+        "accuracy": 0.9416666666666667,
+        "rejected_or_missing_fields": 7,
+        "rejection_rate": 0.058333333333333334,
+        "unflagged_errors": 0,
+        "unflagged_error_rate": 0.0
+      },
+      "2.0": {
+        "regions": 40,
+        "critical_fields": 120,
+        "correct_fields": 108,
+        "accuracy": 0.9,
+        "rejected_or_missing_fields": 12,
+        "rejection_rate": 0.1,
+        "unflagged_errors": 0,
+        "unflagged_error_rate": 0.0
+      }
+    },
+    "quality": {
+      "clean": {
+        "regions": 50,
+        "critical_fields": 150,
+        "correct_fields": 133,
+        "accuracy": 0.8866666666666667,
+        "rejected_or_missing_fields": 17,
+        "rejection_rate": 0.11333333333333333,
+        "unflagged_errors": 0,
+        "unflagged_error_rate": 0.0
+      },
+      "low_contrast": {
+        "regions": 50,
+        "critical_fields": 150,
+        "correct_fields": 138,
+        "accuracy": 0.92,
+        "rejected_or_missing_fields": 12,
+        "rejection_rate": 0.08,
+        "unflagged_errors": 0,
+        "unflagged_error_rate": 0.0
+      },
+      "blurred": {
+        "regions": 50,
+        "critical_fields": 150,
+        "correct_fields": 144,
+        "accuracy": 0.96,
+        "rejected_or_missing_fields": 6,
+        "rejection_rate": 0.04,
+        "unflagged_errors": 0,
+        "unflagged_error_rate": 0.0
+      },
+      "downsampled": {
+        "regions": 50,
+        "critical_fields": 150,
+        "correct_fields": 135,
+        "accuracy": 0.9,
+        "rejected_or_missing_fields": 15,
+        "rejection_rate": 0.1,
+        "unflagged_errors": 0,
+        "unflagged_error_rate": 0.0
+      }
+    }
+  },
+  "latency": {
+    "requests": 200,
+    "method": "Whole OCR.recognize call including PowerShell startup, BMP validation and field parsing.",
+    "p50_seconds": 0.852041050005937,
+    "p95_seconds": 0.903408699989086,
+    "total_seconds": 171.86850919999415
+  },
+  "targets": {
+    "all_critical_field_accuracy": 0.95,
+    "ocr_p95_seconds": 3.0
+  },
+  "measured_target_pass": false
+}

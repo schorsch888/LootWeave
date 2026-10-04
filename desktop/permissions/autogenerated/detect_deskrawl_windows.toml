@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-detect-deskrawl-windows"
+description = "Enables the detect_deskrawl_windows command without any pre-configured scope."
+commands.allow = ["detect_deskrawl_windows"]
+
+[[permission]]
+identifier = "deny-detect-deskrawl-windows"
+description = "Denies the detect_deskrawl_windows command without any pre-configured scope."
+commands.deny = ["detect_deskrawl_windows"]

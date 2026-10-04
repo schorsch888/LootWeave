@@ -16,7 +16,7 @@ from urllib.parse import unquote, urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TEXT_SUFFIXES = {".md", ".json", ".jsonl", ".py", ".ps1", ".toml", ".yaml", ".yml", ".txt", ".rst", ".ini", ".cfg", ".csv"}
+TEXT_SUFFIXES = {".md", ".json", ".jsonl", ".py", ".ps1", ".toml", ".yaml", ".yml", ".txt", ".rst", ".ini", ".cfg", ".csv", ".ts", ".tsx", ".css", ".html", ".rs", ".mjs", ".lock"}
 PRIVATE_PARTS = {".tools", "data/extracted", ".local", "private", "captures", "screenshots", ".codex", ".aws"}
 PRIVATE_SUFFIXES = {".exe", ".dll", ".pdb", ".dmp", ".assets", ".bundle", ".ress", ".resource", ".key", ".pfx", ".p12", ".d2s", ".d2i"}
 PATTERNS = {

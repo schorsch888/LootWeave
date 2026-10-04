@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "dataset_version": "synthetic-critical-fields-v7",
+  "archived_at_utc": "2026-10-04T09:15:56.505449+00:00",
+  "files_sha256": {
+    "manifest.json": "a510e733eb451ec0b7d04c48706ef14ed0dc30bdd1b0c9f26ba52a32a01f47c1",
+    "observations.json": "975dadadc6229a899da2aa55c376342270a6352c516799795297c715446ef4d2",
+    "report.json": "cafe774f0174b7123165f33ffadc8194607684a29ddc55066b4d70a4e02a6ba5",
+    "parser-source.py": "7edf81f6a3961fae83a06529dcac00bc0a8df2af0fa257557c0c371503ca6d72"
+  },
+  "generator_sha256": "55e88d9fd7e5b15023eb9c16c61880b53f58ff2d3c0f34475b31cdf19d60231d",
+  "truth_hash": "c6ab5608f97c2f727ecc1b5a9c9fc869eec0b641ea2593291b0aae060ac34cc6",
+  "render_environment": {
+    "pillow": "12.3.0",
+    "freetype": "2.14.3"
+  },
+  "examined_after_measurement": true,
+  "independent_human_truth_review": "pending",
+  "m2_accepted": false,
+  "prior_input_overlap": {
+    "ocr-tuning-v1": {
+      "regions": 200,
+      "overlapping_image_hashes": 0,
+      "truth_hash": "733a3e817fad3706887670e4e62544844a850e47a8b1e741391695a950516043"
+    },
+    "ocr-holdout-v1": {
+      "regions": 200,
+      "overlapping_image_hashes": 0,
+      "truth_hash": "ff61c025f0c4367ed883fca1694e4d75c4618cf4e15612b59be7275fd57f4562"
+    },
+    "ocr-holdout-v2": {
+      "regions": 200,
+      "overlapping_image_hashes": 0,
+      "truth_hash": "780319d8609f2957327d196a2362f43e2e60389ebd122729474da2eb24cc57cc"
+    },
+    "ocr-holdout-v3": {
+      "regions": 200,
+      "overlapping_image_hashes": 0,
+      "truth_hash": "4c18a5cb24ca9dfd321a4844e34d2765538788bff6da85796fefc2228ed80aa8"
+    },
+    "ocr-holdout-v4": {
+      "regions": 200,
+      "overlapping_image_hashes": 0,
+      "truth_hash": "28cf2e0fd8b313a83e8b0fb8d694f623e0d9a03db3f595a3352a9a84f4ae955a"
+    },
+    "ocr-holdout-v5": {
+      "regions": 200,
+      "overlapping_image_hashes": 0,
+      "truth_hash": "ef956b7779141ed9071b8e13d223c4c7f21df034bd8d5c19f68d829a774ab785"
+    },
+    "ocr-holdout-v6": {
+      "regions": 200,
+      "overlapping_image_hashes": 0,
+      "truth_hash": "8b1948c474dc028f2f99c83ae5be36fe02db41b116d6a1e59f531984f4880b21"
+    }
+  },
+  "scope": "Original synthetic text and complete recorded native OCR observations/crops only; no game/player material, fonts or machine paths.",
+  "future_use": "Historical evaluation/replay only. Any changed parser, model or renderer requires a fresh unseen holdout."
+}

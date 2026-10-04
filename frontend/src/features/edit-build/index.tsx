@@ -1,0 +1,174 @@
+import type { Intent, Snapshot, Source } from "../../shared/api";
+
+type SourceListProps = {
+  title: string;
+  sources: Source[];
+  evidenceIds: string[];
+  ranks?: boolean;
+  setIds?: boolean;
+  defaultActor?: "hero" | "companion";
+  onChange: (sources: Source[]) => void;
+};
+
+function newId(prefix: string) {
+  return `${prefix}-${crypto.randomUUID()}`;
+}
+
+function listValue(value: string): string[] {
+  return value.split(",").map(part => part.trim()).filter(Boolean);
+}
+
+function SourceFields({ source, ranks, setIds, defaultActor, onChange, onDelete }: {
+  source: Source;
+  ranks: boolean;
+  setIds: boolean;
+  defaultActor: "hero" | "companion";
+  onChange: (source: Source) => void;
+  onDelete: () => void;
+}) {
+  return <div className="source-list">
+    <label>标识（稳定英文 ID）<input value={source.id} onChange={event => onChange({ ...source, id: event.target.value })} /></label>
+    {ranks && <label>等级（须 ≥ 0）<input type="number" min="0" value={source.rank ?? ""}
+      onChange={event => {
+        const raw = event.target.value;
+        if (raw === "") {
+          const { rank: _rank, ...rest } = source;
+          onChange(rest);
+        } else {
+          const rank = Number(raw);
+          if (Number.isFinite(rank)) onChange({ ...source, rank });
+        }
+      }} /></label>}
+    <label>明确效果（逗号分隔，不推断）<input value={source.effects.join(", ")}
+      onChange={event => onChange({ ...source, effects: listValue(event.target.value) })} /></label>
+    <label>作用者<select value={source.actor ?? defaultActor}
+      onChange={event => onChange({ ...source, actor: event.target.value })}>
+      <option value="hero">角色本人</option><option value="companion">仆从</option>
+    </select></label>
+    {setIds && <label>符文组 ID（可选）<input value={source.set_id ?? ""}
+      onChange={event => onChange({ ...source, set_id: event.target.value || undefined })} /></label>}
+    <small className="muted">输入来源证据：{source.evidence_ids.join("、") || "暂无"}</small>
+    <button type="button" onClick={onDelete}>删除</button>
+  </div>;
+}
+
+function SourceList({ title, sources, evidenceIds, ranks = false, setIds = false, defaultActor = "hero", onChange }: SourceListProps) {
+  const replace = (index: number, next: Source) => onChange(sources.map((source, i) => i === index ? next : source));
+  const remove = (index: number) => onChange(sources.filter((_, i) => i !== index));
+  const add = () => onChange([...sources, {
+    id: newId("source"), effects: [], evidence_ids: [...evidenceIds], actor: defaultActor, ...(ranks ? { rank: 0 } : {}),
+  }]);
+
+  return <details>
+    <summary>{title}（{sources.length}）</summary>
+    <div className="source-list">
+      {sources.map((source, index) => <SourceFields key={index} source={source} ranks={ranks} setIds={setIds} defaultActor={defaultActor}
+        onChange={next => replace(index, next)} onDelete={() => remove(index)} />)}
+      <button type="button" onClick={add}>添加{title}</button>
+    </div>
+  </details>;
+}
+
+const unknownLabels: Record<string, string> = {
+  build_not_reviewed: "构筑未核对（build_not_reviewed）",
+  current_slot_not_reviewed: "当前槽位未核对（current_slot_not_reviewed）",
+};
+
+function unknownText(values: string) {
+  return values.split("\n").map(value => unknownLabels[value] ?? value).join("\n");
+}
+
+function parseUnknownText(value: string) {
+  const reverse = Object.fromEntries(Object.entries(unknownLabels).map(([key, label]) => [label, key]));
+  return value.split("\n").map(line => reverse[line.trim()] ?? line.trim()).filter(Boolean);
+}
+
+export function BuildEditor({ facts, intent, onFactsChange, onIntentChange }: {
+  facts: Snapshot;
+  intent: Intent;
+  onFactsChange: (facts: Snapshot) => void;
+  onIntentChange: (intent: Intent) => void;
+}) {
+  const updateFacts = (patch: Partial<Snapshot>) => onFactsChange({ ...facts, ...patch });
+  const updateIntent = (edit: (current: Intent) => Intent) => {
+    const next = edit(intent);
+    const { revision: _nextRevision, ...nextContent } = next;
+    const { revision: _currentRevision, ...currentContent } = intent;
+    if (JSON.stringify(nextContent) !== JSON.stringify(currentContent)) {
+      onIntentChange({ ...next, revision: intent.revision + 1 });
+    }
+  };
+  const markBuildReviewed = (reviewed: boolean) => {
+    const unknowns = facts.unknowns.filter(value => value !== "build_not_reviewed");
+    if (!reviewed) unknowns.push("build_not_reviewed");
+    updateFacts({ unknowns });
+  };
+  const addFuture = () => updateIntent(current => ({ ...current, future_builds: [
+    ...current.future_builds,
+    { skills: [], conditions: { ...facts.conditions }, feasibility: "" },
+  ] }));
+
+  return <div className="build-editor">
+    <div className="section-heading"><div><span className="eyebrow">BUILD FACTS &amp; GOALS</span><h2>构筑事实与目标需求</h2></div></div>
+    <p className="muted">这里只记录已确认的事实和需求标识。未填写的构筑信息请保留在未知项中；本表单不会推断规则、权重或 DPS，也不会默认构筑完整。</p>
+    <label>库存覆盖<select value={facts.inventory_coverage} onChange={event => updateFacts({ inventory_coverage: event.target.value })}>
+      <option value="complete">完整核对</option><option value="partial">部分核对</option><option value="unknown">尚不清楚</option>
+    </select></label>
+    <label className="check"><input type="checkbox" checked={!facts.unknowns.includes("build_not_reviewed")}
+      onChange={event => markBuildReviewed(event.target.checked)} /> 我已核对当前技能、天赋、巅峰、符文、仆从和临时状态</label>
+    <details>
+      <summary>未知或待确认事项（{facts.unknowns.length}）</summary>
+      <p className="muted">每行一项。build_not_reviewed 表示构筑未核对；current_slot_not_reviewed 表示当前装备槽位未核对。</p>
+      <label>未知或待确认事项<textarea rows={3} value={unknownText(facts.unknowns.join("\n"))}
+        onChange={event => updateFacts({ unknowns: parseUnknownText(event.target.value) })} /></label>
+    </details>
+
+    <div className="build-source">
+      <SourceList title="技能" sources={facts.skills} evidenceIds={facts.evidence_ids} ranks onChange={skills => updateFacts({ skills })} />
+      <SourceList title="天赋" sources={facts.talents} evidenceIds={facts.evidence_ids} ranks onChange={talents => updateFacts({ talents })} />
+      <SourceList title="巅峰" sources={facts.paragon} evidenceIds={facts.evidence_ids} ranks onChange={paragon => updateFacts({ paragon })} />
+      <SourceList title="符文" sources={facts.runes} evidenceIds={facts.evidence_ids} setIds onChange={runes => updateFacts({ runes })} />
+      <SourceList title="仆从" sources={facts.companions} evidenceIds={facts.evidence_ids} defaultActor="companion" onChange={companions => updateFacts({ companions })} />
+      <SourceList title="临时效果" sources={facts.temporary_effects} evidenceIds={facts.evidence_ids} onChange={temporary_effects => updateFacts({ temporary_effects })} />
+    </div>
+
+    <details>
+      <summary>目标需求与未来构筑</summary>
+      <div className="fields">
+        <label>所需能力标识（每行一项）<textarea rows={3} value={intent.required_capabilities.join("\n")}
+          onChange={event => {
+            const required_capabilities = event.target.value.split("\n").map(line => line.trim()).filter(Boolean);
+            updateIntent(current => ({ ...current, required_capabilities }));
+          }} /></label>
+        <fieldset className="check">
+          <legend>允许改变的构筑部分</legend>
+          <label><input type="checkbox" checked={intent.allowed_build_changes.includes("skills")}
+            onChange={event => updateIntent(current => ({ ...current, allowed_build_changes: event.target.checked
+              ? [...new Set([...current.allowed_build_changes, "skills"])]
+              : current.allowed_build_changes.filter(value => value !== "skills") }))} /> 技能</label>
+        </fieldset>
+        {intent.future_builds.map((build, index) => <div className="source-list" key={index}>
+          <strong>未来构筑 {index + 1}</strong>
+          <label>技能标识（逗号分隔）<input value={build.skills.join(", ")}
+            onChange={event => updateIntent(current => ({ ...current, future_builds: current.future_builds.map((item, i) => i === index
+              ? { ...item, skills: listValue(event.target.value) } : item) }))} /></label>
+          <label>可行性<select value={build.feasibility} onChange={event => updateIntent(current => ({ ...current,
+            future_builds: current.future_builds.map((item, i) => i === index ? { ...item, feasibility: event.target.value } : item),
+          }))}>
+            <option value="">请选择 · 未确认</option><option value="owned">已拥有</option><option value="obtainable">可获取</option><option value="hypothetical">假设构筑</option>
+          </select></label>
+          <small className="muted">初始条件沿用当前已记录条件：{Object.keys(build.conditions).join("、") || "暂无"}</small>
+          {Object.entries(build.conditions).map(([condition, state]) => <label key={condition}>{condition}<select value={state}
+            onChange={event => updateIntent(current => ({ ...current, future_builds: current.future_builds.map((item, i) => i === index
+              ? { ...item, conditions: { ...item.conditions, [condition]: event.target.value } } : item) }))}>
+            <option value="active">已确认生效</option><option value="inactive">已确认未生效</option><option value="unknown">未知</option>
+          </select></label>)}
+          <button type="button" onClick={() => updateIntent(current => ({ ...current,
+            future_builds: current.future_builds.filter((_, i) => i !== index),
+          }))}>删除未来构筑</button>
+        </div>)}
+        <button type="button" onClick={addFuture}>添加未来构筑</button>
+      </div>
+    </details>
+  </div>;
+}

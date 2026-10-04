@@ -1,0 +1,11 @@
+# Versioned files with byte-level hashes must survive checkout unchanged.
+# Check ordinary whitespace while accepting their original CRLF endings.
+knowledge-packs/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+fixtures/evaluation-*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+research/deskrawl-frostwyrm*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+fixtures/ocr-v6-generator.py -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+fixtures/ocr-critical-fields-v6/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+fixtures/ocr-critical-fields-v6/parser-source.py -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+fixtures/ocr-v7-generator.py -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+fixtures/ocr-critical-fields-v7/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+fixtures/ocr-critical-fields-v7/parser-source.py -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

@@ -3,24 +3,89 @@ name: Repository checks
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  check:
+  contracts-and-browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: '3.12'
-      - name: Test publication boundaries
+          python-version: '3.12.14'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.19.0'
+          package-manager-cache: false
+      - name: Test domains, API contracts, storage and process lifecycle
         run: python -m unittest discover -s tests -v
-      - name: Check public documents
-        run: python scripts/check_public_docs.py
-      - name: Check script syntax
-        run: python -m compileall -q scripts
+      - name: Check architecture and publication boundaries
+        run: |
+          python scripts/check_architecture.py
+          python scripts/check_public_docs.py
+          python scripts/validate_ocr_holdout.py
+          python scripts/validate_ocr_holdout.py --version v7
+          python -m compileall -q contracts.py maintenance.py storage.py transport.py process_lifecycle.py service.py gateway.py runtime.py services scripts
+      - name: Install the pinned frontend toolchain
+        run: |
+          npm install --global pnpm@11.19.0 --ignore-scripts
+          pnpm --dir frontend install --frozen-lockfile --ignore-scripts
+      - name: Build the frontend
+        run: pnpm --dir frontend build
+      - name: Check real equipment entry and saved-profile flows without a browser
+        run: pnpm --dir frontend check:core
+      - name: Check acquisition rendering and sample inputs without a browser
+        run: pnpm --dir frontend check:acquisition
+      - name: Check snapshot confirmation rendering and handlers without a browser
+        run: pnpm --dir frontend check:confirmation
+      - name: Verify three-state and historical evaluation rendering
+        run: node scripts/check_evaluation_render.mjs
+      - name: Install the pinned browser runtime
+        run: pnpm --dir frontend exec playwright install --with-deps chromium
+      - name: Verify keyboard, confirmation, replay and responsive flows
+        run: pnpm --dir frontend check:ui
+
+  windows-package:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      CARGO_BUILD_JOBS: '1'
+      RUSTUP_TOOLCHAIN: '1.94.1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12.14'
+          architecture: x64
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.19.0'
+          package-manager-cache: false
+      - name: Install pinned build dependencies
+        run: |
+          rustup toolchain install 1.94.1 --profile minimal
+          python -m pip install -r requirements-build.txt
+          npm install --global pnpm@11.19.0 --ignore-scripts
+          pnpm --dir frontend install --frozen-lockfile --ignore-scripts
+      - name: Build the frontend
+        run: pnpm --dir frontend build
+      - name: Build the frozen runtime, native host and offline NSIS installer
+        run: python scripts/build_desktop.py --installer
+      - name: Test native integrity and loopback contracts
+        run: python scripts/build_desktop.py --test-native
+      - name: Verify twenty starts, each worker fault and forced host exit
+        run: python scripts/check_desktop.py --cycles 20 --executable desktop/target/release/lootweave-desktop.exe
+      - name: Verify hidden WebView readiness, passive IPC and close cleanup
+        run: python scripts/check_native_ui.py --cycles 20 --executable desktop/target/release/lootweave-desktop.exe
