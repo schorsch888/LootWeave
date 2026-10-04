@@ -5,6 +5,7 @@ import argparse
 import os
 import sys
 import threading
+import time
 from pathlib import Path
 
 from contracts import DomainError, canonical
@@ -52,7 +53,10 @@ def main():
             if not args.parent_stdio or sys.stdin.buffer.read(1) != b"1":
                 raise DomainError("service_parent_job_unavailable", 503)
         own_service_process()
+        started = time.perf_counter()
         app = create_app(args, token)
+        startup_timings = {"app_init_ms": (time.perf_counter() - started) * 1000,
+                           **getattr(app, "startup_timings", {})}
         server = LocalServer(app, token, args.port)
         if args.parent_stdio:
             # Closing the supervisor's pipe stops a service even after a supervisor crash.
@@ -60,7 +64,8 @@ def main():
                 sys.stdin.buffer.read()
                 server.shutdown()
             threading.Thread(target=watch_parent, daemon=True).start()
-        print(canonical({"service": args.name, "url": server.url, "contract_version": 1}), flush=True)
+        print(canonical({"service": args.name, "url": server.url, "contract_version": 1,
+                         "startup_timings": startup_timings}), flush=True)
         try:
             server.serve_forever(poll_interval=0.1)
         finally:

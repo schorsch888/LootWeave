@@ -29,6 +29,11 @@ const messages: Record<string, string> = {
   unauthorized: "会话已失效，请从桌面入口重新打开。",
   revision_conflict: "档案已更新，请重新读取后确认。",
   service_unavailable: "服务暂时不可用，已保存的快照仍会保留。",
+  service_start_failed: "服务启动失败，请重试当前操作。",
+  service_start_timeout: "服务启动超时，请重试当前操作。",
+  service_not_ready: "服务尚未就绪，请稍后重试。",
+  service_start_required: "服务尚未启动，请在服务状态中重试所需服务，再重试当前操作。",
+  runtime_stopping: "本地服务正在关闭，请重新打开桌面入口。",
   pack_hash_conflict: "规则包已变化，请重新选择明确的版本。",
   player_confirmation_required: "请核对原文并明确确认。",
   observation_time_conflict: "关联依据的采集时间与原始截图不一致，请按显示的截图时间核对完整构筑，保留其他时点的来源。",
@@ -44,9 +49,24 @@ const messages: Record<string, string> = {
   replay_mismatch: "回放与历史结果不同，已阻止接受该结果。",
 };
 
-export async function api<T>(path: string, body?: unknown): Promise<T> {
+export type RuntimeService = "profile" | "knowledge" | "evaluation" | "planning" | "ocr";
+export type RuntimeStatus = {
+  services: Record<string, { state: "dormant" | "starting" | "ready" | "failed" | "stopping" | "unavailable"; generation?: number }>;
+  core_ready: boolean;
+  startup_policy: "on-demand" | "eager";
+  degraded: boolean;
+};
+
+type RequestOptions = { signal?: AbortSignal };
+const starts = new Map<RuntimeService, Promise<void>>();
+const serviceLabels: Record<RuntimeService, string> = { profile: "档案", knowledge: "知识包", evaluation: "评估", planning: "试验与样本", ocr: "文字识别" };
+
+async function request<T>(path: string, body: unknown, deadline: number, options: RequestOptions = {}): Promise<T> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 15000);
+  const cancel = () => controller.abort();
+  options.signal?.throwIfAborted();
+  options.signal?.addEventListener("abort", cancel, { once: true });
+  const timer = setTimeout(cancel, deadline);
   try {
     const response = await fetch("/api/" + path, {
       method: body === undefined ? "GET" : "POST",
@@ -58,11 +78,53 @@ export async function api<T>(path: string, body?: unknown): Promise<T> {
     if (!response.ok) throw new Error(messages[result.error || ""] || "输入未被接受：" + (result.error || response.status));
     return result;
   } catch (error) {
+    if (options.signal?.aborted) throw options.signal.reason;
     if (error instanceof DOMException && error.name === "AbortError") throw new Error("请求超时，请稍后重试。");
     throw error;
   } finally {
     clearTimeout(timer);
+    options.signal?.removeEventListener("abort", cancel);
   }
+}
+
+// Requests using live dependencies check the current owner generation. Only
+// startup is shared; dispatched writes are never automatically retried.
+export function ensureService(service: RuntimeService): Promise<void> {
+  const existing = starts.get(service);
+  if (existing) return existing;
+  const start = request<{ service: string; state: string; generation: number }>("runtime/ensure", { service }, 10000)
+    .then(result => {
+      if (result.service !== service || result.state !== "ready" || !Number.isSafeInteger(result.generation) || result.generation < 0) {
+        throw new Error("服务启动结果无法核验。");
+      }
+    })
+    .catch(error => { throw new Error(serviceLabels[service] + "服务未就绪：" + (error instanceof Error ? error.message : "启动失败。") + "请重试当前操作；已填写内容会保留。"); })
+    .finally(() => { if (starts.get(service) === start) starts.delete(service); });
+  starts.set(service, start);
+  return start;
+}
+
+function waitForService(start: Promise<void>, signal?: AbortSignal): Promise<void> {
+  if (!signal) return start;
+  signal.throwIfAborted();
+  return new Promise((resolve, reject) => {
+    const cancel = () => reject(signal.reason);
+    signal.addEventListener("abort", cancel, { once: true });
+    start.then(resolve, reject).finally(() => signal.removeEventListener("abort", cancel));
+  });
+}
+
+export async function api<T>(path: string, body?: unknown, options: RequestOptions = {}): Promise<T> {
+  options.signal?.throwIfAborted();
+  const capability = path.split("/")[0] as RuntimeService;
+  // Frozen reads/replays use the already-running evaluator's stored bytes. They
+  // must not start or repair live Profile/Knowledge dependencies implicitly.
+  const frozenHistory = body === undefined
+    ? /^evaluation\/evaluations(?:\/(?!\.{1,2}$)[a-zA-Z0-9_.-]{1,100})?$/.test(path)
+    : /^evaluation\/evaluations\/(?!\.{1,2}\/)[a-zA-Z0-9_.-]{1,100}\/replay$/.test(path);
+  if (Object.hasOwn(serviceLabels, capability) && !frozenHistory) await waitForService(ensureService(capability), options.signal);
+  options.signal?.throwIfAborted();
+  return request<T>(path, body, 15000, options);
 }
 
 export const newId = (prefix: string) => prefix + "-" + crypto.randomUUID();

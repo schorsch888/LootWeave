@@ -150,11 +150,17 @@ print(json.dumps({"responses": responses, "counts": counts, "reopened": reopened
     assert.ok(h.errors.some(value => value.includes("采集时间") || value.includes("核对时间")));
   });
   await check("HTTP 400 observation time conflict maps to clear Chinese", async () => {
-    globalThis.fetch = async () => ({ ok: false, status: 400, json: async () => ({ error: "observation_time_conflict" }) });
+    globalThis.fetch = async (url, options) => url === "/api/runtime/ensure"
+      ? { ok: true, json: async () => ({ service: JSON.parse(options.body).service, state: "ready", generation: 1 }) }
+      : { ok: false, status: 400, json: async () => ({ error: "observation_time_conflict" }) };
     await assert.rejects(api("profile/confirmations", {}), /关联依据的采集时间与原始截图不一致/);
-    globalThis.fetch = async () => ({ ok: false, status: 400, json: async () => ({ error: "profile_observation_time_conflict" }) });
+    globalThis.fetch = async (url, options) => url === "/api/runtime/ensure"
+      ? { ok: true, json: async () => ({ service: JSON.parse(options.body).service, state: "ready", generation: 1 }) }
+      : { ok: false, status: 400, json: async () => ({ error: "profile_observation_time_conflict" }) };
     await assert.rejects(api("profile/confirmations", {}), /原始采集时间存在冲突或无法核验/);
-    globalThis.fetch = async () => ({ ok: false, status: 400, json: async () => ({ error: "invalid_capture_time" }) });
+    globalThis.fetch = async (url, options) => url === "/api/runtime/ensure"
+      ? { ok: true, json: async () => ({ service: JSON.parse(options.body).service, state: "ready", generation: 1 }) }
+      : { ok: false, status: 400, json: async () => ({ error: "invalid_capture_time" }) };
     await assert.rejects(api("profile/confirmations", {}), /原始采集时间无效/);
   });
   for (const [name, seed] of [["game conflict", { facts: { ...facts, context: { ...facts.context, game_id: "other" } } }], ["unapplied draft", { draftApplied: false }]]) await check(`button is disabled for ${name}`, () => assert.equal(button(make(seed)).props.disabled, true));

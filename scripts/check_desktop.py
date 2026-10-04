@@ -15,6 +15,7 @@ import math
 import os
 import platform
 import queue
+import sqlite3
 import subprocess
 import threading
 import time
@@ -28,8 +29,10 @@ ROOT = Path(__file__).resolve().parents[1]
 import sys
 sys.path.insert(0, str(ROOT))
 from contracts import DomainError
+from maintenance import CAPTURE, DATABASES, ordinary, verify
 from storage import acquire_instance_lock
 WORKERS = ("profile", "knowledge", "evaluation", "planning", "ocr", "gateway")
+ENSURE_HTTP_TIMEOUT = 10  # Observe the owner's 8-second attempt plus loopback response delivery.
 
 
 class CheckFailed(Exception):
@@ -98,12 +101,17 @@ def frozen_environment():
 
 
 class Desktop:
-    def __init__(self, executable, resources, data):
+    def __init__(self, executable, resources, data, startup_policy=None):
         self.workers = []
+        self.worker_handles = {}
+        self.handles_by_pid = {}
         self.host_handle = None
         self.started = time.perf_counter()
+        command = [str(executable), "--headless", "--resource-dir", str(resources), "--data-dir", str(data)]
+        if startup_policy is not None:
+            command += ["--startup-policy", startup_policy]
         self.process = subprocess.Popen(
-            [str(executable), "--headless", "--resource-dir", str(resources), "--data-dir", str(data)],
+            command,
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             cwd=executable.parent, env=frozen_environment(), creationflags=0x08000000,
         )
@@ -126,26 +134,68 @@ class Desktop:
             expect(isinstance(self.token, str) and len(self.token) == 64
                    and all(c in "0123456789abcdef" for c in self.token), "native_token_invalid")
             pids = ready.get("pids")
-            expect(isinstance(pids, list) and len(pids) == 6 and len(set(pids)) == 6
+            expect(isinstance(pids, list) and 1 <= len(pids) <= 6 and len(set(pids)) == len(pids)
                    and all(type(pid) is int and pid > 0 for pid in pids), "native_worker_set_invalid")
             for pid in pids:
-                self.workers.append(OwnedProcess(pid))
+                handle = OwnedProcess(pid)
+                self.workers.append(handle)
+                self.handles_by_pid[pid] = handle
+            # Historical full-start artifacts reported exactly this ordered set.
+            if len(pids) == len(WORKERS):
+                self.worker_handles.update(zip(WORKERS, self.workers))
             self.host_handle = OwnedProcess(self.process.pid)
             self.ready_seconds = time.perf_counter() - self.started
             self.opener = build_opener(ProxyHandler({}))
-            expect(not self.call("GET", "/api/status")["degraded"], "initial_service_degraded")
+            status = self.status()
+            self.dynamic_registry = "core_ready" in status
+            actual_policy = status.get("startup_policy")
+            if self.dynamic_registry:
+                expect(actual_policy in ("eager", "on-demand"), "native_startup_policy_invalid")
+                if startup_policy is not None:
+                    expect(actual_policy == startup_policy, "native_startup_policy_mismatch")
+            self.expect_optional_dormant = self.dynamic_registry and actual_policy == "on-demand"
+            if self.expect_optional_dormant:
+                for name in ("ocr", "planning"):
+                    expect(status["services"][name]["state"] == "dormant", "optional_started_before_use")
+            deadline = time.monotonic() + 30
+            while self.dynamic_registry and not status["core_ready"]:
+                expect(time.monotonic() < deadline, "native_core_readiness_timeout")
+                time.sleep(.05)
+                status = self.status()
+            expect(not status["degraded"], "initial_service_degraded")
+            self.core_ready_seconds = time.perf_counter() - self.started
+            self.phases = status.get("timings", status.get("phases", {}))
         except Exception:
             self.stop()
             raise
 
-    def call(self, method, path, body=None, authenticated=True):
+    def status(self):
+        status = self.call("GET", "/api/status")
+        for name, value in status.get("services", {}).items():
+            pid = value.get("pid")
+            if value.get("state") == "ready" and type(pid) is int and pid > 0:
+                if pid not in self.handles_by_pid:
+                    handle = OwnedProcess(pid)
+                    self.handles_by_pid[pid] = handle
+                    self.workers.append(handle)
+                self.worker_handles[name] = self.handles_by_pid[pid]
+        return status
+
+    def ensure(self, name):
+        if self.dynamic_registry:
+            self.call("POST", "/api/runtime/ensure", {"service": name}, timeout=ENSURE_HTTP_TIMEOUT)
+            expect(self.status()["services"][name]["state"] == "ready", "ensured_worker_not_ready")
+        expect(name in self.worker_handles, "owned_worker_identity_missing")
+        return self.worker_handles[name]
+
+    def call(self, method, path, body=None, authenticated=True, timeout=5):
         payload = None if body is None else json.dumps(body, ensure_ascii=False, allow_nan=False).encode("utf-8")
         headers = {"Content-Type": "application/json"}
         if authenticated:
             headers["Authorization"] = "Bearer " + self.token
         request = Request(self.url + path, payload, headers, method=method)
         try:
-            with self.opener.open(request, timeout=5) as response:
+            with self.opener.open(request, timeout=timeout) as response:
                 return json.load(response)
         except HTTPError as error:
             try:
@@ -163,31 +213,68 @@ class Desktop:
                 "private_commit_mib": round(sum(v[1] for v in values) / 2**20, 2)}
 
     def stop(self, forced=False):
-        if self.process.poll() is None:
-            if forced:
-                self.process.kill()
-            else:
-                self.process.stdin.close()
+        cleanup_failed = False
+        orphaned = False
+        try:
+            if self.process.poll() is None:
+                if forced:
+                    self.process.kill()
+                else:
+                    self.process.stdin.close()
+                try:
+                    self.process.wait(timeout=12)
+                except subprocess.TimeoutExpired:
+                    self.process.kill()
+                    self.process.wait(timeout=5)
+        except Exception:
+            cleanup_failed = True
             try:
-                self.process.wait(timeout=12)
-            except subprocess.TimeoutExpired:
                 self.process.kill()
                 self.process.wait(timeout=5)
+            except Exception:
+                pass  # Continue reclaiming each retained child even if host cleanup failed.
+
+        def reclaim(handle):
+            try:
+                handle.terminate()  # This is the exact retained owned-process handle.
+            except Exception:
+                pass  # TerminateProcess may race an exit; the handle wait decides reclamation.
+            try:
+                return handle.exited(5)
+            except Exception:
+                return False
+
         deadline = time.monotonic() + 5
-        orphaned = False
         for handle in self.workers:
-            if not handle.exited(max(0, deadline - time.monotonic())):
-                orphaned = True
-                handle.terminate()  # Only exact children created by this check.
-                handle.exited(5)
-            handle.close()
+            try:
+                if not handle.exited(max(0, deadline - time.monotonic())):
+                    orphaned = True
+                    cleanup_failed |= not reclaim(handle)
+            except Exception:
+                cleanup_failed = True
+                reclaim(handle)
+            finally:
+                try:
+                    handle.close()
+                except Exception:
+                    cleanup_failed = True
         self.workers = []
+        self.worker_handles = {}
+        self.handles_by_pid = {}
         if self.host_handle:
-            self.host_handle.close()
-            self.host_handle = None
-        self.process.stdout.close()
-        self.process.stderr.close()
+            try:
+                self.host_handle.close()
+            except Exception:
+                cleanup_failed = True
+            finally:
+                self.host_handle = None
+        for stream in (self.process.stdin, self.process.stdout, self.process.stderr):
+            try:
+                stream.close()
+            except Exception:
+                cleanup_failed = True
         expect(not orphaned, "orphan_worker_after_host_exit")
+        expect(not cleanup_failed, "owned_cleanup_failed")
 
 
 def fictional_flow(app):
@@ -214,6 +301,11 @@ def fictional_flow(app):
     expect(result["retention"] != "discard", "fictional_core_loss_hidden")
     expect(app.call("POST", "/api/evaluation/evaluations/desktop-evaluation/replay", {})["identical"],
            "frozen_replay_mismatch")
+    if getattr(app, "dynamic_registry", False):
+        status = app.status()
+        if getattr(app, "expect_optional_dormant", False):
+            expect(all(status["services"][name]["state"] == "dormant" for name in ("ocr", "planning")),
+                   "manual_flow_started_optional_worker")
 
 
 def replay(app):
@@ -247,7 +339,46 @@ def cross_entry_lock(data):
         expect(error.code == "instance_already_running", "cross_entry_lock_wrong_error")
 
 
+def maintenance_inputs(data):
+    """Snapshot the supported stored inputs before the offline native backup."""
+    files = set()
+    try:
+        ordinary(data)
+        for name in DATABASES:
+            path = data / name
+            if path.exists():
+                ordinary(path.parent)
+                expect(ordinary(path).is_file(), "native_maintenance_input_invalid")
+                files.add(name)
+        captures = data / "ocr"
+        if captures.exists():
+            ordinary(captures)
+            for path in captures.iterdir():
+                name = "ocr/" + path.name
+                expect(CAPTURE.fullmatch(name) and ordinary(path).is_file(),
+                       "native_maintenance_input_invalid")
+                files.add(name)
+    except DomainError:
+        raise CheckFailed("native_maintenance_input_invalid") from None
+    expect({"profile/profile.sqlite3", "evaluation/evaluation.sqlite3"} <= files,
+           "native_maintenance_core_files_missing")
+    return files
+
+
+def maintenance_manifest(directory):
+    try:
+        manifest = verify(directory)
+    except (DomainError, sqlite3.Error):
+        raise CheckFailed("native_maintenance_integrity_failed") from None
+    expect({"profile/profile.sqlite3", "evaluation/evaluation.sqlite3"} <= set(manifest["files"]),
+           "native_maintenance_core_files_missing")
+    return manifest
+
+
 def native_maintenance(executable, resources, data, flag, other, accepted=True):
+    if accepted:
+        expect(flag in ("--backup-to", "--restore-from"), "native_maintenance_operation_invalid")
+        expected = maintenance_inputs(data) if flag == "--backup-to" else maintenance_manifest(other)
     process = subprocess.run(
         [str(executable), "--resource-dir", str(resources), "--data-dir", str(data), flag, str(other)],
         cwd=executable.parent, env=frozen_environment(), stdin=subprocess.DEVNULL,
@@ -258,9 +389,17 @@ def native_maintenance(executable, resources, data, flag, other, accepted=True):
         result = json.loads(process.stdout)
     except ValueError:
         raise CheckFailed("native_maintenance_response_invalid") from None
+    expect(isinstance(result, dict), "native_maintenance_response_invalid")
     if accepted:
-        expect(result.get("storage_version") == 1 and result.get("files", 0) >= 3,
+        manifest = maintenance_manifest(other if flag == "--backup-to" else data)
+        # SQLite backup can change database bytes; compare names for backup and
+        # the entire verified manifest for restore, where every byte is copied.
+        expect(set(manifest["files"]) == expected if flag == "--backup-to" else manifest == expected,
                "native_maintenance_files_missing")
+        expect(result.get("operation") == ("backup" if flag == "--backup-to" else "restore")
+               and type(result.get("storage_version")) is int and result["storage_version"] == 1
+               and type(result.get("files")) is int and result["files"] == len(manifest["files"]),
+               "native_maintenance_response_invalid")
     else:
         expect(result.get("error") == "instance_already_running", "active_backup_not_rejected")
     return result
@@ -291,6 +430,8 @@ def main():
     parser.add_argument("--executable", type=Path, default=ROOT / "desktop/target/debug/lootweave-desktop.exe")
     parser.add_argument("--resources", type=Path, default=ROOT / "dist/sidecar")
     parser.add_argument("--cycles", type=int, default=20)
+    parser.add_argument("--startup-policy", choices=("eager", "on-demand"), default=None,
+                        help="Omit for historical artifacts without this flag.")
     args = parser.parse_args()
     if os.name != "nt":
         parser.error("Requires the Windows native desktop host.")
@@ -310,13 +451,15 @@ def main():
                               "Readiness timing and idle memory exclude the WebView GUI.",
                               "Repeated starts include warm OS filesystem caches.",
                               "Python is absent from the child's PATH, but is present on the developer machine."]}
-    samples, memories = [], []
+    samples, core_samples, memories, phases = [], [], [], []
     stage = "start_exit"
     app = None
     try:
         for index in range(args.cycles):
-            app = Desktop(executable, resources, data)
+            app = Desktop(executable, resources, data, args.startup_policy)
             samples.append(app.ready_seconds)
+            core_samples.append(app.core_ready_seconds)
+            phases.append(app.phases)
             if index == 0:
                 fictional_flow(app)
                 second_instance(executable, resources, data, app)
@@ -338,16 +481,18 @@ def main():
         stage = "backup_restore"
         native_maintenance(executable, resources, data, "--backup-to", output / "backup")
         native_maintenance(executable, resources, output / "restored-state", "--restore-from", output / "backup")
-        app = Desktop(executable, resources, output / "restored-state")
+        app = Desktop(executable, resources, output / "restored-state", args.startup_policy)
         replay(app)
         app.stop()
         app = None
         report["checks"].append("single_exe_backup_restore_preserves_frozen_replay")
         stage = "worker_faults"
-        for index, name in enumerate(WORKERS):
-            app = Desktop(executable, resources, data)
-            app.workers[index].terminate()
-            expect(app.workers[index].exited(3), "worker_fault_not_delivered")
+        for name in WORKERS:
+            app = Desktop(executable, resources, data, args.startup_policy)
+            handle = app.ensure(name) if name != "gateway" else app.worker_handles.get(name)
+            expect(handle is not None, "owned_gateway_identity_missing")
+            handle.terminate()
+            expect(handle.exited(3), "worker_fault_not_delivered")
             if name == "gateway":
                 try:
                     app.call("GET", "/api/status")
@@ -357,7 +502,7 @@ def main():
                     raise CheckFailed("gateway_fault_not_observed")
             else:
                 status = app.call("GET", "/api/status")
-                expect(status["degraded"] and status["services"][name]["state"] == "unavailable",
+                expect(status["degraded"] and status["services"][name]["state"] in ("unavailable", "failed"),
                        "worker_fault_missing_degradation")
                 if name in ("profile", "knowledge"):
                     replay(app)
@@ -366,11 +511,13 @@ def main():
             print(f"Native worker fault: {name}", flush=True)
         report["checks"] += ["six_worker_fault_cleanup", "source_service_fault_keeps_frozen_replay"]
         stage = "host_fault"
-        app = Desktop(executable, resources, data)
+        app = Desktop(executable, resources, data, args.startup_policy)
+        app.ensure("ocr")
+        app.ensure("planning")
         app.stop(forced=True)
         app = None
         report["checks"].append("forced_host_exit_job_cleanup")
-        app = Desktop(executable, resources, data)
+        app = Desktop(executable, resources, data, args.startup_policy)
         replay(app)
         app.stop()
         app = None
@@ -394,6 +541,13 @@ def main():
                 "runs": len(samples), "seconds": [round(value, 4) for value in samples],
                 "p95_seconds": round(sorted(samples)[math.ceil(.95 * len(samples)) - 1], 4),
             }
+            report["headless_core_readiness"] = {
+                "runs": len(core_samples), "seconds": [round(value, 4) for value in core_samples],
+                "p50_seconds": round(sorted(core_samples)[math.ceil(.5 * len(core_samples)) - 1], 4),
+                "p95_seconds": round(sorted(core_samples)[math.ceil(.95 * len(core_samples)) - 1], 4),
+                "max_seconds": round(max(core_samples), 4),
+            }
+            report["owner_phase_counters"] = phases
         report["headless_idle_memory"] = {
             "runs": len(memories),
             "max_working_set_mib": max((m["working_set_mib"] for m in memories), default=None),

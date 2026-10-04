@@ -112,6 +112,14 @@ fn capture_deskrawl_region(
 }
 
 fn main() {
+    let policy = option("--startup-policy")
+        .map(|value| supervisor::StartupPolicy::parse(&value.to_string_lossy()))
+        .transpose()
+        .unwrap_or_else(|code| {
+            eprintln!("{code}");
+            std::process::exit(1);
+        })
+        .unwrap_or_default();
     let data = option("--data-dir").unwrap_or_else(|| {
         let base = std::env::var_os("LOCALAPPDATA")
             .map(PathBuf::from)
@@ -148,7 +156,7 @@ fn main() {
             eprintln!("resource_directory_required");
             std::process::exit(1);
         };
-        match supervisor::Supervisor::start(&resources, &data) {
+        match supervisor::Supervisor::start(&resources, &data, policy) {
             Ok(mut runtime) => {
                 // Readiness is parent IPC, not an application log.
                 println!("{}", runtime.readiness());
@@ -188,8 +196,8 @@ fn main() {
             let resources = resource_override
                 .clone()
                 .unwrap_or(app.path().resource_dir()?.join("sidecar"));
-            let runtime =
-                supervisor::Supervisor::start(&resources, &data).map_err(std::io::Error::other)?;
+            let runtime = supervisor::Supervisor::start(&resources, &data, policy)
+                .map_err(std::io::Error::other)?;
             if hidden_ui {
                 eprintln!("lootweave_hidden_ui_v1: services_ready");
             }

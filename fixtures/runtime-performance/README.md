@@ -1,0 +1,9 @@
+# Runtime performance evidence
+
+Selected sanitized development cohorts collected on 2026-10-05: [control A](control-a.json), [control B](control-b.json), and the [explicit on-demand candidate](candidate-on-demand.json). Each contains all 20 attempts, phase durations where available, input/source identities, failures and sampled resources. The [results](../../docs/performance-results.md) apply the [predeclared experiment](../../docs/performance-experiment.md); the candidate failed its primary latency gate.
+
+Controls use unchanged eager source `eade0dc33451d55436d2b22acc0ee94dfe8d9be8`; the candidate uses `7afdd6ed9a4304c2d29d09d4b9d4e96088039a34`. Source hashes identify bytes, not validation or third-party rights. These are original synthetic workflows and derived observations; no game resources, player data, screenshots, font files, credentials, process IDs or personal locations are included. Original private process reports stay local.
+
+Publication copies rename the legacy tool's ambiguous `acceptance_passed` field to `workflow_checks_passed`, preserving its value and recording the original summary SHA-256. That field means completion of the workflow/OCR checks, not comparative performance or release acceptance. No observed samples are changed. The candidate publication additionally records `all_predeclared_gates_passed: false` from the comparison.
+
+Limitations: warm OS caches; developer launcher without WebView; one 60-second idle window per state in the first attempt of each cohort; shared working-set pages may be counted repeatedly; 100 ms process discovery can miss brief helpers. Control A retains three OCR HTTP failures with unknown actual HTTP status. No native installer, cold-GUI acceptance, independent OCR truth review or real-game mechanics claim follows from these records. Project documentation and code licensing does not authorize redistribution of Windows fonts or game inputs.

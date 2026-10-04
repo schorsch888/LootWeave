@@ -38,7 +38,7 @@ class RuntimeTests(unittest.TestCase):
                 processes[2].wait(timeout=3)
                 health = status()
                 self.assertTrue(health["degraded"])
-                self.assertEqual("unavailable", health["services"]["evaluation"]["state"])
+                self.assertEqual("failed", health["services"]["evaluation"]["state"])
             finally:
                 runtime.stop()
             self.assertTrue(all(p.poll() is not None for p in processes))
