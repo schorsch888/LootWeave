@@ -585,7 +585,10 @@ try {
   await page.getByRole("status").filter({ hasText: "3 秒后捕获" }).waitFor({ state: "visible" });
   const requestedOcr = await ocrRequest;
   assert.equal(new URL(requestedOcr.url()).pathname, "/api/ocr/regions");
-  await check("已保留原始区域与识别原文；字段仍需逐项核对。");
+  const captureReview = page.locator(".capture-review");
+  const immutableOcrText = page.locator('.capture-review pre[aria-label="OCR 识别原文（未校正）"]');
+  await captureReview.waitFor({ state: "visible" });
+  await immutableOcrText.waitFor({ state: "visible" });
   assert.equal(ocrRequests, ocrBeforeRejectedCapture + 1, "successful_native_mock_did_not_use_real_ocr_http");
   assert.equal(await page.getByLabel("游戏范围", { exact: true }).inputValue(), "deskrawl",
     "capture_context_changed_game_scope");
@@ -611,7 +614,7 @@ try {
   await page.waitForFunction(() => document.querySelector(".capture-review img")?.naturalWidth === 800);
   assert.equal(await capturePreview.evaluate(image => image.naturalHeight), 24);
   const acceptedOcr = await (await requestedOcr.response()).json();
-  const immutableOcrText = page.locator(".capture-review pre");
+  assert.equal(await immutableOcrText.getAttribute("aria-label"), "OCR 识别原文（未校正）");
   assert.equal(await immutableOcrText.innerText(),
     acceptedOcr.raw_text || "未识别到可用文字，请手动填写原始文本。");
   await page.setViewportSize({ width: 390, height: 844 });
@@ -645,7 +648,7 @@ try {
     return button && !button.disabled;
   });
   assert.equal(await capturePreview.count(), 0, "failed_recapture_kept_previous_image");
-  assert.equal(await page.getByText("已保留原始区域与识别原文；字段仍需逐项核对。", { exact: false }).count(), 0,
+  assert.equal(await immutableOcrText.count(), 0,
     "failed_recapture_kept_previous_observation");
   assert.equal(await previewConsent.isChecked(), false, "failed_recapture_kept_previous_confirmation");
   assert.equal(await rawTextField.inputValue(), textBeforeRecapture, "failed_recapture_erased_manual_text");
@@ -658,7 +661,7 @@ try {
 
   await page.getByLabel("游戏范围", { exact: true }).fill("lootweave-fixture");
   assert.equal(await capturePreview.count(), 0, "scope_change_kept_previous_image");
-  assert.equal(await page.getByText("已保留原始区域与识别原文；字段仍需逐项核对。", { exact: false }).count(), 0,
+  assert.equal(await immutableOcrText.count(), 0,
     "scope_change_kept_old_capture_association");
   await genericSource.selectOption("deskrawl");
   await page.evaluate(() => { window.__deskrawlMockState.scenario = "multiple"; });
@@ -672,7 +675,8 @@ try {
   await windowCapture.click();
   await page.getByRole("status").filter({ hasText: "3 秒后捕获" }).waitFor({ state: "visible" });
   await mismatchOcrRequest;
-  await check("已保留原始区域与识别原文；字段仍需逐项核对。");
+  await captureReview.waitFor({ state: "visible" });
+  await immutableOcrText.waitFor({ state: "visible" });
   await rawTextField.fill("人工填写的 Deskrawl 观察文本");
   await check("采集来源为 deskrawl，请先核对游戏范围，再确认快照。");
   const confirmationCheckbox = page.getByRole("checkbox", {
