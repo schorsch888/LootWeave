@@ -49,6 +49,8 @@ def safe_failure(stage, category):
 class NativeCheckFailed(CheckFailed):
     def __init__(self, stage, category):
         self.diagnostic = safe_failure(stage, category)
+        self.cleanup_diagnostic = None
+        self.host_diagnostic = None
         super().__init__(self.diagnostic["category"])
 
 
@@ -172,13 +174,105 @@ def free_port():
         return channel.getsockname()[1]
 
 
+def host_diagnostic(host):
+    code = host.poll()
+    return {"alive": code is None,
+            "exit_code": code if type(code) is int and -(2**31) <= code < 2**32 else None,
+            "elevated": host_elevation(host)}
+
+
+def host_elevation(host):
+    # Query only this Popen's exact process handle; no process memory or identity is read.
+    if os.name != "nt":
+        return None
+    token = wintypes.HANDLE()
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel.CloseHandle.argtypes = (wintypes.HANDLE,)
+    try:
+        security = ctypes.WinDLL("advapi32", use_last_error=True)
+        security.OpenProcessToken.argtypes = (wintypes.HANDLE, wintypes.DWORD, ctypes.POINTER(wintypes.HANDLE))
+        security.GetTokenInformation.argtypes = (wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p,
+                                                 wintypes.DWORD, ctypes.POINTER(wintypes.DWORD))
+        if not security.OpenProcessToken(int(host._handle), 0x8, ctypes.byref(token)):
+            return None
+        elevation = wintypes.DWORD()
+        size = wintypes.DWORD()
+        if security.GetTokenInformation(token, 20, ctypes.byref(elevation), ctypes.sizeof(elevation), ctypes.byref(size)):
+            return bool(elevation.value)
+        return None
+    except Exception:
+        return None
+    finally:
+        if token:
+            kernel.CloseHandle(token)
+
+
+def cleanup_run(host, probe, handles, passed, folder, error_log):
+    errors = []
+    def attempt(action):
+        try:
+            return action()
+        except Exception as error:
+            errors.append(failure_category(error))
+            return None
+
+    if probe:
+        if probe.poll() is None:
+            attempt(probe.kill)
+            attempt(lambda: probe.wait(timeout=5))
+        attempt(probe.stdout.close)
+    if host.poll() is None:
+        for pid in attempt(lambda: descendants(host.pid)) or ():
+            try:
+                handles.append(OwnedProcess(pid))
+            except CheckFailed:
+                pass  # An observed descendant may already have exited.
+        attempt(host.kill)
+        attempt(lambda: host.wait(timeout=5))
+    attempt(error_log.close)
+    states = []
+    for handle in handles:
+        try:
+            if not passed and not handle.exited():
+                try:
+                    handle.terminate()
+                except CheckFailed:
+                    # Job closure can race TerminateProcess. Judge reclamation by this exact handle.
+                    pass
+                if not handle.exited(5):
+                    errors.append("owned_process_termination_failed")
+            state = owned_process_state(handle)
+            states.append(state)
+            if not state["exited"]:
+                errors.append("owned_cleanup_failed")
+        except Exception as error:
+            errors.append(failure_category(error))
+        finally:
+            attempt(handle.close)
+    attempt(lambda: record_shutdown(folder, "cleanup.json", states, errors))
+    if errors:
+        return safe_failure("owned_cleanup", "owned_cleanup_failed")
+    return None
+
+
+def finish_run_failure(primary, cleanup, host_state):
+    if cleanup:
+        if primary is None:
+            primary = NativeCheckFailed(cleanup["stage"], cleanup["category"])
+        primary.cleanup_diagnostic = safe_failure(cleanup["stage"], cleanup["category"])
+    if primary:
+        primary.host_diagnostic = host_state
+        raise primary from None
+
+
 def run(executable, resources, node, output, index):
     folder = output / f"run-{index:02}"
     folder.mkdir()
     port = free_port()
     env = frozen_environment()
-    env["WEBVIEW2_USER_DATA_FOLDER"] = str(folder / "webview-data")
-    env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = f"--remote-debugging-port={port} --remote-debugging-address=127.0.0.1"
+    # App-owned API arguments also work when WebView2 filters elevated-host env overrides:
+    # https://github.com/MicrosoftEdge/WebView2Feedback/issues/5645#issuecomment-4934355430
+    env["LOOTWEAVE_NATIVE_VERIFY_PORT"] = str(port)
     start = time.perf_counter()
     error_log = (folder / "native-stderr.log").open("wb")
     host_args = [str(executable), "--resource-dir", str(resources), "--data-dir", str(folder / "state"), "--hidden-ui"]
@@ -192,6 +286,9 @@ def run(executable, resources, node, output, index):
     handles = []
     probe = None
     passed = False
+    primary = None
+    result = None
+    host_state = None
     stage = "probe_launch"
     try:
         command = [str(node), str(ROOT / "scripts/probe_native_ui.mjs"), "--port", str(port),
@@ -240,44 +337,26 @@ def run(executable, resources, node, output, index):
         record_shutdown(folder, "natural-exit.json", [owned_process_state(handle) for handle in handles])
         expect(natural_exit, "native_descendant_remained")
         passed = True
-        return {"readiness_seconds": round(seconds, 4), "webview_version": ready["webview_version"],
+        result = {"readiness_seconds": round(seconds, 4), "webview_version": ready["webview_version"],
                 "checks": [*done["checks"], "owned_window_hidden_and_nonforeground"],
                 "processes_at_idle": len(memory),
                 "working_set_mib": round(sum(value[0] for value in memory) / 2**20, 2),
                 "private_commit_mib": round(sum(value[1] for value in memory) / 2**20, 2)}
-    except NativeCheckFailed:
-        raise
+    except NativeCheckFailed as error:
+        primary = error
     except Exception as error:
-        raise NativeCheckFailed(stage, failure_category(error)) from None
+        primary = NativeCheckFailed(stage, failure_category(error))
     finally:
-        if probe and probe.poll() is None:
-            probe.kill()
-            probe.wait(timeout=5)
-        if probe:
-            probe.stdout.close()
-        if host.poll() is None:
-            for pid in descendants(host.pid):
-                try:
-                    handles.append(OwnedProcess(pid))
-                except CheckFailed:
-                    pass
-            host.kill()
-            host.wait(timeout=5)
-        error_log.close()
-        cleanup_states, cleanup_errors = [], []
-        for handle in handles:
-            try:
-                if not passed and not handle.exited():
-                    handle.terminate()
-                    handle.exited(5)
-            except CheckFailed:
-                cleanup_errors.append("owned_process_termination_failed")
-            finally:
-                cleanup_states.append(owned_process_state(handle))
-                handle.close()
-        record_shutdown(folder, "cleanup.json", cleanup_states, cleanup_errors)
-        if cleanup_errors or not all(state["exited"] for state in cleanup_states):
-            raise NativeCheckFailed("owned_cleanup", "owned_cleanup_failed")
+        try:
+            host_state = host_diagnostic(host)
+        except Exception:
+            host_state = None
+        try:
+            cleanup = cleanup_run(host, probe, handles, passed, folder, error_log)
+        except Exception:
+            cleanup = safe_failure("owned_cleanup", "owned_cleanup_failed")
+    finish_run_failure(primary, cleanup, host_state)
+    return result
 
 
 def main():
@@ -325,6 +404,17 @@ def main():
         report["failure_diagnostic"] = diagnostic
         print("Native WebView check failed: stage=" + diagnostic["stage"]
               + " category=" + diagnostic["category"] + "; private probe evidence retained.", flush=True)
+        if isinstance(error, NativeCheckFailed):
+            if error.cleanup_diagnostic:
+                report["cleanup_diagnostic"] = error.cleanup_diagnostic
+                print("Native WebView cleanup failed: stage=" + error.cleanup_diagnostic["stage"]
+                      + " category=" + error.cleanup_diagnostic["category"], flush=True)
+            if error.host_diagnostic:
+                report["host_diagnostic"] = error.host_diagnostic
+                state = error.host_diagnostic
+                print("Native host at failure: alive=" + str(state["alive"]).lower()
+                      + " exit_code=" + str(state["exit_code"])
+                      + " elevated=" + str(state["elevated"]).lower(), flush=True)
     finally:
         (output / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         print("Evidence: " + output.relative_to(ROOT).as_posix(), flush=True)
