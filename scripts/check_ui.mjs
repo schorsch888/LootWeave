@@ -345,7 +345,7 @@ try {
   await lostPanel.getByText("仆从 · 仆从支持", { exact: true }).waitFor({ state: "visible" });
   assert.equal(await lostPanel.getByText("角色 · 仆从支持", { exact: true }).count(), 0,
     "companion_loss_presented_as_hero_loss");
-  await check("评估器 0.1.5");
+  await check("评估器 0.1.6");
   await page.locator(".result").screenshot({ path: path.join(output, "actor-comparison.png") });
   results.push("actual_companion_loss_keeps_owner_in_complete_build_and_ui");
   await page.locator("summary").filter({ hasText: "查看或编辑完整构筑数据" }).click();
@@ -371,7 +371,7 @@ try {
   await page.reload();
   await check("每次换装，都有依据");
   await page.locator("summary").filter({ hasText: "查看历史冻结评估" }).click();
-  await page.locator("article.reason").filter({ hasText: "评估器版本：0.1.5" })
+  await page.locator("article.reason").filter({ hasText: "评估器版本：0.1.6" })
     .getByRole("button", { name: "查看这份冻结结果", exact: true }).last().click();
   await check("正在查看保存的冻结输入及其规则版本");
   await check("换装会丢失机制");

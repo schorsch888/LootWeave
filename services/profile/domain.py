@@ -92,6 +92,11 @@ def snapshot(value: dict) -> dict:
     item(value.get("candidate_item"), known)
     instances = [x["instance_id"] for x in equipped.values()]
     instances.append(value["candidate_item"]["instance_id"])
+    if "inventory_items" in value:
+        require(isinstance(value["inventory_items"], list), "inventory_items_required")
+        for entry in value["inventory_items"]:
+            item(entry, known)
+            instances.append(entry["instance_id"])
     require(len(instances) == len(set(instances)), "duplicate_item_instance")
     for key in ("skills", "talents", "paragon", "runes", "companions", "temporary_effects"):
         ids = set()

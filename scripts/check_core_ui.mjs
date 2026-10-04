@@ -9,12 +9,19 @@ import { createElement } from "../frontend/node_modules/react/index.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const workbenchPath = resolve(root, "frontend/src/pages/workbench/index.tsx").replaceAll("\\", "/");
+const equipmentPath = resolve(root, "frontend/src/features/edit-equipment/index.tsx").replaceAll("\\", "/");
 const checks = [];
 const reportIndex = process.argv.indexOf("--report");
 const reportPath = reportIndex >= 0 ? process.argv[reportIndex + 1] : undefined;
 assert.ok(reportIndex < 0 || reportPath);
 const server = await createServer({ root: resolve(root, "frontend"), configFile: false, logLevel: "silent", server: { middlewareMode: true, hmr: false, watch: null }, plugins: [{ name: "core-fixture-hooks", enforce: "pre", transform(code, id) {
-  if (id.split("?")[0].replaceAll("\\", "/") !== workbenchPath) return;
+  const path = id.split("?")[0].replaceAll("\\", "/");
+  if (path === equipmentPath) {
+    const hook = 'import { useState } from "react";';
+    assert.ok(code.includes(hook));
+    return code.replace(hook, "const useState = (...args) => globalThis.equipmentFixture.useState(...args);");
+  }
+  if (path !== workbenchPath) return;
   const hooks = 'import { useEffect, useState } from "react";';
   const api = 'import { api, newId } from "../../shared/api";';
   assert.ok(code.includes(hooks) && code.includes(api));
@@ -41,6 +48,13 @@ try {
   const { Workbench } = await server.ssrLoadModule("/src/pages/workbench/index.tsx");
   const demo = JSON.parse(readFileSync(resolve(root, "fixtures/demo.json"), "utf8"));
   const fresh = equipment.emptySnapshot();
+  const equipmentStates = []; let equipmentCursor = 0;
+  globalThis.equipmentFixture = { useState(value) {
+    const index = equipmentCursor++;
+    if (!(index in equipmentStates)) equipmentStates[index] = value;
+    return [equipmentStates[index], next => { equipmentStates[index] = next; }];
+  } };
+  const equipmentTree = (facts, onChange) => { equipmentCursor = 0; return equipment.EquipmentEditor({ facts, onChange }); };
   await check("actual draft starts empty with explicit unreviewed build and slot", () => { assert.equal(fresh.context.game_id, "deskrawl"); assert.equal(fresh.context.game_build, "unknown"); assert.deepEqual(fresh.equipped_items, {}); assert.deepEqual(fresh.skills, []); assert.equal(fresh.inventory_coverage, "unknown"); assert.ok(fresh.unknowns.includes("build_not_reviewed") && fresh.unknowns.includes("current_slot_not_reviewed")); assert.ok(fresh.candidate_item.required_level === null); });
   await check("new equipment instances are distinct and do not mutate evidence inputs", () => { const refs = ["e1"]; const one = model.emptyItem(refs), two = model.emptyItem(refs); one.evidence_ids.push("e2"); assert.notEqual(one.instance_id, two.instance_id); assert.deepEqual(refs, ["e1"]); });
   await check("OCR only fills a field after explicit mapping with its source", () => { const item = structuredClone(demo.facts.candidate_item); const frozen = JSON.stringify(item); const next = equipment.mapItemField(item, { field: "vitality", value: -12.5, unit: "percent", ambiguous: false }, "capture-input"); assert.equal(next.affixes.at(-1).value, -12.5); assert.equal(next.affixes.at(-1).unit, "percent"); assert.deepEqual(next.affixes.at(-1).evidence_ids, ["capture-input"]); assert.equal(JSON.stringify(item), frozen); assert.deepEqual(next.effects, item.effects); });
@@ -79,6 +93,60 @@ try {
   });
   await check("build review only removes its own missing-input marker", () => { let changed; const tree = BuildEditor({ facts: fresh, intent: demo.intent, onFactsChange: x => { changed = x; }, onIntentChange: () => {} }); find(tree, n => n.type === "input" && n.props.type === "checkbox" && n.props.checked === false).props.onChange({ target: { checked: true } }); assert.ok(!changed.unknowns.includes("build_not_reviewed")); assert.ok(changed.unknowns.includes("current_slot_not_reviewed")); assert.equal(fresh.unknowns.length, 2); });
   await check("future goal changes increment intent without changing confirmed facts", () => { let changed; const before = JSON.stringify(fresh); const tree = BuildEditor({ facts: fresh, intent: demo.intent, onFactsChange: () => assert.fail("facts changed"), onIntentChange: x => { changed = x; } }); button(tree, "添加未来构筑").props.onClick(); assert.equal(changed.revision, demo.intent.revision + 1); assert.equal(changed.future_builds.length, 1); assert.equal(changed.future_builds[0].feasibility, ""); assert.equal(JSON.stringify(fresh), before); });
+  await check("legacy inventory remains unrecorded until explicit review starts", () => {
+    equipmentStates.length = 0;
+    const legacy = structuredClone(fresh); delete legacy.inventory_items;
+    const before = JSON.stringify(legacy); let changed;
+    const tree = equipmentTree(legacy, value => { changed = value; });
+    button(tree, "开始核对库存").props.onClick();
+    assert.deepEqual(changed.inventory_items, []); assert.equal(changed.inventory_coverage, "partial");
+    assert.deepEqual(changed.equipped_items, legacy.equipped_items); assert.deepEqual(changed.candidate_item, legacy.candidate_item);
+    assert.equal(JSON.stringify(legacy), before);
+    const coverage = BuildEditor({ facts: legacy, intent: demo.intent, onFactsChange: () => {}, onIntentChange: () => {} });
+    const complete = find(coverage, node => node.type === "option" && node.props.value === "complete");
+    assert.equal(complete.props.disabled, true);
+  });
+  await check("inventory entry preserves physical identity and edits invalidate complete coverage", () => {
+    equipmentStates.length = 0;
+    let changed; const original = JSON.stringify(fresh);
+    let tree = equipmentTree(fresh, next => { changed = next; });
+    find(tree, node => node.type === "select" && node.props["aria-label"] === "新增库存物品槽位").props.onChange({ target: { value: "back" } });
+    tree = equipmentTree(fresh, next => { changed = next; });
+    button(tree, "添加库存物品").props.onClick();
+    const item = changed.inventory_items[0];
+    assert.equal(item.slot, "back"); assert.notEqual(item.instance_id, fresh.candidate_item.instance_id);
+    assert.deepEqual(item.evidence_ids, fresh.evidence_ids); assert.equal(changed.inventory_coverage, "partial");
+    const complete = { ...changed, inventory_coverage: "complete" };
+    const editor = find(equipmentTree(complete, next => { changed = next; }), node => node.type === equipment.ItemEditor && node.props.kind === "inventory");
+    editor.props.onChange({ ...item, name: "Synthetic cloak", slot: "shoulders" });
+    assert.equal(changed.inventory_items[0].instance_id, item.instance_id); assert.equal(changed.inventory_items[0].slot, "shoulders");
+    assert.equal(changed.inventory_coverage, "partial"); assert.deepEqual(changed.equipped_items, fresh.equipped_items);
+    tree = equipmentTree({ ...changed, inventory_coverage: "complete" }, next => { changed = next; });
+    button(tree, "删除库存物品").props.onClick();
+    assert.deepEqual(changed.inventory_items, []); assert.equal(changed.inventory_coverage, "partial");
+    assert.equal(JSON.stringify(fresh), original);
+  });
+  await check("future equipment selection uses owned references with one item per slot", () => {
+    const one = { ...model.emptyItem(fresh.evidence_ids, "body"), name: "First robe" };
+    const two = { ...model.emptyItem(fresh.evidence_ids, "body"), name: "Second robe" };
+    const cloak = { ...model.emptyItem(fresh.evidence_ids, "back"), name: "Cloak" };
+    const facts = { ...fresh, inventory_items: [one, two, cloak] }; const original = JSON.stringify(facts);
+    const purpose = { ...demo.intent, allowed_build_changes: ["equipment"], future_builds: [{ skills: [], conditions: {}, feasibility: "owned", equipment_items: [one.instance_id, cloak.instance_id] }] };
+    let changed;
+    const tree = BuildEditor({ facts, intent: purpose, onFactsChange: () => assert.fail("confirmed facts changed"), onIntentChange: next => { changed = next; } });
+    find(tree, node => node.type === "input" && node.props["data-item-id"] === two.instance_id).props.onChange({ target: { checked: true } });
+    assert.deepEqual(changed.future_builds[0].equipment_items, [cloak.instance_id, two.instance_id]);
+    assert.equal(changed.revision, purpose.revision + 1); assert.equal(JSON.stringify(facts), original);
+    assert.deepEqual(purpose.future_builds[0].equipment_items, [one.instance_id, cloak.instance_id]);
+  });
+  await check("deleted future references stay visible and can be removed without inventing inventory", () => {
+    const purpose = { ...demo.intent, future_builds: [{ skills: [], conditions: {}, feasibility: "owned", equipment_items: ["missing-owned-item"] }] };
+    let changed;
+    const tree = BuildEditor({ facts: fresh, intent: purpose, onFactsChange: () => assert.fail("inventory changed"), onIntentChange: next => { changed = next; } });
+    button(tree, "移除失效配套物品").props.onClick();
+    assert.deepEqual(changed.future_builds[0].equipment_items, []); assert.equal(changed.revision, purpose.revision + 1);
+    assert.deepEqual(fresh.inventory_items, []); assert.equal(fresh.inventory_coverage, "unknown");
+  });
   const states = [], effects = [], calls = []; let cursor = 0;
   globalThis.coreFixture = { useState(initial) { const i = cursor++; if (!(i in states)) states[i] = typeof initial === "function" ? initial() : initial; return [states[i], value => { states[i] = typeof value === "function" ? value(states[i]) : value; }]; }, useEffect(run) { effects.push(run); }, async api(path) { calls.push(path); if (path === "knowledge/packs") return { packs: [{ pack_id: "deskrawl-sorcerer-leveling", version: "0.6.0-research", pack_hash: "fixture", context: fresh.context, class_id: "sorcerer", scenario: "leveling", execution_policy: "research_only" }] }; if (path === "demo") return demo; throw new Error("Unexpected fixture API: " + path); } };
   const render = () => { cursor = 0; effects.length = 0; return Workbench(); };
@@ -89,6 +157,11 @@ try {
   await check("source-clock conflicts remain unconfirmed after reopening", () => { component(render(), "ProfileLibrary").props.onOpen({ profile_id: "clock-fixture", revision: 2, facts: fresh, build_hash: "hash", facts_hash: "facts", observation_time_status: "conflict" }); assert.equal(button(render(), "解释保留价值与换装变化 →").props.disabled, true); });
   await check("capture import retains its clock and leaves fields pending", () => { const capture = { observation_id: "fixture-capture", fields: [{ field: "vitality", value: 65, unit: "points", ambiguous: false }], raw_text: "Vitality +65", capture_context: { game_id: "deskrawl", captured_at_ms: 1767225600123 } }; component(render(), "CaptureObservationForm").props.onCaptured(capture); const facts = component(render(), "EquipmentEditor").props.facts; const evidence = facts.evidence.find(e => e.source_ref === "observation://fixture-capture"); assert.equal(evidence.captured_at, "2026-01-01T00:00:00.123Z"); assert.deepEqual(facts.candidate_item.affixes, []); assert.ok(facts.unknowns.includes("ocr_fields_not_mapped")); });
   await check("real comparison shows raw signed differences and unit conflicts without a DPS verdict", () => { const result = { evaluation_id: "render-fixture", retention: "needs_confirmation", comparison: { status: "blocked", scope_compatible: false, lost_capabilities: [], gained_capabilities: [], missing_requirements: [], equip_blockers: [], before: [], after: [], item_rolls: { current_item: { name: "Current", instance_id: "one" }, candidate_item: { name: "Candidate", instance_id: "two" }, rows: [{ affix_id: "vitality", current_value: 40, candidate_value: 65, current_unit: "points", candidate_unit: "points", delta: 25, status: "comparable", input_evidence_ids: ["e1"] }, { affix_id: "armor", current_value: 10, candidate_value: 5, current_unit: "points", candidate_unit: "percent", delta: null, status: "unit_mismatch", input_evidence_ids: ["e1"] }] } }, blockers: ["game_mechanics_not_accepted"], reasons: [], pin: { context: fresh.context, profile_revision: 7, pack_version: "research", evaluator_version: "0.1.5", intent_revision: 1 } }; const html = renderToStaticMarkup(createElement(EvaluationCard, { result, onReplay: () => {}, replaying: false, replayed: false })); assert.ok(html.includes("+25 点") && html.includes("单位不同，未相减") && html.includes("实际词条对比") && html.includes("需要补充确认")); assert.ok(!html.includes("当前使用合成示例")); });
+  await check("frozen future explanation shows named supporting equipment and declared feasibility", () => {
+    const result = { evaluation_id: "future-render", retention: "candidate", comparison: { status: "no_known_change", scope_compatible: true, lost_capabilities: [], gained_capabilities: [], missing_requirements: [], equip_blockers: [], before: [], after: [] }, blockers: [], reasons: [{ kind: "future_use", capability: "archive_shield", actor: "hero", feasibility: "owned", future_build_index: 0, future_equipment: [{ instance_id: "saved-robe", slot: "body", name: "Synthetic robe" }], explanation: "Synthetic future combination", evidence_ids: ["fixture-spec"], input_evidence_ids: ["held-input"] }], pin: { context: demo.facts.context, profile_revision: 1, pack_version: "1.0.0", evaluator_version: "0.1.6", intent_revision: 2 } };
+    const html = renderToStaticMarkup(createElement(EvaluationCard, { result, onReplay: () => {}, replaying: false, replayed: false }));
+    assert.ok(html.includes("未来构筑 1") && html.includes("可行性声明：已拥有") && html.includes("胸部 · Synthetic robe"));
+  });
   console.log("Core UI fixture checks: " + checks.length + " passed; no browser or desktop input.");
 } catch (error) { checks.push({ passed: false, error: error.message }); process.exitCode = 1; console.error(error); }
 finally { await server.close(); if (reportPath) writeFileSync(reportPath, JSON.stringify({ scope: "Direct React handlers and static rendering; not GUI, scheduling, OCR or real-game acceptance.", passed: !process.exitCode, checks }, null, 2) + "\n", { flag: "wx" }); }

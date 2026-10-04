@@ -1,0 +1,1 @@
+export const slots: Record<string, string> = { weapon: "武器", offhand: "副手", head: "头部", body: "胸部", hands: "手部", waist: "腰部", legs: "腿部", feet: "脚部", neck: "项链", ring1: "戒指 1", ring2: "戒指 2", shoulders: "护肩", back: "披风" };

@@ -15,6 +15,9 @@ ARCHIVE = json.loads((ROOT / "fixtures/evaluation-0.1.1.json").read_text(encodin
 
 def current_result(inputs):
     profile, knowledge = copy.deepcopy(inputs["profile"]), copy.deepcopy(inputs["knowledge"])
+    # Reconfirm an explicitly empty synthetic inventory for the current engine.
+    # The original historical inputs and result hashes are never modified.
+    profile["facts"].setdefault("inventory_items", [])
     snapshot(profile["facts"])
     validate_pack(knowledge["pack"])
     profile["facts_hash"] = digest(profile["facts"])

@@ -1,13 +1,15 @@
 import type { EvaluationResult } from "../../shared/api";
+import { slots } from "../../shared/equipment-labels";
 
 const retention: Record<string, string> = { keep: "建议保留", candidate: "未来构筑候选", low_current_relevance: "当前相关性低", needs_confirmation: "需要补充确认" };
 const status: Record<string, string> = { blocked: "比较受阻", mechanism_loss: "换装会丢失机制", mechanism_change: "机制发生变化", no_known_change: "未发现已知机制变化" };
 const capabilities: Record<string, string> = { archive_shield: "两件套防护", cold_focus: "冰冷技能配合", mana_loop: "法力循环", vitality_support: "活力支持", frost_cycle: "符文循环", resource_efficiency: "资源效率", survival: "生存依赖", temporary_focus: "临时专注", companion_support: "仆从支持", frozen_bonus: "冻结目标条件", fire_focus: "火焰技能配合" };
 const label = (value: string) => capabilities[value] || value;
+const feasibility: Record<string, string> = { owned: "已拥有", obtainable: "可获取", hypothetical: "假设构筑" };
 const owners: Record<string, string> = { hero: "角色", companion: "仆从" };
 const mechanismStates: Record<string, string> = { active: "已确认生效", inactive: "已确认未生效", unknown: "未知 · 待确认" };
 const unknownRequirement = "unknown_required_capability:";
-const blockerNames: Record<string, string> = { game_mechanics_not_accepted: "真实游戏机制尚未验证，当前只比较已确认的物品字段。", inventory_not_fully_scanned: "库存尚未完整核对，不能判断全部未来用途。", cross_time_snapshot: "存在其他时点的来源，请核对同一时点的构筑。", "input_unknown:build_not_reviewed": "当前构筑尚未完整核对。", "input_unknown:current_slot_not_reviewed": "当前同槽装备尚未核对。", "input_unknown:ocr_fields_not_mapped": "请逐项核对截图识别字段。" };
+const blockerNames: Record<string, string> = { game_mechanics_not_accepted: "真实游戏机制尚未验证，当前只比较已确认的物品字段。", inventory_not_fully_scanned: "库存尚未完整核对，不能判断全部未来用途。", inventory_not_recorded: "此快照尚未记录库存；请核对后保存，缺少记录不等于空库存。", future_build_change_not_permitted: "所选未来组合包含未允许的技能或装备更改。", candidate_class_incompatible: "候选装备不适用于当前职业；当前场景不能给出构筑用途结论。", cross_time_snapshot: "存在其他时点的来源，请核对同一时点的构筑。", "input_unknown:build_not_reviewed": "当前构筑尚未完整核对。", "input_unknown:current_slot_not_reviewed": "当前同槽装备尚未核对。", "input_unknown:ocr_fields_not_mapped": "请逐项核对截图识别字段。" };
 const blockerLabel = (value: string) => blockerNames[value] || (value.startsWith(unknownRequirement)
   ? "该版本知识包尚未收录所需机制：" + value.slice(unknownRequirement.length) + "，暂不能判断其适用性。"
   : value.startsWith("unknown_affix_or_unit:") ? "尚无此词条的机制或单位规则：" + value.split(":")[1]
@@ -15,6 +17,11 @@ const blockerLabel = (value: string) => blockerNames[value] || (value.startsWith
   : value.startsWith("incompatible_context:") ? "知识包与实际游戏范围不同：" + value.split(":")[1]
   : value.startsWith("required_level_unknown:") ? "穿戴等级待确认：" + value.split(":")[1]
   : value.startsWith("item_modifications_unknown:") ? "强化或插槽状态待确认：" + value.split(":")[1]
+  : value.startsWith("future_item_not_owned:") ? "配套物品不在当前持有记录中，请重新选择：" + value.split(":")[1]
+  : value.startsWith("future_equipment_slot_conflict:") ? "未来组合中同一槽位选择了多件装备：" + (slots[value.split(":")[1]] || value.split(":")[1])
+  : value.startsWith("future_candidate_slot_conflict:") ? "未来配套装备会替换正在比较的候选物品，请重新选择。"
+  : value.startsWith("future_required_level_not_met:") ? "所选配套装备尚未达到穿戴等级：" + value.split(":")[1]
+  : value.startsWith("future_item_class_incompatible:") ? "所选配套装备不适用于当前职业：" + value.split(":")[1]
   : value === "item_unknown:effects_not_reviewed" ? "物品特殊效果尚未核对。" : value);
 const statNames: Record<string, string> = { vitality: "活力", armor: "护甲", strength: "力量", dexterity: "敏捷", intelligence: "智力", max_health: "最大生命", max_mana: "最大法力", attack_speed: "攻击速度", critical_chance: "暴击率", critical_damage: "暴击伤害", fire_damage: "火焰伤害", cold_damage: "冰冷伤害", lightning_damage: "闪电伤害", physical_damage: "物理伤害", "fixture-vitality": "示例活力", "fixture-cold-bonus": "示例冰冷加成" };
 const units: Record<string, string> = { points: "点", percent: "%", percent_points: "百分点", seconds: "秒", per_second: "每秒" };
@@ -47,7 +54,7 @@ export function EvaluationCard({ result, onReplay, replaying, replayed }: { resu
     {result.comparison.equip_blockers.map(x => <p className="warning" key={x}>{x === "required_level_not_met" ? "尚未达到穿戴等级；仍可保留。" : "职业穿戴要求不满足。"}</p>)}
     {result.blockers.length > 0 && <details open><summary>缺失依据与待确认项（{result.blockers.length}）</summary><ul>{result.blockers.map(x => <li key={x}>{blockerLabel(x)}</li>)}</ul></details>}
     {result.reasons.length > 0 && <h3>用途说明与依据</h3>}
-    {result.reasons.map((r, i) => <div className="reason" key={i}><strong>{r.capability ? mechanismLabel(r.capability, r.actor) : "当前用途"}</strong><p>{r.kind === "future_use" ? "在明确选择的未来构筑中存在用途；配套可行性：" + r.feasibility : r.kind === "low_current_relevance" ? "未发现已知的当前或选定未来用途；其他用途仍可能存在。" : "在当前确认条件下，这件物品提供此机制。"} </p><small>规则依据：{r.evidence_ids.join("、") || "无适用规则"} · 输入依据：{r.input_evidence_ids.join("、")}</small></div>)}
+    {result.reasons.map((r, i) => <div className="reason" key={i}><strong>{r.capability ? mechanismLabel(r.capability, r.actor) : "当前用途"}</strong><p>{r.kind === "future_use" ? "在未来构筑 " + ((r.future_build_index ?? 0) + 1) + " 中存在用途；可行性声明：" + (feasibility[r.feasibility || ""] || r.feasibility || "未确认") : r.kind === "low_current_relevance" ? "未发现已知的当前或选定未来用途；其他用途仍可能存在。" : "在当前确认条件下，这件物品提供此机制。"} </p>{r.future_equipment && r.future_equipment.length > 0 && <p>所选配套：{r.future_equipment.map(item => (slots[item.slot] || item.slot) + " · " + (item.name || "未命名物品")).join("、")}</p>}<small>规则依据：{r.evidence_ids.join("、") || "无适用规则"} · 输入依据：{r.input_evidence_ids.join("、")}</small></div>)}
     <details><summary>完整配置与依据</summary><table><thead><tr><th>机制</th><th>归属</th><th>替换前</th><th>替换后</th><th>来源</th></tr></thead><tbody>{result.comparison.after.map(r => <tr key={r.rule_id}><td>{label(r.capability || "")}</td><td>{owners[r.actor || ""] || "归属未知"}</td><td>{result.comparison.before.find(x => x.rule_id === r.rule_id)?.state}</td><td>{r.state}</td><td>{r.source_ids?.join("、") || "无"}</td></tr>)}</tbody></table></details>
     <footer className="result-footer"><span>规则包 {result.pin.pack_version} · 评估器 {result.pin.evaluator_version} · 意图 r{result.pin.intent_revision}</span><button type="button" onClick={onReplay} disabled={replaying}>{replaying ? "回放中…" : replayed ? "✓ 回放一致 · 再次验证" : "回放验证"}</button></footer>
   </section>;

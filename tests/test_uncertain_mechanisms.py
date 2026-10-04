@@ -87,7 +87,12 @@ def expected_for(before, after, actor):
 
 
 def current_result(inputs):
-    return evaluate(inputs["profile"], inputs["knowledge"], inputs["intent"])
+    # Current mechanism cases explicitly reconfirm empty synthetic inventory.
+    # Frozen legacy profiles remain unchanged for their original engine replay.
+    profile = deepcopy(inputs["profile"])
+    profile["facts"].setdefault("inventory_items", [])
+    profile["facts_hash"] = digest(profile["facts"])
+    return evaluate(profile, inputs["knowledge"], inputs["intent"])
 
 
 class UncertainMechanismTests(unittest.TestCase):
@@ -95,7 +100,7 @@ class UncertainMechanismTests(unittest.TestCase):
         self.assertEqual(expected["retention"], result["retention"])
         self.assertEqual(expected["comparison"], {
             key: result["comparison"].get(key) for key in expected["comparison"]})
-        self.assertEqual("0.1.5", result["pin"]["evaluator_version"])
+        self.assertEqual("0.1.6", result["pin"]["evaluator_version"])
 
     def test_all_provider_pairs_preserve_three_states_and_actor_ownership(self):
         for actor in ("hero", "companion"):

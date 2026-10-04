@@ -9,12 +9,14 @@ export { emptySnapshot, mapItemField } from "./model";
 const entries = (text: string) => [...new Set(text.split(/[,，\n]/).map(x => x.trim()).filter(Boolean))];
 const numeric = (text: string) => text.trim() ? Number(text) : Number.NaN;
 
-export function ItemEditor({ item, onChange, candidate = false }: { item: Item; onChange: (item: Item) => void; candidate?: boolean }) {
+export function ItemEditor({ item, onChange, kind = "equipped" }: { item: Item; onChange: (item: Item) => void; kind?: "candidate" | "equipped" | "inventory" }) {
+  const candidate = kind === "candidate";
+  const itemKind = kind === "candidate" ? "候选物品" : kind === "inventory" ? "库存物品" : "已装备物品";
   const update = (patch: Partial<Item>) => onChange({ ...item, ...patch });
   const changeAffix = (index: number, patch: Partial<Item["affixes"][number]>) => update({ affixes: item.affixes.map((row, i) => i === index ? { ...row, ...patch } : row) });
   return <div className="item-editor">
-    <div className="fields"><label>物品名称<input aria-label={candidate ? "候选物品名称" : "已装备物品名称"} value={item.name || ""} onChange={e => update({ name: e.target.value })}/></label>
-      {candidate && <label>替换槽位<select aria-label="候选槽位" value={item.slot} onChange={e => update({ slot: e.target.value })}>{Object.entries(slots).map(([id, name]) => <option key={id} value={id}>{name}</option>)}{!slots[item.slot] && <option value={item.slot}>{item.slot}</option>}</select></label>}
+    <div className="fields"><label>物品名称<input aria-label={itemKind + "名称"} value={item.name || ""} onChange={e => update({ name: e.target.value })}/></label>
+      {(candidate || kind === "inventory") && <label>{candidate ? "替换槽位" : "物品槽位"}<select aria-label={candidate ? "候选槽位" : "库存物品槽位"} value={item.slot} onChange={e => update({ slot: e.target.value })}>{Object.entries(slots).map(([id, name]) => <option key={id} value={id}>{name}</option>)}{!slots[item.slot] && <option value={item.slot}>{item.slot}</option>}</select></label>}
       <label>穿戴等级<input type="number" min="1" step="1" placeholder="未知时留空" value={item.required_level ?? ""} onChange={e => update({ required_level: e.target.value ? Number(e.target.value) : null })}/></label>
       <label>限定职业<input placeholder="不限职业时留空" value={item.class_id || ""} onChange={e => update({ class_id: e.target.value.trim() || undefined })}/></label></div>
     <h3>实际词条</h3><p className="muted">同一词条请选择相同标识和单位；这里记录实际值，数值增加不等于构筑更强。</p>
@@ -42,13 +44,14 @@ export function ItemEditor({ item, onChange, candidate = false }: { item: Item; 
 
 export function EquipmentEditor({ facts, onChange }: { facts: Snapshot; onChange: (facts: Snapshot) => void }) {
   const [otherSlot, setOtherSlot] = useState("head");
+  const [inventorySlot, setInventorySlot] = useState("head");
   const slot = facts.candidate_item.slot;
   const current = facts.equipped_items[slot];
   const mode = current ? "item" : facts.unknowns.includes("current_slot_not_reviewed") ? "unknown" : "empty";
   const setCurrent = (item: Item) => onChange({ ...facts, equipped_items: { ...facts.equipped_items, [item.slot]: item } });
   return <>
     <div className="workspace-grid"><section className="panel"><div className="section-heading"><div><span className="eyebrow">02 · CANDIDATE</span><h2>候选物品</h2></div><span className="tag">{slots[slot] || slot}</span></div>
-      <ItemEditor candidate item={facts.candidate_item} onChange={item => { const unknowns = facts.unknowns.filter(x => x !== "current_slot_not_reviewed"); if (item.slot !== slot && !facts.equipped_items[item.slot]) unknowns.push("current_slot_not_reviewed"); else if (item.slot === slot && mode === "unknown") unknowns.push("current_slot_not_reviewed"); onChange({ ...facts, candidate_item: item, unknowns }); }}/></section>
+      <ItemEditor kind="candidate" item={facts.candidate_item} onChange={item => { const unknowns = facts.unknowns.filter(x => x !== "current_slot_not_reviewed"); if (item.slot !== slot && !facts.equipped_items[item.slot]) unknowns.push("current_slot_not_reviewed"); else if (item.slot === slot && mode === "unknown") unknowns.push("current_slot_not_reviewed"); onChange({ ...facts, candidate_item: item, unknowns }); }}/></section>
       <section className="panel"><div className="section-heading"><div><span className="eyebrow">03 · CURRENT EQUIPMENT</span><h2>当前同槽装备</h2></div><span className="tag">{slots[slot] || slot}</span></div>
         <label>当前装备状态<select aria-label="当前装备状态" value={mode} onChange={e => { const equipped = { ...facts.equipped_items }; if (e.target.value === "item") equipped[slot] = current || emptyItem(facts.evidence_ids, slot); else delete equipped[slot]; const unknowns = facts.unknowns.filter(x => x !== "current_slot_not_reviewed"); if (e.target.value === "unknown") unknowns.push("current_slot_not_reviewed"); onChange({ ...facts, equipped_items: equipped, unknowns }); }}><option value="unknown">尚未核对</option><option value="item">已装备物品</option><option value="empty">已确认空槽</option></select></label>
         {current ? <ItemEditor item={current} onChange={setCurrent}/> : <p className="muted">{mode === "unknown" ? "请填写当前装备或明确确认空槽，不能把未填写当作空装备位。" : "已确认这个槽位没有装备；不会把缺失词条按零计算。"}</p>}
@@ -56,6 +59,13 @@ export function EquipmentEditor({ facts, onChange }: { facts: Snapshot; onChange
     <details className="panel"><summary>其他装备位（{Object.keys(facts.equipped_items).filter(key => key !== slot).length}）</summary><p className="muted">保留整套已装备物品的效果和套装来源。</p>
       {Object.entries(facts.equipped_items).filter(([key]) => key !== slot).map(([key, item]) => <details key={key}><summary>{slots[key] || key} · {item.name || "未命名"}</summary><ItemEditor item={item} onChange={setCurrent}/><button type="button" onClick={() => { const equipped = { ...facts.equipped_items }; delete equipped[key]; onChange({ ...facts, equipped_items: equipped }); }}>移除此槽装备</button></details>)}
       <div className="fields"><label>新增装备位<select value={otherSlot} onChange={e => setOtherSlot(e.target.value)}>{Object.entries(slots).map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label><button type="button" disabled={!!facts.equipped_items[otherSlot] || otherSlot === slot} onClick={() => onChange({ ...facts, equipped_items: { ...facts.equipped_items, [otherSlot]: emptyItem(facts.evidence_ids, otherSlot) } })}>添加已装备物品</button></div>
+    </details>
+    <details className="panel"><summary>其他已持有物品（{facts.inventory_items?.length ?? "未记录"}）</summary>
+      <p className="muted">仅记录背包或仓库中的其他装备，不会加入当前构筑。候选物品和已装备物品已分别记录；库存未核对不等于空库存。</p>
+      {facts.inventory_items === undefined ? <div><p className="muted">此快照尚未记录库存。开始核对会建立一个部分核对的库存；只有之后明确选择完整核对，空库存才表示已确认没有其他持有物品。</p><button type="button" onClick={() => onChange({ ...facts, inventory_items: [], inventory_coverage: "partial" })}>开始核对库存</button></div> : <>
+        {facts.inventory_items.map((item, index) => <details key={item.instance_id}><summary>{slots[item.slot] || item.slot} · {item.name || "未命名"}</summary><ItemEditor kind="inventory" item={item} onChange={updated => onChange({ ...facts, inventory_items: facts.inventory_items!.map((entry, i) => i === index ? updated : entry), inventory_coverage: "partial" })}/><button type="button" aria-label={"删除库存物品 " + (item.name || item.instance_id)} onClick={() => onChange({ ...facts, inventory_items: facts.inventory_items!.filter((_, i) => i !== index), inventory_coverage: "partial" })}>删除库存物品</button></details>)}
+        <div className="fields"><label>新增库存槽位<select aria-label="新增库存物品槽位" value={inventorySlot} onChange={e => setInventorySlot(e.target.value)}>{Object.entries(slots).map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label><button type="button" onClick={() => onChange({ ...facts, inventory_items: [...facts.inventory_items!, emptyItem(facts.evidence_ids, inventorySlot)], inventory_coverage: "partial" })}>添加库存物品</button></div>
+      </>}
     </details>
   </>;
 }
