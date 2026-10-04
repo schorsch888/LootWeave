@@ -156,7 +156,6 @@ Real loopback HTTP verifies that the new research pack still blocks executable m
 
 The final read-only signature snapshot found no matching controlled service/helper/component-check processes, with 4,952 MiB available memory and 84% committed bytes. This is a single host reading, not a leak or release benchmark. Native runtime registration-root use, class-vtable materialization, indirect dispatch, complete event/ownership coverage and online effects still require evidence. M1 remains unaccepted; the full Tauri/NSIS rebuild and two-clean-machine distribution gate remain deferred/unpassed. Selecting an older explicit research pack preserves its original scope; an older checker cannot validate the new image/module sections.
 
-
 ## Frostwyrm code-registration tail and selected module entry
 
 A fresh read-only search initially found no module table when it assumed native module order matched metadata order. Name-based discovery then found one 95-entry array containing the same image-name set, with a different order. The selected Assembly-CSharp module is at native array index 6, while the original metadata image index is 3. The published checker validates the declared count/full range and selected pointer; the exploratory whole-name-set finding is not a claim that all 95 module structures were validated.
@@ -392,7 +391,7 @@ The same historical source run's standalone native checks passed 22 tests with t
 
 #### Historical package (2034deed)
 
-A matching EXE, Python directory bundle and offline NSIS installer were built from product source `2034deed5e735d31e39bbd8ddb6710b66ed15e92`, using Python 3.12.14 and Rust 1.94.1. Verifier-only repairs at that stage did not change the product inputs in these artifacts. The later `923bca` health-deadline fix and mainline product integration postdate this package and require a new matching build; this rebuild is underway. These local historical artifacts are not uploaded by the PR and do not replace the historically delivered installer above.
+A matching EXE, Python directory bundle and offline NSIS installer were built from product source `2034deed5e735d31e39bbd8ddb6710b66ed15e92`, using Python 3.12.14 and Rust 1.94.1. Verifier-only repairs at that stage did not change the product inputs in these artifacts. The later `923bca` health-deadline fix and mainline product integration postdate this package and require the separate matching build recorded below. These local historical artifacts are not uploaded by the PR and do not replace the historically delivered installer above.
 
 | Artifact | Bytes | SHA-256 |
 | --- | ---: | --- |
@@ -409,3 +408,21 @@ Hidden passive WebView verification passed 20 fresh-profile start/close cycles a
 The hosted frontend checker initially observed a Vite optimizer's 1000 ms status timer inside its simulated global clock. Modules are now loaded and Vite is closed before the application clock assertions; polling and request-deadline assertions remain unchanged. Node 24.19.0 passed all 16 checks and ten normal/forced-cold optimizer runs with deliberate overlap. This is verifier isolation, not a product timing improvement.
 
 Historical identities and results remain separate. M4 still needs visible cold-GUI, two-clean-machine offline installation/removal, signing and independent privacy/rights review; these matching development checks do not accept the release.
+
+#### Integrated package (ddbfa853)
+
+The matching development EXE, frozen Python services and offline NSIS installer were rebuilt from product source `ddbfa8539e0dc91d39ff57d40c7f247f6b929545` after integration of mainline real-equipment/profile workflows and the absolute health-read deadline repair. Python 3.12.14 and Rust 1.94.1 were used. Subsequent documentation and verifier updates do not change these product inputs; the tested host and bundle hashes were checked again after all gates. These local artifacts are not uploaded or substituted for the delivered installer.
+
+| Artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `desktop/target/release/lootweave-desktop.exe` | 11213824 | `f30db13d61a26004ae7148eb4c57de3b6a346c9f7ab73bf5592349f7f295692f` |
+| `dist/sidecar/bundle-manifest.json` | 62038 | `dd182d0400c3405465c991f7a4377b047ad3cdd566fee1d4f477802cc5ad633e` |
+| `desktop/target/release/bundle/nsis/LootWeave_0.1.0_x64-setup.exe` | 226010098 | `c924f768a1da599b79a842b485b6bf06cf3f41c2d91bfda4be2a7a5cf0be46de` |
+
+The integrated source suite ran 438 Python tests in 52.215 s: 437 passed and one Windows symlink-privilege test skipped. Full locked native Rust tests passed 31 cases; three explicitly ignored child-fixture entry points are exercised by parent tests. Publication checked 179 text files with zero findings; architecture and Python compileall passed. Frontend TypeScript/build, 16 runtime cases, 18 core cases, 19 confirmation cases (including actual Profile/SQLite writes), 27 acquisition/Planning cases, 32 evaluation renders, and 21 application plus six simulated native browser flows passed. The new single JavaScript entry is 296818 bytes, SHA-256 `628514755ce46ab140b0d7513c4fa5ca39bdacf8801b18afe6ea2769f2bce571`; CSS is 7954 bytes, SHA-256 `a3913dbf448b65788a083e866ec3228fa550b5434ac40c3b759ddc5fb877b5e3`.
+
+Default eager and explicit on-demand each passed 20 start/exit cycles and all 13 lifecycle gates, including six worker faults, forced host exit, authorization, instance ownership, backup/restore, frozen replay and restart recovery. On-demand manual work left OCR/Planning dormant until requested. Hidden passive WebView passed 20 fresh-profile start/close cycles on installed WebView2 154.0.4258.53, with readiness P95 10.6237 s, maximum summed idle working set 636.69 MiB and private commit 378.03 MiB. These observe warm developer-machine startup, include CDP client cost and may double-count working-set pages; they are separate from the pre-integration comparative cohorts and do not accept M4.
+
+The final benchmark identity verifier added five deterministic regressions for stale/reused PIDs and rejected-handle closure, reusing the native metadata helpers. Its 20 tests passed; the complete updated source suite ran 443 tests in 50.255 s (442 passed, one existing skip). Publication remained 179 text files with zero findings, and compileall passed. Eight recorded product-entry/host/bundle hashes were unchanged. This is a tooling revision, outside the frozen product build; the earlier measured cohorts and summaries were not rewritten or rerun.
+
+The verifier preserves upstream exact host/descendant handles and ordered creation-time/snapshot bounds, emits allowlisted checkpoints before cleanup, retains both primary and cleanup errors, and continues all owned-handle cleanup after a termination race. Cold PowerShell test fixtures were replaced with env-gated native children without relaxing their deadlines. The earlier hosted abrupt exit has no established cause; passing matching local checks does not prove that cause or hosted CI success. Original failures remain local, no failed comparison attempt was replaced, and visible GUI, two clean Windows environments, offline installation/removal and independent human/release review remain open. No game source checks or image reconstruction were performed in this work.

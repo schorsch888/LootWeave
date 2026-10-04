@@ -18,7 +18,7 @@ LootWeave 是一个开源的 Windows 本地装备决策助手原型，无需玩�
 
 [预先声明的运行实验](docs/performance-experiment.md)、[结果](docs/performance-results.md)和[选定的脱敏批次](fixtures/runtime-performance/README.md)保留了每组 20 次尝试。显式按需模式源码 `7afdd6e` 将启动后无界面的空闲私有提交内存降至 76.6 MiB，对照组最大值约为 105 MiB；但手动流程完成 P95 为 4.924 秒，未达到 <3.698 秒的要求。主要门槛未通过，因此两个启动器仍默认 eager；`--startup-policy on-demand` 仅作为显式实验选项。Knowledge 延迟解析、OCR 辅助进程复用和生产 JavaScript 拆包继续暂缓。这些测量批次早于当前真实装备流程，也没有测量可见桌面启动。
 
-历史开发包检查在源码 `2034deed` 上通过了各 20 次 eager 和显式按需生命周期／故障循环，以及 20 次隐藏被动 WebView 循环。合并后源码的匹配产物与验证在[验证记录](docs/validation.md#matching-development-package)中单独记录。这些开发机暖缓存检查不能确立发布验收。
+集成后产品源码 `ddbfa853` 的匹配开发构建通过了各 20 次 eager 和显式按需生命周期／故障循环，以及 20 次隐藏被动 WebView 循环。产物身份、较早 `2034deed` 的结果与限制在[验证记录](docs/validation.md#matching-development-package)中分别列出。这些本地产物不替换已交付安装包，也不能确立发布验收。
 
 ## 了解项目
 

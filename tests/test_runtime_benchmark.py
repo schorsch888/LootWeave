@@ -121,8 +121,12 @@ class ObserverDeadlineTests(unittest.TestCase):
 
 
 class FakeHandle:
-    def __init__(self, pid):
+    def __init__(self, pid, created=None):
         self.pid, self.dead, self.closed, self.terminated = pid, False, False, False
+        self.created = pid if created is None else created
+
+    def identity(self):
+        return self.pid, self.created
 
     def exited(self, timeout=0):
         return self.dead
@@ -173,7 +177,7 @@ class OwnershipTests(unittest.TestCase):
         def factory(pid):
             created[pid] = FakeHandle(pid)
             return created[pid]
-        tree = benchmark.OwnedTree(100, snapshot=lambda: snapshot, factory=factory)
+        tree = benchmark.OwnedTree(100, snapshot=lambda: snapshot, factory=factory, clock=lambda: 1000)
         tree.finished.set()
         tree.thread.join(2)
         tree.discover()
@@ -190,7 +194,7 @@ class OwnershipTests(unittest.TestCase):
         self.assertNotIn(200, created)
 
     def test_natural_owned_shutdown_passes_without_termination(self):
-        tree = benchmark.OwnedTree(100, snapshot=lambda: {100: 1}, factory=FakeHandle)
+        tree = benchmark.OwnedTree(100, snapshot=lambda: {100: 1}, factory=FakeHandle, clock=lambda: 1000)
         tree.finished.set()
         tree.thread.join(2)
         handle = tree.handles[100]
@@ -204,13 +208,70 @@ class OwnershipTests(unittest.TestCase):
             if pid != 100:
                 raise benchmark.CheckFailed("owned_worker_handle_unavailable")
             return FakeHandle(pid)
-        tree = benchmark.OwnedTree(100, snapshot=lambda: {100: 1, 101: 100}, factory=factory)
+        tree = benchmark.OwnedTree(100, snapshot=lambda: {100: 1, 101: 100}, factory=factory, clock=lambda: 1000)
         tree.finished.set()
         tree.thread.join(2)
         tree.discover()
         self.assertIn("descendant_exited_before_handle", tree.failures)
         tree.handles[100].dead = True
         self.assertTrue(tree.close(timeout=0))
+
+    def discover_once(self, parents, identities, on_open=None):
+        # No watcher thread or native counters: exercise the actual admission boundary deterministically.
+        tree = benchmark.OwnedTree.__new__(benchmark.OwnedTree)
+        root = FakeHandle(100, 10)
+        opened = {}
+        def factory(pid):
+            if on_open:
+                on_open(tree, pid)
+            actual_pid, created = identities[pid]
+            opened[pid] = FakeHandle(actual_pid, created)
+            return opened[pid]
+        tree.snapshot, tree.factory, tree.clock = lambda: parents, factory, lambda: 50
+        tree.handles, tree.created = {100: root}, {100: 10}
+        import threading
+        tree.lock, tree.failures = threading.Lock(), []
+        tree.peak_working_set = tree.peak_private_commit = 0
+        tree.discover()
+        return tree, opened
+
+    def test_valid_creation_order_admits_complete_chain_and_counters(self):
+        tree, opened = self.discover_once({101: 100, 102: 101}, {101: (101, 20), 102: (102, 30)})
+        self.assertEqual({100, 101, 102}, set(tree.handles))
+        self.assertEqual([], tree.failures)
+        self.assertTrue(all(not handle.closed for handle in opened.values()))
+        self.assertEqual(3, tree.counters()["retained_handles"])
+
+    def test_stale_parent_pid_child_born_before_current_parent_is_closed(self):
+        tree, opened = self.discover_once({101: 100, 102: 101}, {101: (101, 9), 102: (102, 20)})
+        self.assertEqual({100}, set(tree.handles))
+        self.assertEqual({101}, set(opened))  # The rejected process cannot anchor grandchildren.
+        self.assertTrue(opened[101].closed)
+        self.assertFalse(opened[101].terminated)
+        self.assertEqual(["descendant_identity_uncertain"], tree.failures)
+        self.assertEqual(1, tree.counters()["retained_handles"])
+
+    def test_recycled_child_pid_created_after_snapshot_is_closed(self):
+        tree, opened = self.discover_once({101: 100}, {101: (101, 51)})
+        self.assertNotIn(101, tree.handles)
+        self.assertTrue(opened[101].closed)
+        self.assertFalse(opened[101].terminated)
+        self.assertEqual(["descendant_identity_uncertain"], tree.failures)
+
+    def test_queried_pid_mismatch_closes_candidate_before_counter_use(self):
+        tree, opened = self.discover_once({101: 100}, {101: (200, 20)})
+        self.assertEqual({100}, set(tree.handles))
+        self.assertTrue(opened[101].closed)
+        self.assertFalse(opened[101].terminated)
+        self.assertEqual(1, tree.counters()["retained_handles"])
+
+    def test_parent_exit_during_open_rejects_and_closes_candidate(self):
+        tree, opened = self.discover_once({101: 100}, {101: (101, 20)},
+                                         on_open=lambda owner, _pid: setattr(owner.handles[100], "dead", True))
+        self.assertEqual({100}, set(tree.handles))
+        self.assertTrue(opened[101].closed)
+        self.assertFalse(opened[101].terminated)
+        self.assertEqual(["descendant_identity_uncertain"], tree.failures)
 
 
 class FictionalFixtureTests(unittest.TestCase):

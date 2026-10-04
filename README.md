@@ -18,7 +18,7 @@ The same release host also passed `scripts/check_desktop.py --cycles 2`: 13 back
 
 The [predeclared runtime experiment](docs/performance-experiment.md), [results](docs/performance-results.md) and [selected sanitized cohorts](fixtures/runtime-performance/README.md) retain 20 attempts per cohort. Explicit on-demand source `7afdd6e` reduced initial headless idle private commit to 76.6 MiB versus control maxima near 105 MiB, but manual-complete P95 was 4.924 seconds against a required <3.698 seconds. The primary gate failed, so both launchers keep eager as the default; use `--startup-policy on-demand` only as an explicit experiment. Lazy Knowledge parsing, OCR helper reuse and production JavaScript splitting remain deferred. These measured cohorts precede the current real-equipment workflow and do not measure visible desktop startup.
 
-Historical development-package checks on source `2034deed` passed 20 eager and 20 explicit on-demand lifecycle/fault cycles plus 20 hidden passive WebView cycles. Matching artifacts and validation for the integrated source are recorded separately in [validation](docs/validation.md#matching-development-package). No release acceptance follows from these warm developer-machine checks.
+A matching development build of integrated product source `ddbfa853` passed 20 eager and 20 explicit on-demand lifecycle/fault cycles plus 20 hidden passive WebView cycles. Artifact identities, earlier `2034deed` results and limitations are separated in [validation](docs/validation.md#matching-development-package). These local artifacts do not replace the delivered installer or establish release acceptance.
 
 ## Explore the project
 

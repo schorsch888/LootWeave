@@ -30,6 +30,7 @@ import uuid
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.check_desktop import CheckFailed, ENSURE_HTTP_TIMEOUT, OwnedProcess, expect, frozen_environment, machine
+from scripts.check_native_ui import _filetime_value, _process_created, _process_pid
 from contracts import digest
 
 METRICS = ("launch_ready", "core_ready", "manual_complete", "manual_work", "catalog_response", "replay",
@@ -177,7 +178,19 @@ def process_snapshot():
         kernel.CloseHandle(snapshot)
 
 
+def process_snapshot_time():
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel.GetSystemTimeAsFileTime.argtypes = (ctypes.POINTER(wintypes.FILETIME),)
+    kernel.GetSystemTimeAsFileTime.restype = None
+    before = wintypes.FILETIME()
+    kernel.GetSystemTimeAsFileTime(ctypes.byref(before))
+    return _filetime_value(before)
+
+
 class CounterProcess(OwnedProcess):
+    def identity(self):
+        return _process_pid(self), _process_created(self)
+
     def cpu(self):
         values = [wintypes.FILETIME() for _ in range(4)]
         self.kernel.GetProcessTimes.argtypes = (wintypes.HANDLE,) + (ctypes.POINTER(wintypes.FILETIME),) * 4
@@ -188,9 +201,17 @@ class CounterProcess(OwnedProcess):
 
 class OwnedTree:
     """Retain exact handles; discovery/termination only follow living owned parents."""
-    def __init__(self, pid, snapshot=process_snapshot, factory=CounterProcess):
-        self.snapshot, self.factory = snapshot, factory
-        self.handles = {pid: factory(pid)}
+    def __init__(self, pid, snapshot=process_snapshot, factory=CounterProcess, clock=process_snapshot_time):
+        self.snapshot, self.factory, self.clock = snapshot, factory, clock
+        before = self.clock()
+        root = factory(pid)
+        try:
+            actual_pid, created = root.identity()
+            expect(actual_pid == pid and created <= before, "owned_process_identity_unavailable")
+        except Exception:
+            root.close()
+            raise
+        self.handles, self.created = {pid: root}, {pid: created}
         self.lock = threading.Lock()
         self.finished = threading.Event()
         self.failures = []
@@ -200,6 +221,7 @@ class OwnedTree:
 
     def discover(self):
         with self.lock:
+            before = self.clock()
             parents = self.snapshot()
             living = {pid for pid, handle in self.handles.items() if not handle.exited()}
             while True:
@@ -207,13 +229,27 @@ class OwnedTree:
                 if not new:
                     break
                 for pid in new:
+                    candidate = None
                     try:
-                        self.handles[pid] = self.factory(pid)
-                        living.add(pid)
-                    except CheckFailed:
-                        # Short lived descendants can exit between snapshot and OpenProcess.
-                        self.failures.append("descendant_exited_before_handle")
+                        parent = parents[pid]
+                        expect(not self.handles[parent].exited(), "descendant_identity_uncertain")
+                        candidate = self.factory(pid)
+                        actual_pid, created = candidate.identity()
+                        expect(actual_pid == pid and self.created[parent] <= created <= before
+                               and not self.handles[parent].exited(), "descendant_identity_uncertain")
+                        alive = not candidate.exited()
+                        self.handles[pid], self.created[pid] = candidate, created
+                        if alive:
+                            living.add(pid)
+                        candidate = None  # Ownership has transferred to the retained tree.
+                    except CheckFailed as error:
+                        self.failures.append("descendant_identity_uncertain" if candidate is not None
+                                             or str(error) == "descendant_identity_uncertain"
+                                             else "descendant_exited_before_handle")
                         parents.pop(pid, None)
+                    finally:
+                        if candidate is not None:
+                            candidate.close()
 
     def counters(self):
         with self.lock:
@@ -488,7 +524,7 @@ def run_cycle(args, output, index, fixture):
                 "working_set_mib": app.tree.peak_working_set / 2**20,
                 "private_commit_mib": app.tree.peak_private_commit / 2**20,
                 "sampling_failures": len(app.tree.failures)}
-            if "resource_counter_failed" in app.tree.failures:
+            if any(code in app.tree.failures for code in ("resource_counter_failed", "descendant_identity_uncertain")):
                 cycle["passed"] = False
                 cycle.setdefault("failure_stage", "resources")
                 cycle.setdefault("failure_category", "resource_counter_failed")
