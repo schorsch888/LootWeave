@@ -31,7 +31,7 @@ pnpm --dir frontend check:acquisition
 python runtime.py
 ~~~
 
-The development launcher creates a session secret, starts services on ephemeral literal-loopback addresses, waits for authenticated readiness and opens the browser. Data defaults to the ignored .local directory. Close the launcher with Ctrl+C to stop workers. Rust owns the desktop distribution's outer process scope. Before application initialization, each Windows service retains an anonymous, non-inherited kill-on-close [job object](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects) for its entire process lifetime. Windows closes that handle when the service exits, reclaiming active helper descendants even during OCR startup/recognition or forced worker termination. The handle is deliberately not closed while the owner is still running.
+The development launcher creates a session secret and serves the shell on an ephemeral literal-loopback address before core readiness. Profile and Knowledge start concurrently, then Evaluation; OCR and Planning start on an explicit capability request. `--startup-policy eager` retains the sequential control. Each service is checked for authenticated readiness. Data defaults to ignored `.local`; Ctrl+C stops workers. Rust owns the desktop distribution's outer process scope. Before initialization, each Windows service retains an anonymous, non-inherited kill-on-close [job object](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects) for its lifetime. Windows closes that handle when the service exits, reclaiming active helper descendants even during OCR startup/recognition or forced worker termination. The handle is not closed while the owner is running.
 
 For desktop service launches, Rust assigns its outer job before writing a one-byte boot permit to the service's existing stdin pipe. With `LOOTWEAVE_PARENT_JOB=1`, Python waits for that permit before establishing the nested service job or initializing helpers. Missing/invalid permits and ownership failures publish no readiness. The developer launcher clears the inherited desktop flag and starts independent service roots. Process cleanup is scoped to owned descendants; unrelated siblings remain running. The frozen sidecar and current Rust host must be rebuilt together before validating this protocol in a packaged application.
 
@@ -109,12 +109,15 @@ python scripts/check_architecture.py
 python scripts/check_public_docs.py
 python scripts/validate_ocr_holdout.py
 python scripts/validate_ocr_holdout.py --version v7
-python -m compileall -q services scripts contracts.py storage.py transport.py process_lifecycle.py service.py gateway.py runtime.py version.py
+python -m compileall -q services scripts contracts.py storage.py transport.py process_lifecycle.py service.py gateway.py runtime.py runtime_control.py version.py
 pnpm --dir frontend build
 node scripts/check_evaluation_render.mjs
+node scripts/check_frontend_runtime.mjs
 ~~~
 
 After generating desktop resources, run cargo test --locked -j 1 --manifest-path desktop/Cargo.toml. This requires Windows dependencies and local resources. Python tests/publication checks require neither game assets nor compiled frontend assets.
+
+On Windows with a built frontend, `python scripts/benchmark_runtime.py --policy on-demand --cohort candidate --cycles 20 --source-revision <reviewed-revision>` measures the developer owner with original synthetic inputs. For an unchanged source export, add `--runtime-root <control-source> --policy legacy`; for matching packaged artifacts, add `--executable <host> --resources <sidecar>`. These are warm-cache headless comparisons excluding WebView and visible-GUI readiness. Raw reports stay local; sanitized summaries require content review. Missing OCR language support is explicit. The first cycle contains two 60-second idle windows; all launches/failures and first-use latencies are retained. See the [performance plan](performance-plan.md) and [experiment protocol](performance-experiment.md).
 
 The native benchmark is `python scripts/benchmark_ocr.py`. Current `holdout-v7` (`synthetic-critical-fields-v7`) was generated after adapter freeze, using a previously unseen seed: 200 synthetic regions/600 critical fields across two languages, five scales and four quality conditions. It scored 572/600 (95.33%) overall, English 299/300 (99.67%) and Chinese 273/300 (91%); 28 fields were rejected/missing and zero incorrect fields went unflagged. Whole-request P50/P95 was 0.922/1.780 s, including primary and optional native helpers. Twenty-six observations received 30 numeric crops, with zero optional-read errors. Truth SHA-256: `c6ab5608f97c2f727ecc1b5a9c9fc869eec0b641ea2593291b0aae060ac34cc6`. Overall numerical targets passed; Chinese and poorer-quality strata remain below 95%, actual game/layout coverage and independent human truth review remain pending. M2 is unaccepted. V7 and historical v6 use different seeds and are not a controlled score comparison.
 

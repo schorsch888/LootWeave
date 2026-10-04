@@ -57,6 +57,10 @@ Two-environment acceptance remains unpassed: no second clean machine or VM is cu
 
 Dependency/model rights and integrity, migration backup/rollback, local API authorization, redacted logs and a keyboard-accessible main flow must pass review; status cannot rely on color alone. **Go:** trial only accepted game/class/scenario scopes. **No-go:** developer-machine-only success, missing dependencies or services left running after exit. Roll back to a compatible release and rule pack; old services must not access incompatible new storage.
 
+### Runtime performance work
+
+The [runtime performance plan](performance-plan.md) tracks P0 timing/resource tools, P1 owner-controlled on-demand OCR/Planning, P2 shell/core readiness and P4 conditional panel mounting/serialized polling. These behaviors are implemented in source; matching packaged lifecycle checks and the [predeclared development comparison](performance-experiment.md) establish their observed scope. P3 selected-pack loading and P5 OCR helper reuse require measured cost. Frontend code splitting is deferred after an aborted-import retry failure and small entry-byte savings. These stages do not change M4's budgets; missing cold-GUI or clean-machine evidence keeps the release gate open.
+
 ## M5: Acquisition, leveling and other games
 
 First expose verified sources, eligibility and access requirements, distinguishing rarity, usefulness and replacement difficulty. Define the target event, attempt unit and sampling coverage before reporting estimates; raw weights are not final item-drop probabilities, and average waiting time is not a guaranteed drop.

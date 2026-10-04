@@ -2,7 +2,9 @@
 
 Recorded on 2026-10-04 UTC. This is developer-machine evidence, not release acceptance. The source tree and generated binaries are separate validation scopes.
 
-## Current source
+## Source snapshot before runtime optimization
+
+This section records the earlier source/artifact checks; runtime performance verification is reported separately below.
 
 | Check | Observed result | Scope |
 | --- | --- | --- |

@@ -69,6 +69,14 @@ Tauri is the current host choice. A failed packaging gate reopens that choice. R
 
 Bind local APIs to loopback and validate session authorization and caller origin; keep credentials out of logs. Handle instance locks, port conflicts, health timeouts, retries, and child-process cleanup. Preserve text confirmation when OCR fails. Validate knowledge-update source, hash, and contract compatibility; back up before storage migrations. Rollback must not let old services read incompatible new storage.
 
+## Runtime performance
+
+The [runtime performance plan](performance-plan.md) and [experiment protocol](performance-experiment.md) distinguish implementation from observed acceptance. The default owner starts Gateway after bundle verification, serves the shell, then starts Profile and Knowledge concurrently and Evaluation after its dependencies. OCR and Planning remain dormant until explicitly needed. `--startup-policy eager` retains the full sequential control policy. Status reads never start services.
+
+Gateway requests an allowlisted service through bounded owner `status`/`ensure` operations. The desktop uses versioned inherited pipes; the developer launcher uses the same operations in process. Each attempt has a generation and shared outcome. Evaluation pins Profile/Knowledge generations; Planning pins Knowledge. Failed or replaced dependencies invalidate dependent routes until explicit recovery rebinds them. An already-ready Evaluation worker remains owned for allowlisted frozen collection/detail/replay reads during an upstream fault; it is historical-only and cannot accept new evaluations. Those frozen reads require no dependency start. No dispatched business write is automatically retried. Closing prohibits new starts and retains ownership of incomplete children until cleanup.
+
+The frontend separates shell/demo, catalog and core readiness, gates confirmation/evaluation on their actual dependencies and preserves typed drafts. Secondary panels mount when first opened and remain mounted when hidden. Serialized status polling uses 500 ms during active visible core startup, five seconds after readiness/failure and 30 seconds hidden, with refresh on return. Production code splitting is deferred: an aborted chunk fetch stayed cached as failed on retry, while initial byte savings were small. Selected-pack loading and persistent OCR helpers also require measured justification. The existing M4 budgets and release gates remain unchanged.
+
 ## Deskrawl leveling route planning
 
 Measured-route comparison is implemented in Planning; Deskrawl-specific map/entry rules remain unaccepted. Treat map and difficulty as one candidate; combine versioned entry rules with confirmed unlock status. Exclude confirmed inaccessible/unavailable entries; unknown access requires confirmation. Static enemy levels, placeholders, or map counts cannot establish playable routes or XP per minute.

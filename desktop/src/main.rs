@@ -82,6 +82,13 @@ fn capture_deskrawl_region(
 }
 
 fn main() {
+    let policy = option("--startup-policy")
+        .map(|value| value.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "on-demand".into());
+    let policy = supervisor::StartupPolicy::parse(&policy).unwrap_or_else(|code| {
+        eprintln!("{code}");
+        std::process::exit(1);
+    });
     let data = option("--data-dir").unwrap_or_else(|| {
         let base = std::env::var_os("LOCALAPPDATA")
             .map(PathBuf::from)
@@ -118,7 +125,7 @@ fn main() {
             eprintln!("resource_directory_required");
             std::process::exit(1);
         };
-        match supervisor::Supervisor::start(&resources, &data) {
+        match supervisor::Supervisor::start(&resources, &data, policy) {
             Ok(mut runtime) => {
                 // Readiness is parent IPC, not an application log.
                 println!("{}", runtime.readiness());
@@ -153,8 +160,8 @@ fn main() {
             let resources = resource_override
                 .clone()
                 .unwrap_or(app.path().resource_dir()?.join("sidecar"));
-            let runtime =
-                supervisor::Supervisor::start(&resources, &data).map_err(std::io::Error::other)?;
+            let runtime = supervisor::Supervisor::start(&resources, &data, policy)
+                .map_err(std::io::Error::other)?;
             let url = runtime.window_url().parse()?;
             app.manage(Mutex::new(runtime));
             tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::External(url))

@@ -30,6 +30,7 @@ sys.path.insert(0, str(ROOT))
 from contracts import DomainError
 from storage import acquire_instance_lock
 WORKERS = ("profile", "knowledge", "evaluation", "planning", "ocr", "gateway")
+ENSURE_HTTP_TIMEOUT = 10  # Observe the owner's 8-second attempt plus loopback response delivery.
 
 
 class CheckFailed(Exception):
@@ -98,12 +99,17 @@ def frozen_environment():
 
 
 class Desktop:
-    def __init__(self, executable, resources, data):
+    def __init__(self, executable, resources, data, startup_policy=None):
         self.workers = []
+        self.worker_handles = {}
+        self.handles_by_pid = {}
         self.host_handle = None
         self.started = time.perf_counter()
+        command = [str(executable), "--headless", "--resource-dir", str(resources), "--data-dir", str(data)]
+        if startup_policy is not None:
+            command += ["--startup-policy", startup_policy]
         self.process = subprocess.Popen(
-            [str(executable), "--headless", "--resource-dir", str(resources), "--data-dir", str(data)],
+            command,
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             cwd=executable.parent, env=frozen_environment(), creationflags=0x08000000,
         )
@@ -126,26 +132,62 @@ class Desktop:
             expect(isinstance(self.token, str) and len(self.token) == 64
                    and all(c in "0123456789abcdef" for c in self.token), "native_token_invalid")
             pids = ready.get("pids")
-            expect(isinstance(pids, list) and len(pids) == 6 and len(set(pids)) == 6
+            expect(isinstance(pids, list) and 1 <= len(pids) <= 6 and len(set(pids)) == len(pids)
                    and all(type(pid) is int and pid > 0 for pid in pids), "native_worker_set_invalid")
             for pid in pids:
-                self.workers.append(OwnedProcess(pid))
+                handle = OwnedProcess(pid)
+                self.workers.append(handle)
+                self.handles_by_pid[pid] = handle
+            # Historical full-start artifacts reported exactly this ordered set.
+            if len(pids) == len(WORKERS):
+                self.worker_handles.update(zip(WORKERS, self.workers))
             self.host_handle = OwnedProcess(self.process.pid)
             self.ready_seconds = time.perf_counter() - self.started
             self.opener = build_opener(ProxyHandler({}))
-            expect(not self.call("GET", "/api/status")["degraded"], "initial_service_degraded")
+            status = self.status()
+            self.dynamic_registry = "core_ready" in status
+            if self.dynamic_registry and startup_policy != "eager":
+                for name in ("ocr", "planning"):
+                    expect(status["services"][name]["state"] == "dormant", "optional_started_before_use")
+            deadline = time.monotonic() + 30
+            while self.dynamic_registry and not status["core_ready"]:
+                expect(time.monotonic() < deadline, "native_core_readiness_timeout")
+                time.sleep(.05)
+                status = self.status()
+            expect(not status["degraded"], "initial_service_degraded")
+            self.core_ready_seconds = time.perf_counter() - self.started
+            self.phases = status.get("timings", status.get("phases", {}))
         except Exception:
             self.stop()
             raise
 
-    def call(self, method, path, body=None, authenticated=True):
+    def status(self):
+        status = self.call("GET", "/api/status")
+        for name, value in status.get("services", {}).items():
+            pid = value.get("pid")
+            if value.get("state") == "ready" and type(pid) is int and pid > 0:
+                if pid not in self.handles_by_pid:
+                    handle = OwnedProcess(pid)
+                    self.handles_by_pid[pid] = handle
+                    self.workers.append(handle)
+                self.worker_handles[name] = self.handles_by_pid[pid]
+        return status
+
+    def ensure(self, name):
+        if self.dynamic_registry:
+            self.call("POST", "/api/runtime/ensure", {"service": name}, timeout=ENSURE_HTTP_TIMEOUT)
+            expect(self.status()["services"][name]["state"] == "ready", "ensured_worker_not_ready")
+        expect(name in self.worker_handles, "owned_worker_identity_missing")
+        return self.worker_handles[name]
+
+    def call(self, method, path, body=None, authenticated=True, timeout=5):
         payload = None if body is None else json.dumps(body, ensure_ascii=False, allow_nan=False).encode("utf-8")
         headers = {"Content-Type": "application/json"}
         if authenticated:
             headers["Authorization"] = "Bearer " + self.token
         request = Request(self.url + path, payload, headers, method=method)
         try:
-            with self.opener.open(request, timeout=5) as response:
+            with self.opener.open(request, timeout=timeout) as response:
                 return json.load(response)
         except HTTPError as error:
             try:
@@ -182,6 +224,8 @@ class Desktop:
                 handle.exited(5)
             handle.close()
         self.workers = []
+        self.worker_handles = {}
+        self.handles_by_pid = {}
         if self.host_handle:
             self.host_handle.close()
             self.host_handle = None
@@ -214,6 +258,11 @@ def fictional_flow(app):
     expect(result["retention"] != "discard", "fictional_core_loss_hidden")
     expect(app.call("POST", "/api/evaluation/evaluations/desktop-evaluation/replay", {})["identical"],
            "frozen_replay_mismatch")
+    if getattr(app, "dynamic_registry", False):
+        status = app.status()
+        if getattr(app, "expect_optional_dormant", False):
+            expect(all(status["services"][name]["state"] == "dormant" for name in ("ocr", "planning")),
+                   "manual_flow_started_optional_worker")
 
 
 def replay(app):
@@ -291,6 +340,8 @@ def main():
     parser.add_argument("--executable", type=Path, default=ROOT / "desktop/target/debug/lootweave-desktop.exe")
     parser.add_argument("--resources", type=Path, default=ROOT / "dist/sidecar")
     parser.add_argument("--cycles", type=int, default=20)
+    parser.add_argument("--startup-policy", choices=("eager", "on-demand"), default=None,
+                        help="Omit for historical artifacts without this flag.")
     args = parser.parse_args()
     if os.name != "nt":
         parser.error("Requires the Windows native desktop host.")
@@ -310,13 +361,16 @@ def main():
                               "Readiness timing and idle memory exclude the WebView GUI.",
                               "Repeated starts include warm OS filesystem caches.",
                               "Python is absent from the child's PATH, but is present on the developer machine."]}
-    samples, memories = [], []
+    samples, core_samples, memories, phases = [], [], [], []
     stage = "start_exit"
     app = None
     try:
         for index in range(args.cycles):
-            app = Desktop(executable, resources, data)
+            app = Desktop(executable, resources, data, args.startup_policy)
+            app.expect_optional_dormant = app.dynamic_registry and args.startup_policy != "eager"
             samples.append(app.ready_seconds)
+            core_samples.append(app.core_ready_seconds)
+            phases.append(app.phases)
             if index == 0:
                 fictional_flow(app)
                 second_instance(executable, resources, data, app)
@@ -338,16 +392,18 @@ def main():
         stage = "backup_restore"
         native_maintenance(executable, resources, data, "--backup-to", output / "backup")
         native_maintenance(executable, resources, output / "restored-state", "--restore-from", output / "backup")
-        app = Desktop(executable, resources, output / "restored-state")
+        app = Desktop(executable, resources, output / "restored-state", args.startup_policy)
         replay(app)
         app.stop()
         app = None
         report["checks"].append("single_exe_backup_restore_preserves_frozen_replay")
         stage = "worker_faults"
-        for index, name in enumerate(WORKERS):
-            app = Desktop(executable, resources, data)
-            app.workers[index].terminate()
-            expect(app.workers[index].exited(3), "worker_fault_not_delivered")
+        for name in WORKERS:
+            app = Desktop(executable, resources, data, args.startup_policy)
+            handle = app.ensure(name) if name != "gateway" else app.worker_handles.get(name)
+            expect(handle is not None, "owned_gateway_identity_missing")
+            handle.terminate()
+            expect(handle.exited(3), "worker_fault_not_delivered")
             if name == "gateway":
                 try:
                     app.call("GET", "/api/status")
@@ -357,7 +413,7 @@ def main():
                     raise CheckFailed("gateway_fault_not_observed")
             else:
                 status = app.call("GET", "/api/status")
-                expect(status["degraded"] and status["services"][name]["state"] == "unavailable",
+                expect(status["degraded"] and status["services"][name]["state"] in ("unavailable", "failed"),
                        "worker_fault_missing_degradation")
                 if name in ("profile", "knowledge"):
                     replay(app)
@@ -366,11 +422,13 @@ def main():
             print(f"Native worker fault: {name}", flush=True)
         report["checks"] += ["six_worker_fault_cleanup", "source_service_fault_keeps_frozen_replay"]
         stage = "host_fault"
-        app = Desktop(executable, resources, data)
+        app = Desktop(executable, resources, data, args.startup_policy)
+        app.ensure("ocr")
+        app.ensure("planning")
         app.stop(forced=True)
         app = None
         report["checks"].append("forced_host_exit_job_cleanup")
-        app = Desktop(executable, resources, data)
+        app = Desktop(executable, resources, data, args.startup_policy)
         replay(app)
         app.stop()
         app = None
@@ -394,6 +452,13 @@ def main():
                 "runs": len(samples), "seconds": [round(value, 4) for value in samples],
                 "p95_seconds": round(sorted(samples)[math.ceil(.95 * len(samples)) - 1], 4),
             }
+            report["headless_core_readiness"] = {
+                "runs": len(core_samples), "seconds": [round(value, 4) for value in core_samples],
+                "p50_seconds": round(sorted(core_samples)[math.ceil(.5 * len(core_samples)) - 1], 4),
+                "p95_seconds": round(sorted(core_samples)[math.ceil(.95 * len(core_samples)) - 1], 4),
+                "max_seconds": round(max(core_samples), 4),
+            }
+            report["owner_phase_counters"] = phases
         report["headless_idle_memory"] = {
             "runs": len(memories),
             "max_working_set_mib": max((m["working_set_mib"] for m in memories), default=None),

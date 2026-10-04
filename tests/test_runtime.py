@@ -18,7 +18,7 @@ class RuntimeTests(unittest.TestCase):
             front=Path(directory)/"ui"
             front.mkdir()
             (front/"index.html").write_text("<html><body>synthetic</body></html>")
-            runtime = Runtime(Path(directory), front_dir=front)
+            runtime = Runtime(Path(directory), front_dir=front, startup_policy="eager")
             try:
                 with mock.patch.dict(os.environ, {"LOOTWEAVE_PARENT_JOB": "1"}):
                     runtime.start()
@@ -38,7 +38,7 @@ class RuntimeTests(unittest.TestCase):
                 processes[2].wait(timeout=3)
                 health = status()
                 self.assertTrue(health["degraded"])
-                self.assertEqual("unavailable", health["services"]["evaluation"]["state"])
+                self.assertEqual("failed", health["services"]["evaluation"]["state"])
             finally:
                 runtime.stop()
             self.assertTrue(all(p.poll() is not None for p in processes))

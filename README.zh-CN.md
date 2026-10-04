@@ -20,6 +20,8 @@ LootWeave 是一个开源的 Windows 本地装备决策助手原型，无需玩�
 
 React/TypeScript 前端按 feature-sliced 目录组织于 `frontend/src/{app,pages,features,entities,shared}`。Rust/Tauri Windows 宿主位于 `desktop`。profile、knowledge、evaluation、planning 和 OCR 的 Python 服务以独立 HTTP 进程运行，并使用 SQLite 存储。根目录的 `contracts`、`storage` 和 `transport` 模块提供通用基础设施；gateway 不包含领域规则。
 
+当前源码在核心服务就绪前显示工作台外壳，仅在需要时启动 OCR／Planning。确认和评估会等待所需服务；次要面板按需打开，关闭后保留草稿。`--startup-policy eager` 保留完整启动的对照策略。[性能计划（英文）](docs/performance-plan.md)将开发环境实测与未变更的发布门槛分开；上述历史安装包尚未包含这些源码改动。
+
 实现支持已确认的完整快照修订、将 OCR 原始观察与用户确认数据分开、解释整件替换，并可回放冻结的评估。采集成功后，核对面板会按原始像素显示 BMP 区域，原图区支持键盘滚动，并保留未经校正的 OCR 原文供对照。数字解析会拒绝分裂或残缺数字以及科学计数法片段，同时保留原文、符号和单位。原生 OCR 行文本会映射回原始文本并保留全局跨度；字段绑定到对应来源行，跨行重复字段标记为歧义，缺失或无法映射的原生行不会生成解析字段。可读的主识别结果仍是数值来源；一致的英文识别记录为 `numeric_corroboration`，只有实际恢复不可读数字时才使用 `numeric_source`。带空格的小数片段会被拒绝，使带明确单位的完整不可读主识别词项可与独立英文数字结果核对；若有分歧仍标记为歧义，所有观察仍须人工确认。更改游戏范围、采集来源、窗口绑定、区域或语言，或开始新的采集，都会清除旧图像及观察关联并要求重新确认，同时保留手动输入的文本。只有匹配当前范围和检测代次的窗口检测响应才会更新窗口列表。planning 可比较实测总经验值和完整耗时，并提供带 Wilson 95% 区间的观察采样估计。试验可手动填写实际起止角色等级，或单独填写巅峰经验类型及其起止等级，并记录覆盖相同范围的累计实际经验与完整耗时。系统只比较确认范围一致的记录；任一试验输入变化都会清除旧排名，并要求重新确认一致性。若试验保存成功但比较失败，使用相同数据重试会沿用原 trial ID。系统报告记录到的结果，不推断掉落或最优地图。
 
 新试验的经验和等级须处于精确整数范围，并产生有限的经验率。无法可靠计算的历史测量保留原始存储内容，标记为待确认并排除排名；超出计算范围的汇总同样保持待确认。相同原始输入的重试沿用 trial ID，不受派生分类变化影响，并发保存不会产生重复记录。微小的正经验率仍显示为非零值。
@@ -66,7 +68,7 @@ python scripts/build_desktop.py
 
 公开的 [v7 证据](fixtures/ocr-critical-fields-v7/README.md)包含全部原始输入、原生观察和 30 个数字补读区域。200 张 BMP 的哈希及完整清单字节均已精确复现，冻结解析器可回放每条观察。新增 7 项证据回归覆盖观察状态／图像身份篡改、缺失或变更的区域、原始词语映射及虚增汇总。[历史 v6 证据](fixtures/ocr-critical-fields-v6/README.md)保持不变；已查看的数据集不能作为后续算法的新验收集。
 
-当前 Python 回归运行 348 项：347 项通过、1 项 Windows 符号链接权限用例跳过（含发现用例共 34.660 秒）。TypeScript 和前端生产构建通过；直接 React 检查通过 14 项快照确认、27 项 Planning 用例及 32 张实际评估卡片，无需 DOM 或浏览器输入。新的采集时间校验在写入前拒绝来源不匹配，允许修正后重试，并保留历史内容与回放；评估器仍为 0.1.4。源码提交 `fcc9ed1` 安装包所用的宿主和冻结服务通过两轮后台启动／退出、六个服务故障、宿主强制退出回收、持久化和备份／恢复检查；包内 HTML、JavaScript、CSS 与该提交的生产构建一致。这些检查不覆盖可见 GUI 和两台干净机器验收；独立的隐藏式 native 检查通过 20 轮，并记录 CDP 断开与进程自然退出。首次出现的子进程退出超时仍待定位，证据范围见验证记录。详见[验证记录（英文）](docs/validation.md)和 [Roadmap（英文）](docs/roadmap.md)。
+运行时优化之前的 Python 回归运行 348 项：347 项通过、1 项 Windows 符号链接权限用例跳过（含发现用例共 34.660 秒）。TypeScript 和前端生产构建通过；直接 React 检查通过 14 项快照确认、27 项 Planning 用例及 32 张实际评估卡片，无需 DOM 或浏览器输入。新的采集时间校验在写入前拒绝来源不匹配，允许修正后重试，并保留历史内容与回放；评估器仍为 0.1.4。源码提交 `fcc9ed1` 安装包所用的宿主和冻结服务通过两轮后台启动／退出、六个服务故障、宿主强制退出回收、持久化和备份／恢复检查；包内 HTML、JavaScript、CSS 与该提交的生产构建一致。这些检查不覆盖可见 GUI 和两台干净机器验收；独立的隐藏式 native 检查通过 20 轮，并记录 CDP 断开与进程自然退出。首次出现的子进程退出超时仍待定位，证据范围见验证记录。详见[验证记录（英文）](docs/validation.md)和 [Roadmap（英文）](docs/roadmap.md)。
 
 研究基线验证了 Deskrawl build `25690430` 中选出的 1,593 个静态对象；这不代表完整游戏机制、玩家实际装备词条或最终战斗与掉落公式已验证。复现需要合法可用的同构建游戏文件，并重新生成本地中间产物。原始游戏资源、完整提取数据库和下载工具不随仓库分发。
 
@@ -80,9 +82,10 @@ python scripts/check_architecture.py
 python scripts/check_public_docs.py
 python scripts/validate_ocr_holdout.py
 python scripts/validate_ocr_holdout.py --version v7
-python -m compileall -q services scripts contracts.py storage.py transport.py service.py gateway.py runtime.py version.py
+python -m compileall -q services scripts contracts.py storage.py transport.py process_lifecycle.py service.py gateway.py runtime.py runtime_control.py version.py
 pnpm --dir frontend build
 node scripts/check_evaluation_render.mjs
+node scripts/check_frontend_runtime.mjs
 ```
 
 这些检查验证仓库约定和前端构建；不能证明游戏机制、真实截图上的 OCR 质量或干净机器安装已通过验收。完整 Rust/Tauri 测试依赖生成的桌面资源。Windows 上可使用 `python scripts/check_window_guards.py`，利用缓存的 Rust 依赖独立测试实际采集模块，无需重编译 Tauri 宿主。

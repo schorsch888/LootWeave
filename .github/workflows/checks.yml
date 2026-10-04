@@ -35,7 +35,7 @@ jobs:
           python scripts/check_public_docs.py
           python scripts/validate_ocr_holdout.py
           python scripts/validate_ocr_holdout.py --version v7
-          python -m compileall -q contracts.py maintenance.py storage.py transport.py process_lifecycle.py service.py gateway.py runtime.py services scripts
+          python -m compileall -q contracts.py maintenance.py storage.py transport.py process_lifecycle.py service.py gateway.py runtime.py runtime_control.py services scripts
       - name: Install the pinned frontend toolchain
         run: |
           npm install --global pnpm@11.19.0 --ignore-scripts
@@ -48,6 +48,8 @@ jobs:
         run: pnpm --dir frontend check:confirmation
       - name: Verify three-state and historical evaluation rendering
         run: node scripts/check_evaluation_render.mjs
+      - name: Verify runtime readiness, cancellation and visibility polling
+        run: node scripts/check_frontend_runtime.mjs
       - name: Install the pinned browser runtime
         run: pnpm --dir frontend exec playwright install --with-deps chromium
       - name: Verify keyboard, confirmation, replay and responsive flows
