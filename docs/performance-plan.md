@@ -32,7 +32,7 @@ The initial work needs no database migration or evaluator change. Dynamic native
 
 ## Delivery sequence
 
-Stages define reviewable contracts, observed checks and rollback points. The prerequisite implementation and runtime changes are separate PRs. P0/P1/P2/P4 have focused regressions and comparable measurements; P1/P2 contracts below describe the explicit experiment, whose default promotion was rejected by the declared latency gate. Roles indicate responsibility for future evidence and fixes.
+Stages define reviewable contracts, observed checks and rollback points. The prerequisite equipment workflow was delivered to main through PRs #2 and #4; this runtime change targets that current mainline. P0/P1/P2/P4 have focused regressions and comparable measurements; P1/P2 contracts below describe the explicit experiment, whose default promotion was rejected by the declared latency gate. Roles indicate responsibility for future evidence and fixes.
 
 ### P0 — Establish an attributable baseline
 
@@ -97,7 +97,7 @@ Conditionally mount secondary Planning and history panels when opened, and use d
 
 Replace overlapping interval requests with at most one health request in flight, scheduled after completion. Slow polling while hidden and refresh on return without hiding active-operation failures. Keep dormant services dormant. Current source uses 500 ms during visible active core startup, five seconds after readiness/failure and 30 seconds hidden, preserving the prior ready-service detection interval and avoiding a five-second initial gate delay. Resource effects still need measurement.
 
-Before mainline workflow integration, the production splitting trial reduced the entry from 264.97 kB to 257.09 kB but increased total JavaScript to 272.56 kB; an aborted first chunk fetch stayed cached as failed on a same-import retry. Splitting is deferred without additional manifest/loader machinery. Conditional mount-once panels remain. The historical `2034deed` build retained one 270430-byte JavaScript entry; the integrated `ddbfa853` build retains one 296818-byte entry. These builds have different workflow scope and are not a controlled byte comparison; no JavaScript saving is claimed.
+Before mainline workflow integration, the production splitting trial reduced the entry from 264.97 kB to 257.09 kB but increased total JavaScript to 272.56 kB; an aborted first chunk fetch stayed cached as failed on a same-import retry. Splitting is deferred without additional manifest/loader machinery. Conditional mount-once panels remain. The historical `2034deed` build retained one 270430-byte JavaScript entry; the first mainline integration `ddbfa853` retained one 296818-byte entry, and the complete-equipment integration `96c6374` retains one 297135-byte entry. These builds have different workflow scope and are not a controlled byte comparison; no JavaScript saving is claimed.
 
 Acceptance: unopened panels cause no feature fetch or optional startup; open/close/reopen preserves intended draft and confirmation state; failed chunk loading is recoverable; repeated visibility changes leave one poller; status requests never overlap. Run relevant component checks and inspect the production bundle, then compare startup bytes, interaction latency and idle CPU. Large-list virtualization remains deferred until realistic list sizes show a rendering bottleneck.
 

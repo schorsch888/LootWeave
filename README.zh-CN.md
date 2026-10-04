@@ -20,7 +20,7 @@ LootWeave 是一个开源的 Windows 本地装备决策助手原型，无需玩�
 
 [预先声明的运行实验](docs/performance-experiment.md)、[结果](docs/performance-results.md)和[选定的脱敏批次](fixtures/runtime-performance/README.md)保留了每组 20 次尝试。显式按需模式源码 `7afdd6e` 将启动后无界面的空闲私有提交内存降至 76.6 MiB，对照组最大值约为 105 MiB；但手动流程完成 P95 为 4.924 秒，未达到 <3.698 秒的要求。主要门槛未通过，因此两个启动器仍默认 eager；`--startup-policy on-demand` 仅作为显式实验选项。Knowledge 延迟解析、OCR 辅助进程复用和生产 JavaScript 拆包继续暂缓。这些测量批次早于当前真实装备流程，也没有测量可见桌面启动。
 
-集成后产品源码 `ddbfa853` 的匹配开发构建通过了各 20 次 eager 和显式按需生命周期／故障循环，以及 20 次隐藏被动 WebView 循环。产物身份、较早 `2034deed` 的结果与限制在[验证记录](docs/validation.md#matching-development-package)中分别列出。这些本地产物不替换已交付安装包，也不能确立发布验收。
+完整装备流程集成源码 `96c6374` 的匹配开发构建通过了各 20 次 eager 和显式按需生命周期／故障循环，以及 20 次隐藏被动 WebView 循环。产物身份、历史 `2034deed`／`ddbfa853` 结果与限制在[验证记录](docs/validation.md#complete-equipment-integration-96c6374)中分别列出。这些本地产物不替换已交付安装包，也不能确立发布验收。
 
 ## 了解项目
 
@@ -80,7 +80,7 @@ python scripts/build_desktop.py
 
 公开的 [v7 证据](fixtures/ocr-critical-fields-v7/README.md)包含全部原始输入、原生观察和 30 个数字补读区域。200 张 BMP 的哈希及完整清单字节均已精确复现，冻结解析器可回放每条观察。新增 7 项证据回归覆盖观察状态／图像身份篡改、缺失或变更的区域、原始词语映射及虚增汇总。[历史 v6 证据](fixtures/ocr-critical-fields-v6/README.md)保持不变；已查看的数据集不能作为后续算法的新验收集。
 
-此前完整本机 Python 回归包含 363 项：362 项通过、1 项 Windows 符号链接权限用例跳过（31.261 秒）。当前直接前端检查也已通过：core（16 项）、快照确认（19 项，含真实 Profile SQLite）、评估卡片（32 项）和 Planning（27 项）。当前发布宿主和冻结服务通过上述 11 项后台核心检查和 13 项后台生命周期检查。这些结果不代表可见 GUI、真实游戏采集或机制、两台干净机器安装／卸载已通过。此前记录的隐藏子进程退出超时仍未解决。证据范围见[验证记录（英文）](docs/validation.md)和 [Roadmap（英文）](docs/roadmap.md)。
+此前完整本机 Python 回归包含 363 项：362 项通过、1 项 Windows 符号链接权限用例跳过（31.261 秒）。当前源码直接前端检查也已通过：core（19 项）、快照确认（19 项，含真实 Profile SQLite）、评估卡片（32 项）和 Planning（27 项）。当前发布宿主和冻结服务通过上述 11 项后台核心检查和 13 项后台生命周期检查。这些结果不代表可见 GUI、真实游戏采集或机制、两台干净机器安装／卸载已通过。此前记录的隐藏子进程退出超时仍未解决。证据范围见[验证记录（英文）](docs/validation.md)和 [Roadmap（英文）](docs/roadmap.md)。
 
 研究基线验证了 Deskrawl build `25690430` 中选出的 1,593 个静态对象；这不代表完整游戏机制、玩家实际装备词条或最终战斗与掉落公式已验证。复现需要合法可用的同构建游戏文件，并重新生成本地中间产物。原始游戏资源、完整提取数据库和下载工具不随仓库分发。
 
