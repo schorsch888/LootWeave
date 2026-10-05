@@ -1,10 +1,121 @@
 # Local validation record
 
-Recorded on 2026-10-04 UTC. This is developer-machine evidence, not release acceptance. The source tree and generated binaries are separate validation scopes.
+This record preserves dated developer-machine observations, not release acceptance. The source tree and generated binaries are separate validation scopes. Older sections retain their original measurements and limitations; they do not describe a fresh run on the latest checkout.
+
+Start with the [portable build record](#portable-build-record), [OCR-review installer](#ocr-review-build-record), [preparation history](#preparation-build-record), [owned-equipment history](#owned-equipment-build-record), [runtime experiment](#runtime-performance-experiment-2026-10-05), and [open gates](#open-gates). Reproduction commands and prerequisites are in the [development guide](development.md#validate-a-change) and [research guide](research.md).
+
+## Portable build record
+
+Recorded for the 2026-10-05 portable build. This is a historical local artifact, not a GitHub CI Release. Its original measurements are retained here; packaging was not repeated during this documentation review.
+
+| Identity | Recorded value |
+| --- | --- |
+| Local artifact, excluded from the repository | `dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip` |
+| Application source commit | `8b3d1b7e4152a86ecb0364119f4f4caea1d4ebc6` |
+| Size and entries | 324,746,175 bytes; 789 entries |
+| Archive SHA-256 | `8a6daebcaee74a7fd054a7fe3f704a58f099b9f41dd9ff2435fd5a7ab09e09cb` |
+| Native EXE SHA-256 | `61aa28a67774a0be000913449e0a900bb94f0e113294a34b3209f457846398d1` |
+| Bundled runtime | Python, WebView2 Fixed Version `154.0.4258.53`, and application-local MSVC runtime DLLs |
+
+A same-name extracted delivery folder was recorded with `LootWeave.exe` and no player data. Future CI Release identities and hashes come from their own `build-manifest.json` and `SHA256SUMS.txt`; they are not identified by this local archive hash.
+
+| Recorded check | Reported result | Scope |
+| --- | --- | --- |
+| Actual Rust headless portable host | Six passed in 20.298 s | Scrubbed PATH without Python; all archive files matched the manifest |
+| Runtime placement | Host DLLs in the EXE directory; frozen Python DLLs in `sidecar/_internal` | Loaded application-local C++ runtimes |
+| Data and relocation | SQLite beside the EXE; exact profile/evaluation and ten frozen replays unchanged after moving the folder | Different working directory and destination with spaces and Unicode; owned hosts/workers exited |
+| Build | 219.281 s | Local packaging with one Cargo job |
+| Source regression | 502 Python tests passed, one Windows symlink-privilege skip; core 44, confirmation 22, capture handlers seven, Rust 31, TypeScript/Vite, architecture and publication passed | Three Rust child fixtures ignored by direct enumeration; source checks have separate scope from the packaged host |
+
+The first portable check incorrectly required frozen Python DLLs at the sidecar root; its retained failure was corrected to allow the bundled `_internal` directory. Capture-handler checks cover original-observation durability across successful captures, failed recapture/manual saving, source changes, and save failure, with temporary SQLite restart reads. The capture observation remains unconfirmed until human review.
+
+This build includes the save-before-review screenshot persistence fix. Its source differs from the earlier OCR-review installer below. Remote passive native checks and merge are recorded in [PR #7](https://github.com/schorsch888/LootWeave/pull/7). Visible GUI, real-game mechanics and two-clean-machine acceptance remain open; evaluator `0.1.7` and SQLite schema v1 are unchanged. See the [portable build guide](development.md#portable-windows-zip) for reproduction prerequisites.
+
+## OCR-review build record
+
+Recorded for the 2026-10-05 OCR-review installer. This earlier build supports per-line equipment review but predates the save-before-review observation persistence fix. Its checks were not repeated during this documentation review.
+
+| Identity | Recorded value |
+| --- | --- |
+| Local artifact, excluded from the repository | `dist/LootWeave-MVP-0.1.0-20261005-ocr-review-windows-x64-setup.exe` |
+| Source commit | `eb33ccf1d303cf9554735a1d6238878f02c8517c` |
+| Size | 226,036,621 bytes |
+| SHA-256 | `b846e6e0dc60c1c136ec547b75ec0108663ea49078029b9ba012e16382074834` |
+| Evaluator and startup | `0.1.7`; eager default |
+
+| Recorded check | Reported result | Scope |
+| --- | --- | --- |
+| Packaged OCR-affix checks | Six passed in 6.8597 s | Actual Rust headless host/frozen workers; fictional signed/custom/zero and legacy-percent affixes |
+| Packaged preparation checks | Eight passed in 9.1709 s | Preparation persistence and replay |
+| Packaged lifecycle checks | Thirteen passed over two cycles | Owned-worker cleanup |
+| Bundle/frontend identity | All 524 files matched the manifest; all three frontend files matched the production build | Integrity and correspondence, not visible GUI acceptance |
+| Build | 227.831 s | Local packaging duration; five earlier installers retained unchanged |
+| Source regression | 502 Python tests passed, one Windows symlink-privilege skip; core 44, confirmation 22, runtime 16, acquisition 27, evaluation rendering 32, TypeScript/Vite, architecture, publication and both frozen OCR holdouts passed | Includes temporary SQLite persistence; synthetic OCR observations, not a real-game accuracy measurement |
+
+The six packaged OCR checks include original text/capture-time provenance, exact profile/evaluation reads after restart, raw deltas of -28.25 points and -4%, and ten frozen replays before and after restart. These results cover API persistence and process behavior. They do not establish visible WebView interaction, live OCR accuracy, game mechanics, installer/uninstaller acceptance or the two-clean-machine gate. SQLite schema v1 is unchanged. Remote checks and merge are recorded in [PR #7](https://github.com/schorsch888/LootWeave/pull/7); the earlier preparation delivery was merged in [PR #6](https://github.com/schorsch888/LootWeave/pull/6).
+
+## Preparation build record
+
+Recorded for the 2026-10-05 preparation build. These are previously reported local checks for the identified product source, not new measurements from this documentation change.
+
+| Identity | Recorded value |
+| --- | --- |
+| Local artifact, excluded from the repository | `dist/LootWeave-MVP-0.1.0-20261005-preparation-windows-x64-setup.exe` |
+| Source commit | `2c08e023b6767a0c5ca732abfe941286a84aeefb` |
+| Size | 226,029,750 bytes |
+| SHA-256 | `cb5574695c048d0754616258136af84577d9f87cd0d2a06fae89f493b7fca9fc` |
+| Evaluator | `0.1.7` |
+
+The build includes resource balances, preparation quotes and budget checks, plus the PR #3 runtime integration. Eager remains the default. Four earlier installers were retained unchanged.
+
+| Recorded check | Reported result | Scope |
+| --- | --- | --- |
+| `scripts/check_preparation_desktop.py` | 8 passed in 9.0852 s | Actual Rust headless host and frozen workers, using fictional inputs |
+| `scripts/check_desktop.py --cycles 2` | 13 passed in 37.175 s | Lifecycle checks over two cycles; not a startup-latency measurement |
+| Bundle integrity | All 524 files matched their hashes | Integrity, not publisher authenticity |
+| Frontend identity | All three files matched the production build byte-for-byte | Correspondence, not visible GUI acceptance |
+| Build | 723.625 s | Local packaging duration |
+| Rust unit checks | 31 passed; three child-process fixtures ignored by discovery; 47.164 s | Other tests invoke `historical_evaluation_child_fixture`, `job_boot_child_fixture`, and `lifecycle_child_fixture` explicitly with `--ignored` |
+| Python source regressions | 503 run: 502 passed, one Windows symlink-privilege skip; 51.586 s | Earlier preparation-source scope |
+| Direct frontend/source checks | Core 33, confirmation 20, runtime 16, Planning 27, evaluation cards 32, TypeScript/Vite, architecture and publication passed | Includes domain-result SSR, temporary SQLite save/restart and ten replays; cards include 24 historical and eight current cases |
+
+The packaged preparation check covers three-state results, combined resource cost 12, budget 10 exceeded by 2, unknown balance as null, SQLite profile/evaluation persistence across restart, ten replays per result before and after restart, and unchanged actual equipment. Forty-two historical synthetic examples each replay ten times with their original outputs.
+
+Reproduction commands and prerequisites are in the [development guide](development.md#native-windows). The recorded local results do not establish final-head CI success. Real M1/M3 mechanics, visible GUI, independent OCR human holdout and two-machine release acceptance remain open.
+
+## Owned-equipment build record
+
+Recorded for the 2026-10-05 owned-equipment build. The packaged test results below are historical observations; they do not establish release acceptance.
+
+| Identity | Recorded value |
+| --- | --- |
+| Local artifact, excluded from the repository | `dist/LootWeave-MVP-0.1.0-20261005-owned-equipment-windows-x64-setup.exe` |
+| Source commit | `75163eff591469ec1b352fce360c7b00734c8df1` |
+| Size | 225,936,027 bytes |
+| SHA-256 | `f233cc1380efbfb2c63ec1de922c05da29f7c860e8e2031bb8087a0393cc26df` |
+| Evaluator | `0.1.6` |
+
+Artifact size and SHA-256 were checked again during the 2026-10-05 documentation review and matched these values. The packaged tests were not rerun.
+
+The recorded build includes persistent, uniquely identified owned inventory and the [core workflow](implementation.md#core-workflow). Three earlier installers were retained unchanged; PR #4 was identified in the prior README as preserving the preceding scope.
+
+| Recorded check | Reported result | Limit |
+| --- | --- | --- |
+| Packaged core checks | 17 passed in 9.056 s | Fictional data and headless execution; no visible GUI measurement |
+| Packaged lifecycle checks | 13 passed in 34.726 s | Two starts and six worker-fault cases, including natural child-process exit; not two-machine acceptance |
+| Frontend identity | Packaged bytes matched the production build | Artifact correspondence, not visible rendering acceptance |
+
+The earlier equipment installer from source `eb1995dc` also recorded `python scripts/check_desktop.py --cycles 2`: 13 checks in 34.563 s covering two normal start/exit cycles, six service faults, forced-host Job cleanup, restart recovery, frozen replay across restart/source failure, instance locking, and backup/restore. That is a separate recorded run, not an extra measurement of the 34.726 s run. Both durations are whole-script elapsed time, not startup latency.
+
+An earlier source summary recorded 363 Python tests: 362 passed and one Windows symlink-privilege case skipped in 31.261 s. It also recorded direct frontend core (16), confirmation (19, including real Profile SQLite), evaluation-card (32), and Planning (27) checks. Those counts apply only to that earlier source scope.
+
+The original summary does not supply a complete environment and invocation for every packaged check. Preserve that limitation when citing it; do not infer reproducibility from an artifact hash alone. Visible GUI, installation/removal on two clean machines, real-game capture and mechanics, DPS, and equip/retention recommendations remain unaccepted. Later successful exits do not resolve the separately recorded earlier hidden descendant-timeout investigation. Deskrawl rules remain research-only and M4 remains open.
 
 ## Source snapshot before runtime optimization
 
 This section records the earlier source/artifact checks; runtime performance verification is reported separately below.
+
+Recorded on 2026-10-04 UTC. The following measurements retain that historical source and environment scope.
 
 | Check | Observed result | Scope |
 | --- | --- | --- |
