@@ -1,6 +1,14 @@
-# Implementation and validation
+# Implementation reference
 
 The implementation lives directly in the repository root. There is no enclosing application directory. The only executable pack is `synthetic-leveling` version `1.0.0`, scoped to the entirely fictional game ID `lootweave-fixture` and its Sorcerer leveling scenario. Deskrawl build 25690430 has research-only pack versions `0.1.0-research` through `0.6.0-research`; the latest adds selected original Frostwyrm code-registration tail, module-array entry and address-reference checks to the prior lifecycle evidence while leaving `rules` empty. Earlier pack bytes/hashes remain unchanged, and all six explicit versions are available through the API. These records are not accepted online-mechanics adapters. Diablo II, III and IV do not have accepted adapters.
+
+For installation, launch commands, checks, and troubleshooting, use the [development guide](development.md). Dated measurements and local artifact identities belong in the [validation record](validation.md); a source description does not establish release acceptance.
+
+## Core workflow
+
+The current source opens on a blank profile. Structured forms record uniquely identified owned items as candidates, equipped items, or unequipped inventory; SQLite preserves those records and their evidence across reopening. Future loadouts can reference only recorded owned items, and equipment use is checked against slot, class, level, and source requirements. Adding an item to inventory does not equip it automatically. Skills retain actor, rank, and effect data, while unconfirmed conditions continue to block conclusions.
+
+Players can also record evidence-linked material and currency balances and review preparation quotes for skill learning/removal or equipment changes. Future plans select quote IDs and may set resource limits. Engine `0.1.7` combines recorded known costs to report resource deficits and budget excess. Unknown costs, unlocks, changed inputs, random results, and missing supporting quotes stay unconfirmed. Preparation feasibility is separate from game-mechanic conclusions; projections do not change current equipment or its build hash. No real-game DPS calculation or retain/equip recommendation has passed acceptance.
 
 ## Boundaries
 
@@ -22,65 +30,33 @@ Python service runtime dependencies are standard-library modules and installed W
 
 ## Development
 
-For local source development, use Python 3.12, Node.js 24 or newer, and pnpm 11.19.0. Pure source editing does not require local Windows packaging or Rust compilation; GitHub Actions is the Windows build/check and release artifact path. The commands below run the local development app; desktop packaging instructions are optional.
-
-~~~powershell
-pnpm --dir frontend install --frozen-lockfile
-pnpm --dir frontend build
-pnpm --dir frontend check:acquisition
-python runtime.py
-~~~
+Follow the [source setup](development.md#run-the-experimental-source) and [Windows build instructions](development.md#build-the-windows-desktop). Native capture/OCR and desktop packaging require Windows x64.
 
 The development launcher creates a session secret on an ephemeral literal-loopback address. Default `eager` starts all services sequentially before serving the shell. Explicit `--startup-policy on-demand` serves the shell before core readiness, starts Profile/Knowledge concurrently then Evaluation, and starts OCR/Planning on an explicit capability request. Its [measured experiment](performance-results.md) passed correctness and memory checks but failed the primary startup-tail comparison, so default promotion is deferred. Each service requires authenticated readiness. Data defaults to ignored `.local`; Ctrl+C stops workers. Rust owns the desktop outer process scope. Before initialization, each Windows service retains an anonymous, non-inherited kill-on-close [job object](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects) for its lifetime; Windows reclaims owned helpers on service exit or forced termination.
 
 For desktop service launches, Rust assigns its outer job before writing a one-byte boot permit to the service's existing stdin pipe. With `LOOTWEAVE_PARENT_JOB=1`, Python waits for that permit before establishing the nested service job or initializing helpers. Missing/invalid permits and ownership failures publish no readiness. The developer launcher clears the inherited desktop flag and starts independent service roots. Process cleanup is scoped to owned descendants; unrelated siblings remain running. The frozen sidecar and current Rust host must be rebuilt together before validating this protocol in a packaged application.
 
-Optional local desktop packaging: install the Rust Windows MSVC toolchain and C++ build tools, then the pinned build dependencies:
+Build products are local and ignored. The development guide documents build options and external prerequisites; an installer build does not complete clean-machine acceptance.
 
-~~~powershell
-python -m pip install -r requirements-build.txt
-python scripts/build_desktop.py
-~~~
-
-Use --sidecar-only to bundle Python without compiling Rust; --debug builds a debug host; --installer requests NSIS after the frontend and sidecar are built. --test-native runs release Rust tests with the same path-remapping flags as packaging. Build products are local and ignored. An installer build does not complete clean-machine acceptance.
-
-### Portable Windows ZIP
-
-Build the frontend and run `python scripts/build_desktop.py` to produce the frozen services and Rust host. Download and verify the official x64 CAB pinned in `scripts/webview-runtime.json`, expand all files, and package its named runtime directory:
-
-~~~powershell
-$sourceCommit = git rev-parse HEAD
-$webviewPin = Get-Content scripts/webview-runtime.json -Raw | ConvertFrom-Json
-$portableBuild = Join-Path (Get-Location).Path '.local/portable-runtime'
-New-Item -ItemType Directory -Path $portableBuild -Force | Out-Null
-$webviewCab = Join-Path $portableBuild 'webview2-fixed.cab'
-Invoke-WebRequest -Uri $webviewPin.url -OutFile $webviewCab
-if ((Get-FileHash $webviewCab -Algorithm SHA256).Hash.ToLowerInvariant() -ne $webviewPin.sha256) { throw 'fixed_webview_download_hash_mismatch' }
-$expandedRuntime = Join-Path $portableBuild 'expanded'
-New-Item -ItemType Directory -Path $expandedRuntime -Force | Out-Null
-& "$env:SystemRoot/System32/expand.exe" $webviewCab '-F:*' $expandedRuntime | Out-Null
-if ($LASTEXITCODE -ne 0) { throw 'fixed_webview_expand_failed' }
-$runtimeFolder = Join-Path $expandedRuntime ('Microsoft.WebView2.FixedVersionRuntime.' + $webviewPin.version + '.x64')
-# Set this to the x64 Microsoft.VC*.CRT folder shipped in Visual Studio VC/Redist/MSVC.
-$vcRuntime = '<Visual Studio x64 redistributable CRT directory>'
-python scripts/build_portable.py --executable desktop/target/release/lootweave-desktop.exe --webview-runtime $runtimeFolder --vc-runtime-dir $vcRuntime --output dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip --source-commit $sourceCommit
-python scripts/check_portable_desktop.py --archive dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip --report .local/portable-report.json
-~~~
-
-The package also copies `vcruntime140.dll` and `vcruntime140_1.dll` from Visual Studio's x64 redistributable folder beside both executables; these DLLs are required by the current Rust host. Their hashes join the portable and sidecar manifests. See Microsoft's [application-local C++ deployment guidance](https://learn.microsoft.com/en-us/cpp/windows/choosing-a-deployment-method?view=msvc-170).
-
-When built, the portable ZIP packages `LootWeave.exe`, embedded Python, the fixed WebView2 runtime, application-local C++ runtime DLLs, and a `portable.json` marker. Extract it to a writable local directory and double-click `LootWeave.exe`; no application install or administrator rights are needed. The marker selects sibling `sidecar/`, `webview2/`, and `data/` folders, which keep SQLite, OCR captures, and browser data beside the app. Exit LootWeave before moving the folder. Upgrades replace app/runtime files while preserving `data/`; the regular installer continues to use `%LOCALAPPDATA%/LootWeave`. This describes packaging behavior, not portable acceptance evidence.
-
-Screenshot captures in the updated source are persisted first as unconfirmed observations. Recapture, OCR failure, and manual saving preserve the original screenshot reference; reviewed fields become snapshot facts only after human confirmation. Missing Windows OCR language models still allow manual text entry.
+### OCR behavior
 
 English en-US and Simplified Chinese zh-Hans-CN OCR models are installed Windows capabilities. Text confirmation remains usable when a model or capture is unavailable. The current OCR adapter supports three generic demonstration labels: level, vitality and armor. It does not identify arbitrary affixes, icons or game layouts. Numeric parsing rejects split or incomplete digits and scientific-notation fragments, and preserves the original text, sign and unit. A readable primary recognition remains the numeric source; consistent English recognition is recorded separately as `numeric_corroboration`. `numeric_source` is reserved for cases where an unreadable number was actually recovered. The original observation and every interpreted value remain unconfirmed until the user reviews and confirms them.
 
 Unresolved fields with a unique mapped label, explicit unit and uncontested native row geometry can request English numeric-region recognition. The worker uses the original BMP and one additional helper for at most three crops, projects word bounds back to original pixels and retains the original text/span. Readable primary values and explicit signs are preserved; conflicting candidates remain ambiguous, and consistent crops corroborate rather than replace readable values. The helper has a six-second maximum within the remaining twelve-second request budget; failure is recorded as `numeric_region_error` while primary observations remain usable. Each crop bitmap and input stream is disposed, and the helper stays in the service process scope. All values still require confirmation. The frozen current adapter's fresh synthetic v7 measurement is documented below; real-game acceptance remains open.
+
+Screenshot captures in the updated source are persisted first as unconfirmed observations. Recapture, OCR failure, and manual saving preserve the original screenshot reference; reviewed fields become snapshot facts only after human confirmation. Missing Windows OCR language models still allow manual text entry.
+
 OCR review accepts or ignores each non-empty raw-text line and each parsed field not represented by a complete matching raw-text line, independently. Known and custom affixes require explicit value/unit review; `required_level` is confirmed separately. After all rows are handled, one apply action writes the reviewed fields to the candidate; a matching affix ID is replaced by the reviewed value on application. Screenshot evidence is attached only to mapped candidate fields while raw text, unrelated evidence sources, and capture time remain preserved. A new screenshot resets the review state. An independent UI gate matches the reviewed `observation_id`, so deleting a snapshot unknown marker cannot bypass review. Percent values retain their original unit, and duplicate targets prevent application. The OCR model/algorithm and evaluator 0.1.7 did not change.
+
+## Windows delivery
+
+The portable distribution bundles `LootWeave.exe`, embedded Python, WebView2 Fixed Version, application-local C++ runtimes, and a `portable.json` marker. The marker selects sibling `sidecar/`, `webview2/`, and `data/` folders. SQLite, OCR captures, and browser data stay beside the app; the regular installer uses `%LOCALAPPDATA%/LootWeave`. Both formats retain the single-EXE entry point. Build commands and external runtime prerequisites are in the [development guide](development.md#portable-windows-zip).
+
+The earlier OCR-review installer predates the save-before-review observation persistence fix. The historical portable build includes it. Their exact source identities and scoped checks are preserved separately in the [validation record](validation.md#portable-build-record); source behavior does not establish acceptance of either artifact.
 
 ## GitHub CI and Releases
 
-A single GitHub Actions `checks.yml` workflow runs on pull requests, main pushes, and manual CI dispatch. Successful Windows packaging uploads the four `dist/release/` files (installer, portable ZIP, `build-manifest.json`, and `SHA256SUMS.txt`) as `lootweave-windows-x64-<commit>` for seven days; source, tests, private logs, and user data are excluded. On main pushes or manual dispatches targeting main, `publish-preview` depends on successful `contracts-and-browser` and `windows-package` jobs, then publishes the artifact from that same run as an always-prerelease GitHub Release tagged `v0.1.0-mvp.<run number>`. Each main source commit gets a separate preview; tags do not trigger publishing. This documents the workflow, not a successful current run or an already-published preview. Pure source maintenance requires no local packaging; the local builder commands below are optional.
+A single GitHub Actions [workflow](../.github/workflows/checks.yml) runs on pull requests, main pushes, and manual CI dispatch. Successful Windows packaging uploads the four `dist/release/` files (installer, portable ZIP, `build-manifest.json`, and `SHA256SUMS.txt`) as `lootweave-windows-x64-<commit>` for seven days; source, tests, private logs, and user data are excluded. On main pushes or manual dispatches targeting main, `publish-preview` depends on successful `contracts-and-browser` and `windows-package` jobs, then publishes the artifact from that same run as an always-prerelease GitHub Release tagged `v0.1.0-mvp.<run number>`. Each main source commit gets a separate preview; tags do not trigger publishing. This documents the workflow, not a successful current run or an already-published preview. Pure source maintenance requires no local packaging; local builder commands in the development guide are optional.
 
 ## Deskrawl process and window capture
 
@@ -90,7 +66,7 @@ Detection reads only OS process/window metadata. It checks the executable basena
 
 GDI reads the selected foreground screen region inside the game client. It is not an atomic window-only capture API; overlays and changes between checks still require manual review. After capture, the UI displays the original BMP region at its native pixel dimensions and the uncorrected OCR text. The image viewer is keyboard-focusable and scrollable for larger regions. Changing game scope, capture source, selected window binding, region or language, or starting another capture clears the old image and observation association and invalidates confirmation while preserving manually entered text. Original image/text and window provenance remain unconfirmed until the separate Profile confirmation flow. A declared capture game must match the snapshot game; each new observation resets the manual checkbox.
 
-The window source and simulated UI guards are tested. The delivered `fcc9ed1` MVP host, frozen Python and NSIS installer were built locally; its headless lifecycle and backup/restore checks pass. Later hidden/native verification uses a separate Rust-only host. Successful real-window capture, visible GUI and two-clean-machine installation/removal remain unaccepted. Run the lightweight Windows checks independently of desktop resources:
+The window source and simulated UI guards have recorded checks. The historical `fcc9ed1` MVP host, frozen Python and NSIS installer were built locally and passed the recorded headless lifecycle and backup/restore checks. Subsequent builds have separate identities in the [validation record](validation.md); results from distinct artifacts must not be combined. Successful real-window capture, visible GUI and two-clean-machine installation/removal remain unaccepted. Run the lightweight Windows checks independently of desktop resources:
 
 ~~~powershell
 cargo fetch --locked --target x86_64-pc-windows-msvc --manifest-path desktop/Cargo.toml
@@ -135,30 +111,11 @@ Rust checks the bundle manifest before worker execution and uses a Windows Job O
 
 Acquisition cards use the API `source_id` and show their target event. Manual sample results display the returned game/version/mode/season/ruleset and content scope. Sample drafts retain count text; blank or rounded inputs cannot silently become observations. Both Planning forms share validation for nonnegative decimal integer text within the JavaScript exact-integer range. The sample API bounds counts at `2**53 - 1` and returns `invalid_sample_counts` with HTTP 400 for larger input. This follows the interoperability guidance in [RFC 8259 section 6](https://www.rfc-editor.org/rfc/rfc8259.html#section-6). Editing a sample clears its estimate and confirmations; submission disables its controls, and failure leaves no prior estimate displayed. Small nonzero interval bounds use scientific notation and near-one values remain visibly below 100%. The Wilson method, storage version and historical rules are unchanged. These checks do not accept a real-game acquisition adapter.
 
-## OCR equipment entry delivery
-
-The new local installer is `dist/LootWeave-MVP-0.1.0-20261005-ocr-review-windows-x64-setup.exe` (226,036,621 bytes; SHA-256 `b846e6e0dc60c1c136ec547b75ec0108663ea49078029b9ba012e16382074834`), compiled from `eb33ccf1d303cf9554735a1d6238878f02c8517c` in 227.831 seconds. All 524 bundled files match their integrity manifest; all three packaged frontend files match the production build. The five earlier installers are unchanged. The previous preparation delivery remains documented below and in PR #6.
-This earlier installer predates the current save-before-review screenshot persistence fix; it is not the same source state as the portable build instructions above.
-
-Against the actual packaged Rust headless host and frozen workers, fictional OCR-confirmed signed/custom/zero and legacy-percent affixes passed six checks (6.8597 s), including original observation text and capture-time binding, exact profile/evaluation reads after restart, raw deltas of -28.25 points and -4%, and ten frozen replays before and after restart. The eight packaged preparation checks passed (9.1709 s), and thirteen two-cycle lifecycle checks passed with owned-worker cleanup. These local reports cover API persistence and process behavior; they do not establish visible WebView interaction, live OCR accuracy, real-game mechanics, installer/uninstaller acceptance or the two-clean-machine gate. Evaluator 0.1.7 and SQLite schema v1 are unchanged. Remote CI and merge are tracked in the current phase PR.
-
 ## Reproducible checks
 
-The earlier preparation-stage installer is `dist/LootWeave-MVP-0.1.0-20261005-preparation-windows-x64-setup.exe`, 226,029,750 bytes, SHA-256 `cb5574695c048d0754616258136af84577d9f87cd0d2a06fae89f493b7fca9fc`, built from `2c08e023b6767a0c5ca732abfe941286a84aeefb`. It includes evaluator 0.1.7 and the PR #3 runtime integration; eager remains the default. The public reproducible `scripts/check_preparation_desktop.py` passed 8 actual Rust headless/frozen-worker checks in 9.0852 s: three-state results, resource/budget total 12, budget 10 exceeded by 2, unknown balance null, SQLite profile/evaluation persistence across restart, each result replayed ten times before and after restart, and no actual-equipment change. `scripts/check_desktop.py --cycles 2` passed 13 lifecycle checks in 37.175 s. All 524 bundle files passed hash verification; all three frontend files match the production build byte-for-byte. Build time was 723.625 s. Rust unit checks passed 31; three ignored `supervisor.rs` child-process fixtures (`historical_evaluation_child_fixture`, `job_boot_child_fixture`, `lifecycle_child_fixture`) are invoked explicitly by other tests using `--ignored` (47.164 s). GUI acceptance remains open and is not represented by those ignored tests. The four earlier installers remain unchanged. Current-source validation passed Python 503 (502 passed, one Windows symlink permission skip; 51.586 s), core 33 including domain-result SSR states, confirmation 20 including temporary SQLite save/restart/ten replays, runtime 16, Planning 27, evaluation cards 32 (24 historical, 8 current), TypeScript/Vite, architecture, and publication checks. The 42 historical synthetic examples replay ten times each. The prior preparation delivery was merged as [PR #6](https://github.com/schorsch888/LootWeave/pull/6). For this OCR field-review stage, local regression passes: 502 Python tests with one Windows symlink-privilege skip, 44 core and 22 confirmation (including real temporary SQLite persistence), runtime 16, acquisition 27, evaluation rendering 32, TypeScript/Vite, architecture, publication and both frozen OCR holdouts. Current-phase remote checks and merge state are recorded in its PR. Real M1/M3 mechanics, GUI, OCR human holdout, and two-machine release acceptance remain open; roadmap stages are not all complete.
+The [development guide](development.md#validate-a-change) lists checks by component. The [validation record](validation.md) preserves separate portable, OCR-review, preparation, and owned-equipment build identities and their recorded checks. The observations below retain their historical source scopes; they are not fresh results for the current checkout.
 
-~~~powershell
-python -m unittest discover -s tests -v
-python scripts/check_architecture.py
-python scripts/check_public_docs.py
-python scripts/validate_ocr_holdout.py
-python scripts/validate_ocr_holdout.py --version v7
-python -m compileall -q services scripts contracts.py storage.py transport.py process_lifecycle.py service.py gateway.py runtime.py runtime_control.py version.py
-pnpm --dir frontend build
-node scripts/check_evaluation_render.mjs
-node scripts/check_frontend_runtime.mjs
-~~~
-
-After generating desktop resources, run cargo test --locked -j 1 --manifest-path desktop/Cargo.toml. This requires Windows dependencies and local resources. Python tests/publication checks require neither game assets nor compiled frontend assets.
+Python tests/publication checks require neither game assets nor compiled frontend assets. Native tests require matching generated desktop resources and Windows prerequisites, as described in the development guide.
 
 To reproduce the packaged preparation persistence check on Windows:
 
@@ -181,11 +138,3 @@ Public v6/v7 fixtures preserve the original manifests, raw observations, reports
 Before runtime optimization, Python regressions ran 348 tests: 347 passed and one Windows symlink-privilege case was skipped (34.660 s including discovery). TypeScript/production build, 14 direct confirmation checks, 27 Planning component checks and 32 actual evaluation-card renders passed without DOM/browser input. Nine source-clock unit regressions and two real loopback HTTP cases cover atomic rejection/retry, exact UTC equivalence, linked evidence, immutable history and offline frozen replay; evaluator 0.1.4 and historical artifacts are unchanged. The delivered installer `dist/LootWeave-MVP-0.1.0-20261004-windows-x64-setup.exe` corresponds to source commit `fcc9ed1`: its host/frozen workers passed two headless start/exit cycles, six service faults, forced-host cleanup, restart persistence and native backup/restore. A separate packaged check rejects a clock mismatch, accepts the corrected same-request retry and replays its evaluation; served HTML/JS/CSS exactly match that commit's production build. NSIS includes embedded Python and the offline WebView2 installer. Later hidden-test source and Rust-only host changes have not been rebuilt into this installer. `scripts/check_native_ui.py` performs hidden, non-focusable passive DOM/IPC checks with no keyboard, mouse, or focus operations. Its readiness does not establish visible painting, successful capture from a real game window, keyboard accessibility, cold-GUI P95, or two-machine acceptance; the final verifier passed 20 cycles with explicit CDP disconnection and fixed-handle natural exit evidence, while an earlier descendant-exit timeout remains unresolved. See the [validation record](validation.md) for identities and remaining gates.
 
 Read the [roadmap](roadmap.md) for full gates. Synthetic tests do not establish real-game mechanics, real screenshot accuracy, two-machine offline distribution or independent release review.
-
-## Portable MVP delivery
-
-`dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip` is 324,746,175 bytes, SHA-256 `8a6daebcaee74a7fd054a7fe3f704a58f099b9f41dd9ff2435fd5a7ab09e09cb`, with 789 entries. Its application source is `8b3d1b7e4152a86ecb0364119f4f4caea1d4ebc6`; the native EXE hash is `61aa28a67774a0be000913449e0a900bb94f0e113294a34b3209f457846398d1`. A same-name extracted delivery folder was delivered with `LootWeave.exe` and no player data. The archive includes Python, WebView2 Fixed Version 154.0.4258.53, and application-local MSVC runtime DLLs. This was a historical local build, not a GitHub CI Release artifact. Future CI Release identity and hashes are defined by the remote `build-manifest.json` and `SHA256SUMS.txt`.
-
-The actual Rust headless portable host passed six checks in 20.298 seconds, using a scrubbed PATH without Python. Every archive file matched its manifest. Loaded C++ DLL paths were inside the package: the host used the EXE directory, and frozen Python used its existing `sidecar/_internal` runtime. SQLite was created beside the EXE while the working directory was elsewhere; after the whole folder moved to another path with spaces and Unicode, the exact profile/evaluation and ten frozen replays remained identical. Owned hosts and workers exited. The first check attempt wrongly required frozen Python DLLs to live at the sidecar root; its retained failure was corrected to allow the packaged `_internal` directory.
-
-The build took 219.281 seconds with one Cargo job. Local source checks passed 502 Python tests with one Windows symlink-privilege skip, 44 core, 22 confirmation and seven capture handler checks, 31 Rust unit tests (three child fixtures ignored in direct enumeration), TypeScript/Vite, architecture and publication boundaries. The new capture checks exercise original-observation durability across multiple successful captures, failed recapture/manual saving, source changes and save failure, with temporary SQLite restart reads. Remote passive native checks and merge are tracked in the phase PR. Visible GUI, actual game mechanics, live OCR holdout and two-clean-machine acceptance remain open; evaluator 0.1.7 and SQLite schema v1 are unchanged.
