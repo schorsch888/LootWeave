@@ -48,6 +48,8 @@ Each evaluation pins the game context, item/build/intent revisions, knowledge pa
 
 The FSD frontend, DDD backend microservices, and use of both Rust and Python are requirements. The component breakdown below is implemented; remaining deployment, distribution and game-support gates need validation.
 
+The [architecture contract](architecture.md) defines file ownership, permitted calls, Rust/Python responsibilities, and infrastructure exceptions. It also defines the procedure and checks for boundary changes. Follow that contract for code changes. The table below summarizes component responsibilities.
+
 | Component | Responsibility and boundary |
 | --- | --- |
 | React/TypeScript + FSD | Confirmation, configuration, and comparison UI; no duplicate game formulas |

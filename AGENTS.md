@@ -4,7 +4,7 @@ LootWeave has a local Windows prototype. Real-game support and release acceptanc
 
 ## Start here
 
-- Read [README](README.md), [design](docs/design.md), and [roadmap](docs/roadmap.md) before changes.
+- Read [README](README.md), [design](docs/design.md), [architecture contract](docs/architecture.md), and [roadmap](docs/roadmap.md) before changes.
 - For implementation, read the [implementation record](docs/implementation.md). For research, read the [research guide](docs/research.md) and related evidence.
 - For all new or changed text, obey the [writing rules](docs/agent-writing.md), including ASD-STE100.
 
@@ -19,6 +19,8 @@ LootWeave has a local Windows prototype. Real-game support and release acceptanc
 
 ## Project boundaries
 
+- Before code changes, identify the owner, permitted callers, data owner, and affected contract.
+- Obey the architecture contract for service calls, storage, shared helpers, and boundary changes. Keep pinned replay.
 - Keep one Windows EXE entry point, Rust + Python, FSD frontend, and DDD microservices for each business capability.
 - Keep rules separate by game, edition, build, mode, and season. Do not use static definitions as proof of owned items or complete mechanics.
 - Keep observations, confirmed facts, and derived results separate. If prerequisites are unknown, do not give a definite conclusion.
@@ -39,7 +41,7 @@ python scripts/check_public_docs.py
 python -m compileall -q scripts
 ```
 
-- Run additional [repository checks](README.md#repository-checks) applicable to the change.
+- Run additional [repository checks](docs/development.md#validate-a-change) applicable to the change.
 - Give the changes, actual check results, skipped checks, missing prerequisites, and unknowns. Keep current results separate from historical evidence and targets.
 - Do not give source verification results without matching inputs. Game mechanics and release acceptance must have their own evidence.
 - Do not commit, push, publish, create remote resources, or select a license without permission.

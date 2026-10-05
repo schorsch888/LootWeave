@@ -5,7 +5,6 @@ data/extracted/
 # Local research drafts superseded by the current design or final evidence
 /docs/README.md
 /docs/product.md
-/docs/architecture.md
 /docs/data-evidence.md
 /docs/privacy-and-publication.md
 /docs/leveling-map-recommendation.md

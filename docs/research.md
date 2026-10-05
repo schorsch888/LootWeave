@@ -16,6 +16,7 @@ This repository contains a runnable local development implementation and Windows
 | [Frostwyrm code registration](../research/deskrawl-frostwyrm-code-registration.json) | Adds a hashed x64 v39 registration tail, 95-entry module-array range, selected module entry and PE exception-bounded address reference. Native module index 6 differs from metadata image index 3; no executed registration, class-dispatch or gameplay acceptance. |
 | [Decision model](../research/decision-model.json), [loot planning](../research/loot-planning.json) | Research input/decision contracts and acquisition reasoning. The local planning service records manually measured, scope-bound XP/time trials and checks prerequisites for the synthetic fixture; it is not a Deskrawl rules database or a live acquisition feed. |
 | [Synthetic OCR holdout v6](../fixtures/ocr-critical-fields-v6/README.md) | Complete original 200-region/600-field renderer inputs, native observations and scores with byte-preserving sources; 200 exact local image reconstructions/parser replays. Historical 91.67% accuracy and pending independent human truth review leave M2 unaccepted. |
+| [Synthetic OCR holdout v7](../fixtures/ocr-critical-fields-v7/README.md) | Complete original 200-region/600-field inputs, native observations, 30 numeric crops, and frozen sources. Historical 95.33% overall accuracy does not establish real-game coverage or independent human truth review; M2 remains unaccepted. |
 | [Toolchain provenance](../research/toolchain-provenance.json) | Pinned versions, official release identities and the recorded environment. |
 
 The recorded local result is 1,593 selected objects, zero parse failures and 3,080 ObscuredFloat, 67 ObscuredInt and 196 ObscuredLong conversions independently checked. The readable catalog projects 817 definitions. These are historical measurements for the named inputs, not promises for another installation or proof of complete mechanics, DPS, actual inventory or final drop probabilities.
@@ -29,6 +30,7 @@ From the repository root, using Python 3.12:
 ```powershell
 python scripts/check_public_docs.py
 python scripts/validate_ocr_holdout.py
+python scripts/validate_ocr_holdout.py --version v7
 python scripts/extract_deskrawl.py --help
 python scripts/validate_deskrawl_numeric.py --help
 python scripts/validate_deskrawl_xp.py --help
