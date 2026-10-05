@@ -17,7 +17,22 @@ def current_result(inputs):
     profile, knowledge = copy.deepcopy(inputs["profile"]), copy.deepcopy(inputs["knowledge"])
     # Reconfirm an explicitly empty synthetic inventory for the current engine.
     # The original historical inputs and result hashes are never modified.
-    profile["facts"].setdefault("inventory_items", [])
+    facts = profile["facts"]
+    facts.setdefault("inventory_items", [])
+    # Current callers explicitly reconfirm the pet owning attached companion effects.
+    attached = [entry for group in ("skills", "talents", "paragon", "runes", "temporary_effects")
+                for entry in facts[group] if entry.get("actor", "hero") == "companion"]
+    attached.extend(entry for item in (*facts["equipped_items"].values(), facts["candidate_item"])
+                    for entry in item["embedded_items"] if entry.get("actor", "hero") == "companion")
+    if attached:
+        owner = next((entry["id"] for entry in facts["companions"]
+                      if entry.get("actor", "companion") == "companion"), None)
+        if owner is None:
+            owner = "confirmed-owner"
+            facts["companions"].append({"id": owner, "actor": "companion", "effects": [],
+                                       "evidence_ids": facts["evidence_ids"][:]})
+        for entry in attached:
+            entry["companion_id"] = owner
     snapshot(profile["facts"])
     validate_pack(knowledge["pack"])
     profile["facts_hash"] = digest(profile["facts"])

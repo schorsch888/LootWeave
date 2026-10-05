@@ -1,21 +1,25 @@
+import type { SourceGroup, SourceKind } from "../build-sources";
+
 export type Evidence = { id: string; kind: string; source_ref: string; captured_at: string; verification: string; conflicts: string[] };
-export type Source = { id: string; effects: string[]; evidence_ids: string[]; rank?: number; set_id?: string; actor?: string };
+export type Source = { id: string; effects: string[]; evidence_ids: string[]; rank?: number; set_id?: string; actor?: string; level?: number; companion_id?: string };
 export type Item = { record_kind: string; instance_id: string; name?: string; class_id?: string; slot: string; required_level: number | null; effects: string[]; affixes: { id: string; name?: string; value: number; unit: string; evidence_ids: string[] }[]; unrevealed_properties: string[]; embedded_items: Source[]; unknowns: string[]; upgrade_state: { known: boolean; level?: number }; socket_state: { known: boolean; count?: number }; evidence_ids: string[]; set_id?: string };
 export type ResourceCost = { resource_id: string; amount: number };
 export type OwnedResources = { coverage: "complete" | "partial" | "unknown"; balances: (ResourceCost & { evidence_ids: string[] })[] };
-export type PreparationRequirements = { required_level: number | null; max_rank: number | null; unlock_state: "unlocked" | "locked" | "unknown" };
-export type PreparationOption = { id: string; context: GameContext; class_id: string; target_id: string; evidence_ids: string[]; unknowns: string[]; costs: ResourceCost[] | null; requirements: PreparationRequirements } & ({ kind: "equipment"; input: Item; result: Item } | { kind: "skill"; input: Source | null; result: Source });
-export type FuturePreparation = { future_build_index: number; status: "feasible" | "infeasible" | "unknown"; declared_feasibility: string; blockers: string[]; input_evidence_ids: string[]; options: { id: string; kind: string; target_id: string; projected_result: Item | Source }[]; skill_allocations: Source[]; resources: { resource_id: string; cost: number | null; available: number | null; budget_limit: number | null; missing: number | null; budget_excess: number | null }[] };
+export type PreparationRequirements = { required_level: number | null; max_rank: number | null; unlock_state: "unlocked" | "locked" | "unknown"; companion_id?: string };
+export type PreparationOption = { id: string; context: GameContext; class_id: string; target_id: string; evidence_ids: string[]; unknowns: string[]; costs: ResourceCost[] | null; requirements: PreparationRequirements } & ({ kind: "equipment"; input: Item; result: Item } | { kind: SourceKind; input: Source | null; result: Source | null });
+export type FuturePreparation = { future_build_index: number; status: "feasible" | "infeasible" | "unknown"; declared_feasibility: string; blockers: string[]; input_evidence_ids: string[]; options: { id: string; kind: string; target_id: string; projected_result: Item | Source | null }[]; skill_allocations: Source[]; build_sources?: Record<SourceGroup, Source[]>; comparison?: EvaluationComparison; equipped_items?: Record<string, Item>; conditions?: Record<string, string>; projection_kind?: "future_plan"; resources: { resource_id: string; cost: number | null; available: number | null; budget_limit: number | null; missing: number | null; budget_excess: number | null }[] };
 export type GameContext = { game_id: string; edition: string; game_build: string; mode: string; season: string; ruleset_id: string; content_entitlements: string[] };
 export type Snapshot = { context: GameContext; class_id: string; character_level: number; captured_at: string; evidence: Evidence[]; evidence_ids: string[]; skills: Source[]; talents: Source[]; paragon: Source[]; account_unlocks: Record<string, unknown>; runes: Source[]; companions: Source[]; temporary_effects: Source[]; observed_panel: { stat: string; value: number; unit: string; source_ids: string[]; evidence_ids: string[] }[]; conditions: Record<string, string>; inventory_coverage: string; unknowns: string[]; equipped_items: Record<string, Item>; inventory_items?: Item[]; owned_resources?: OwnedResources; preparation_options?: PreparationOption[]; candidate_item: Item };
-export type Intent = { revision: number; scenario: string; required_capabilities: string[]; allowed_build_changes: string[]; future_builds: { skills: string[]; conditions: Record<string, string>; feasibility: string; equipment_items?: string[]; preparation_options?: string[] }[]; budget: Record<string, unknown> };
+export type FutureBuild = { skills: string[]; conditions: Record<string, string>; feasibility: string; equipment_items?: string[]; preparation_options?: string[] } & Partial<Record<SourceGroup, string[]>>;
+export type Intent = { revision: number; scenario: string; required_capabilities: string[]; allowed_build_changes: string[]; future_builds: FutureBuild[]; budget: Record<string, unknown> };
 export type Pack = { pack_id: string; version: string; pack_hash: string; context: GameContext; class_id: string; scenario: string; execution_policy: string };
-export type Reason = { kind?: string; rule_id?: string; capability?: string; explanation: string; evidence_ids: string[]; input_evidence_ids: string[]; source_ids?: string[]; state?: string; actor?: string; feasibility?: string; future_build_index?: number; future_equipment?: Pick<Item, "instance_id" | "slot" | "name">[]; preparation_status?: string };
+export type Reason = { kind?: string; rule_id?: string; capability?: string; explanation: string; evidence_ids: string[]; input_evidence_ids: string[]; source_ids?: string[]; state?: string; actor?: string; feasibility?: string; future_build_index?: number; future_equipment?: Pick<Item, "instance_id" | "slot" | "name">[]; preparation_status?: string; future_comparison?: EvaluationComparison };
 export type Mechanism = { actor: "hero" | "companion"; capability: string };
 export type MechanismState = "active" | "inactive" | "unknown";
 export type UncertainMechanism = Mechanism & { before: MechanismState; after: MechanismState };
 export type ItemRollComparison = { scope: string; current_item: { instance_id: string; name?: string } | null; candidate_item: { instance_id: string; name?: string }; rows: { affix_id: string; current_value: number | null; candidate_value: number | null; current_unit: string | null; candidate_unit: string | null; delta: number | null; status: string; input_evidence_ids: string[] }[]; limitations: string[] };
-export type EvaluationResult = { evaluation_id: string; retention: string; comparison: { status: string; scope_compatible?: boolean; item_rolls?: ItemRollComparison; lost_capabilities: string[]; gained_capabilities: string[]; missing_requirements: string[]; lost_mechanisms?: Mechanism[]; gained_mechanisms?: Mechanism[]; missing_mechanisms?: Mechanism[]; uncertain_mechanisms?: UncertainMechanism[]; equip_blockers: string[]; before: Reason[]; after: Reason[] }; blockers: string[]; reasons: Reason[]; future_preparation?: FuturePreparation[]; scope_notice: string; limitations: string[]; pin: { profile_revision: number; pack_version: string; pack_hash: string; evaluator_version: string; intent_revision: number; context: GameContext } };
+export type EvaluationComparison = { status: string; scope_compatible?: boolean; blockers?: string[]; item_rolls?: ItemRollComparison; lost_capabilities: string[]; gained_capabilities: string[]; missing_requirements: string[]; lost_mechanisms?: Mechanism[]; gained_mechanisms?: Mechanism[]; missing_mechanisms?: Mechanism[]; uncertain_mechanisms?: UncertainMechanism[]; equip_blockers: string[]; before: Reason[]; after: Reason[] };
+export type EvaluationResult = { evaluation_id: string; retention: string; comparison: EvaluationComparison; blockers: string[]; reasons: Reason[]; future_preparation?: FuturePreparation[]; scope_notice: string; limitations: string[]; pin: { profile_revision: number; pack_version: string; pack_hash: string; evaluator_version: string; intent_revision: number; context: GameContext } };
 export type Demo = { label: string; facts: Snapshot; intent: Intent };
 
 const hash = new URLSearchParams(window.location.hash.slice(1));
@@ -40,6 +44,14 @@ const messages: Record<string, string> = {
   preparation_costs_required: "请核对方案全部费用；费用未知时保留未确认。",
   preparation_unlock_required: "请明确学习或改造条件是否已解锁。",
   preparation_requirements_required: "等级要求和等级上限需要正整数，未知时留空。",
+  preparation_source_required: "准备方案需要明确的来源标识、预计结果和撤销状态。",
+  preparation_source_owner_conflict: "准备方案不能将原来源转移给另一作用者或仆从。",
+  source_level_required: "仆从实际等级需要正的安全整数；未知时留空。",
+  source_companion_identity_conflict: "仆从归属需要与该仆从自己的标识一致，请核对。",
+  unsupported_preparation_kind: "此评估版本不支持这类准备方案，请使用当前版本创建新评估。",
+  unsupported_future_build_fields: "历史评估版本不支持扩展后的未来配置，请使用当前版本创建新评估。",
+  future_sources_required: "未来配置需要明确的来源标识列表。",
+  duplicate_future_source: "同一未来配置中的来源标识重复，请核对。",
   preparation_skill_required: "技能准备方案需要明确标识和非负目标等级。",
   preparation_item_identity_conflict: "改造方案的物品、槽位和职业必须与原物品一致。",
   preparation_skill_owner_conflict: "技能准备方案不能改变原技能的作用者。",
