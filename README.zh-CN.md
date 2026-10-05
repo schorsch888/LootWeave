@@ -109,8 +109,10 @@ python -m compileall -q scripts
 | 游戏范围 | 状态 |
 | --- | --- |
 | 🧪 `lootweave-fixture` | 虚构开发数据。`synthetic-leveling` 知识包包含可执行规则。 |
-| 🔬 Deskrawl build `25690430` | 首个研究对象：Sorcerer 升级场景。研究包不含可执行规则。 |
+| 🔬 Deskrawl build `25690430` | Sorcerer 升级场景的研究包含 Frostwyrm 法杖静态依赖路径。研究包不含可执行规则，线上机制仍未验收。 |
 | 🗺️ Diablo II、III、IV | 未来研究对象。尚无通过验收的适配器。 |
+
+工作台提供显式选择模板、固定资料版本的只读装备依赖查询，展示来源关联与尚待核验的线上条件，查询不会改变已保存的事实。详见[实现说明](docs/implementation.md#contracts-and-invariants)。
 
 规则按游戏、版本分支、构建、模式和赛季隔离。
 真实游戏 DPS、最终掉落概率和全局最优路线尚未验证。

@@ -258,7 +258,10 @@ class ServiceIntegrationTests(unittest.TestCase):
     def test_research_versions_are_explicit_and_api_copies_are_immutable(self):
         catalog = self.knowledge.call("GET", "/v1/packs")
         versions = {p["version"] for p in catalog["packs"] if p["pack_id"] == "deskrawl-sorcerer-leveling"}
-        self.assertEqual({"0.1.0-research", "0.2.0-research", "0.3.0-research", "0.4.0-research", "0.5.0-research", "0.6.0-research"}, versions)
+        self.assertEqual({
+            "0.1.0-research", "0.2.0-research", "0.3.0-research", "0.4.0-research",
+            "0.5.0-research", "0.6.0-research", "0.7.0-research",
+        }, versions)
         for version in sorted(versions):
             with self.subTest(version=version):
                 path = "/v1/packs/deskrawl-sorcerer-leveling/" + version
@@ -271,7 +274,7 @@ class ServiceIntegrationTests(unittest.TestCase):
             self.knowledge.call("GET", "/v1/packs/deskrawl-sorcerer-leveling/latest")
 
     def test_research_evaluation_and_replay_keep_mechanics_blocked_over_http(self):
-        pack = self.knowledge.call("GET", "/v1/packs/deskrawl-sorcerer-leveling/0.6.0-research")
+        pack = self.knowledge.call("GET", "/v1/packs/deskrawl-sorcerer-leveling/0.7.0-research")
         facts = copy.deepcopy(DEMO["facts"])
         facts["context"] = copy.deepcopy(pack["pack"]["context"])
         facts["evidence"][0]["source_ref"] = "observation://research-text"
@@ -288,7 +291,7 @@ class ServiceIntegrationTests(unittest.TestCase):
         self.assertEqual("needs_confirmation", result["retention"])
         self.assertEqual([], result["comparison"]["before"])
         self.assertEqual([], result["comparison"]["after"])
-        self.assertEqual("0.6.0-research", result["pin"]["pack_version"])
+        self.assertEqual("0.7.0-research", result["pin"]["pack_version"])
         self.servers[0].shutdown()
         self.servers[1].shutdown()
         for _ in range(10):

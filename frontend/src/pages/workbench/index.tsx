@@ -4,6 +4,7 @@ import type { CaptureObservation } from "../../features/capture-observation";
 import { EquipmentEditor, PreparationOptionsEditor, ObservationFields, emptySnapshot, mapReviewedItemFields } from "../../features/edit-equipment";
 import { BuildEditor } from "../../features/edit-build";
 import { OwnedResourcesEditor } from "../../features/edit-owned-resources";
+import { ItemDependencies } from "../../features/inspect-item-dependencies";
 import { ProfileLibrary } from "../../features/profile-library";
 import { AcquisitionEvidence } from "../../features/acquisition-evidence";
 import { RouteTrials } from "../../features/route-trials";
@@ -141,6 +142,7 @@ export function Workbench() {
     finally { if (alive.current) { setReplaying(false); setBusy(false); } }
   };
   const compatiblePacks = packs.filter(p => p.context.game_id === facts.context.game_id);
+  const dependencyPack = packs.find(pack => pack.pack_id + "/" + pack.version === selectedPack) || null;
   const observationText = rawText.trim() || "手动核对录入：\n" + JSON.stringify(facts);
   const synthetic = facts.context.game_id === "lootweave-fixture";
 
@@ -165,6 +167,7 @@ export function Workbench() {
           <p className="muted">版本不确定时保留 unknown。研究包提供的版本参考不会自动成为你的游戏版本。</p>
         </section>
         <EquipmentEditor facts={facts} onChange={changeFacts}/>
+        <ActivatedPanel label="候选装备依赖资料"><ItemDependencies key={JSON.stringify([selectedPack, dependencyPack?.pack_hash, facts.context, facts.class_id, facts.candidate_item.instance_id, facts.candidate_item.name, status?.services.knowledge?.generation])} facts={facts} pack={dependencyPack} ready={Boolean(knowledgeReady && catalogLoaded && !catalogError)}/></ActivatedPanel>
         <OwnedResourcesEditor facts={facts} onChange={changeFacts}/>
         <PreparationOptionsEditor facts={facts} onChange={changeFacts}/>
         <section className="panel"><div className="section-heading"><div><span className="eyebrow">04 · BUILD AND INTENT</span><h2>当前构筑与比较目标</h2></div></div>

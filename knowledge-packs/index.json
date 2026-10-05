@@ -29,6 +29,10 @@
     {
       "file": "deskrawl-sorcerer-leveling-0.6.0-research.json",
       "sha256": "f2074a0c9267271c4842113f5111d33afaf1d55c5f634bc9005c6c12aa8314e3"
+    },
+    {
+      "file": "deskrawl-sorcerer-leveling-0.7.0-research.json",
+      "sha256": "4cb4cbc715eaecbb613636d01195f659b04a983e4a9bb9963ea614d02897d963"
     }
   ]
 }

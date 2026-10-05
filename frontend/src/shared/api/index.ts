@@ -12,7 +12,9 @@ export type GameContext = { game_id: string; edition: string; game_build: string
 export type Snapshot = { context: GameContext; class_id: string; character_level: number; captured_at: string; evidence: Evidence[]; evidence_ids: string[]; skills: Source[]; talents: Source[]; paragon: Source[]; account_unlocks: Record<string, unknown>; runes: Source[]; companions: Source[]; temporary_effects: Source[]; observed_panel: { stat: string; value: number; unit: string; source_ids: string[]; evidence_ids: string[] }[]; conditions: Record<string, string>; inventory_coverage: string; unknowns: string[]; equipped_items: Record<string, Item>; inventory_items?: Item[]; owned_resources?: OwnedResources; preparation_options?: PreparationOption[]; candidate_item: Item };
 export type FutureBuild = { skills: string[]; conditions: Record<string, string>; feasibility: string; equipment_items?: string[]; preparation_options?: string[] } & Partial<Record<SourceGroup, string[]>>;
 export type Intent = { revision: number; scenario: string; required_capabilities: string[]; allowed_build_changes: string[]; future_builds: FutureBuild[]; budget: Record<string, unknown> };
-export type Pack = { pack_id: string; version: string; pack_hash: string; context: GameContext; class_id: string; scenario: string; execution_policy: string };
+export type Pack = { pack_id: string; version: string; pack_hash: string; context: GameContext; class_id: string; scenario: string; execution_policy: string; dependency_templates?: { template_id: string; label: string }[] };
+export type ItemTemplateDependency = { template_id: string; template_name: string; ability_id: string; ability_name: string; template_object_id: string; effect_object_id: string; ability_object_id: string; object_links: { source_id: string; relation: "equipment_effect" | "affected_ability"; target_id: string }[]; status: "reviewed_static_only"; evidence_ids: string[]; unknowns: string[] };
+export type ItemDependencyResult = { contract_version: 1; record_kind: "item_template_dependency"; scope: "reviewed_static_only"; mechanics_accepted: false; pack_id: string; pack_version: string; pack_hash: string; context: GameContext; class_id: string; dependency: ItemTemplateDependency; evidence: { id: string; source_ref: string; source_build: string; method: string; scope: string; results: string; unknowns: string; verification: string; conflicts: string[] }[] };
 export type Reason = { kind?: string; rule_id?: string; capability?: string; explanation: string; evidence_ids: string[]; input_evidence_ids: string[]; source_ids?: string[]; state?: string; actor?: string; feasibility?: string; future_build_index?: number; future_equipment?: Pick<Item, "instance_id" | "slot" | "name">[]; preparation_status?: string; future_comparison?: EvaluationComparison };
 export type Mechanism = { actor: "hero" | "companion"; capability: string };
 export type MechanismState = "active" | "inactive" | "unknown";
@@ -76,6 +78,10 @@ const messages: Record<string, string> = {
   service_start_required: "服务尚未启动，请在服务状态中重试所需服务，再重试当前操作。",
   runtime_stopping: "本地服务正在关闭，请重新打开桌面入口。",
   pack_hash_conflict: "规则包已变化，请重新选择明确的版本。",
+  pack_version_not_found: "所选资料版本不存在，请重新读取知识包。",
+  dependency_scope_mismatch: "当前游戏版本、模式、职业或内容范围与资料不一致，请先核对。",
+  dependency_data_unavailable: "此知识包尚未提供装备依赖资料，请保留未知。",
+  dependency_template_not_found: "所选装备模板没有对应资料，请重新选择。",
   player_confirmation_required: "请核对原文并明确确认。",
   observation_time_conflict: "关联依据的采集时间与原始截图不一致，请按显示的截图时间核对完整构筑，保留其他时点的来源。",
   profile_observation_time_conflict: "该快照的原始采集时间存在冲突或无法核验，请重新核对后保存新修订；历史结果仍可回放。",
