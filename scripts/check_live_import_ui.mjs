@@ -236,7 +236,19 @@ try {
   await load.click();
   await text("数据来源已变化");
   assert.equal(await confirm.isDisabled(), true);
-  await load.click();
+  let releaseDraft;
+  const draftGate = new Promise(resolve => { releaseDraft = resolve; });
+  await page.route("**/api/profile/imports/live/draft", async route => {
+    await draftGate;
+    await route.continue();
+  }, { times: 1 });
+  const pendingDraft = page.waitForRequest(request => new URL(request.url()).pathname === "/api/profile/imports/live/draft");
+  try {
+    await load.click();
+    await pendingDraft;
+    assert.equal(await confirm.isDisabled(), true, "pending_draft_must_not_enable_confirmation");
+  } finally { releaseDraft(); }
+  await confirm.and(page.locator(":enabled")).waitFor({ state: "visible" });
   await page.getByText("查看或编辑完整构筑数据", { exact: true }).click();
   const editor = page.getByLabel("完整构筑数据", { exact: true });
   let facts = JSON.parse(await editor.inputValue());

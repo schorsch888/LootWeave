@@ -628,3 +628,7 @@ The owned API browser checks passed six groups before main integration.
 The frontend build, architecture checks, public document checks, and script compilation passed.
 These checks do not establish Windows OCR or real Deskrawl online acceptance.
 Full STE dictionary review remains incomplete.
+
+Hosted Linux checks exposed an editor read before the draft response reached the UI.
+The browser check now waits for the confirmation control to become available.
+A held draft request verifies that pending input cannot enable confirmation.
