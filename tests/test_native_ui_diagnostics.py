@@ -5,6 +5,7 @@ import sys
 import subprocess
 import io
 import json
+import shutil
 import tempfile
 from pathlib import Path
 import unittest
@@ -18,6 +19,37 @@ from check_desktop import CheckFailed
 
 
 class NativeUiDiagnosticsTests(unittest.TestCase):
+    def test_page_discovery_waits_for_creation_within_the_connection_deadline(self):
+        node = shutil.which("node")
+        if node is None:
+            self.skipTest("Node.js is required for the native page discovery check")
+        result = subprocess.run(
+            [node, "--input-type=module"],
+            cwd=Path(__file__).resolve().parents[1],
+            input='''
+import assert from "node:assert/strict";
+import { waitForNativePage } from "./scripts/native_page.mjs";
+const native = { url: () => "http://127.0.0.1:12345/" };
+const blank = { url: () => "about:blank" };
+let contexts = [{ pages: () => [blank] }];
+const browser = { contexts: () => contexts };
+const pending = waitForNativePage(browser, Date.now() + 1000);
+setTimeout(() => { contexts = [{ pages: () => [blank, native] }]; }, 10);
+assert.equal(await pending, native);
+contexts = [];
+const delayedContext = waitForNativePage(browser, Date.now() + 1000);
+setTimeout(() => { contexts = [{ pages: () => [native] }]; }, 10);
+assert.equal(await delayedContext, native);
+contexts = [{ pages: () => [blank] }];
+const deadline = Date.now() + 20;
+assert.equal(await waitForNativePage(browser, deadline), undefined);
+assert.ok(Date.now() >= deadline);
+assert.equal(await waitForNativePage(browser, Date.now() - 1), undefined);
+''',
+            text=True, capture_output=True, timeout=10,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_checkpoint_discloses_only_bounded_stage_cycle_and_owned_exit_states(self):
         host, probe = Mock(), Mock()
         host.poll.return_value = 0xC0000005

@@ -4,6 +4,7 @@ import http from "node:http";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { waitForNativePage } from "./native_page.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const { chromium } = createRequire(path.join(root, "frontend/package.json"))("playwright");
@@ -56,8 +57,7 @@ try {
     report.loopback_endpoint = await endpointStatus();
   }
   expect(browser, "webview_connection_timeout");
-  const pages = browser.contexts().flatMap(context => context.pages());
-  page = pages.find(value => value.url().startsWith("http://127.0.0.1:")) || pages[0];
+  page = await waitForNativePage(browser, deadline);
   expect(page, "native_page_missing");
   page.setDefaultTimeout(15000);
   page.on("pageerror", error => errors.push(error.name));
