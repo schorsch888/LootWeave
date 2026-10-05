@@ -36,7 +36,7 @@ The workbench keeps those inputs together:
 | 🧭 **Measured trials** | Record actual XP and complete elapsed time. Compare trials with matching conditions. |
 | 🔁 **Replay** | Keep the inputs, evidence, and rule versions for each evaluation. Replay frozen results. |
 
-Preparation plans cover equipment, skills, talents, Paragon, runes, companions, and temporary effects.
+Preparation plans include equipment, skills, talents, Paragon, runes, companions, and temporary effects.
 They keep feasibility separate from game-mechanic outcomes. A plan does not change the actual build.
 See the [preparation workflow](docs/implementation.md#core-workflow) for confirmation requirements and blocked results.
 
@@ -50,7 +50,7 @@ flowchart LR
 ```
 
 Observations, confirmed facts, and derived results stay separate.
-Missing or conflicting evidence blocks unsupported conclusions.
+Missing or conflicting evidence prevents unsupported conclusions.
 See the [architecture contract](docs/architecture.md) for ownership and data flow.
 
 ## Quickstart
@@ -63,7 +63,7 @@ See the [architecture contract](docs/architecture.md) for ownership and data flo
 
 The packages include the Python runtime. The portable ZIP also includes WebView2 and C++ runtimes.
 Portable data stays in the adjacent `data/` folder. The installer uses `%LOCALAPPDATA%/LootWeave`.
-Before you move the folder, exit the app. Keep `data/` when you replace application files.
+Before you move the folder, exit the app. When you replace application files, keep `data/`.
 
 Windows OCR uses installed language capabilities. If OCR is not available, use manual input.
 See the [desktop guide](docs/development.md#build-the-windows-desktop) for build and runtime prerequisites.
@@ -123,7 +123,7 @@ The explicit on-demand experiment did not pass its declared startup-latency comp
 The [validation record](docs/validation.md) gives dated results and artifact identities.
 Historical checks do not establish acceptance of the latest source.
 Local build paths in those records are not download links.
-The [CI and release contract](docs/implementation.md#github-ci-and-releases) defines preview publication.
+The [CI and release contract](docs/implementation.md#github-ci-and-releases) gives rules for preview publication.
 
 ## Documentation
 
@@ -138,7 +138,7 @@ The [CI and release contract](docs/implementation.md#github-ci-and-releases) def
 | 🤝 [Contributing](CONTRIBUTING.md) | Contribution types, publication rules, and review steps |
 
 More detail: [source implementation](docs/implementation.md) · [performance plan](docs/performance-plan.md) · [performance results](docs/performance-results.md).
-English is the main documentation language. The Chinese README has the same meaning.
+English is the primary documentation language. The Chinese README has the same meaning.
 
 <details>
 <summary>🗂️ Repository map</summary>
@@ -154,7 +154,7 @@ English is the main documentation language. The Chinese README has the same mean
 | [services/](services/) | Python services for business capabilities and OCR |
 | [runtime.py](runtime.py) | Local development launcher |
 
-The architecture requires Rust + Python, one Windows EXE entry point, an FSD frontend, and DDD microservices.
+The architecture must use Rust + Python, one Windows EXE entry point, an FSD frontend, and DDD microservices.
 Follow the [architecture contract](docs/architecture.md) for component responsibilities.
 
 </details>
@@ -180,4 +180,4 @@ Follow the [publication rules](docs/design.md#privacy-and-publication) for share
 ## License
 
 Project code and documentation use [Apache-2.0](LICENSE).
-Third-party game content and tools keep their own terms. This license does not permit their redistribution.
+Third-party game content and tools keep their own terms. This license does not give redistribution rights for them.
