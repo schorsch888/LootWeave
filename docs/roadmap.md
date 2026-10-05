@@ -4,6 +4,8 @@ The repository contains a local implementation plus selected research evidence a
 
 All implementation stages must preserve the FSD frontend, DDD backend microservices organized by business capability, Rust + Python stack, and Windows single-EXE entry point. React/TypeScript, Tauri and the Rust/Python split are implemented; packaging, clean-machine deployment and real-game support require their remaining gates.
 
+The [architecture contract](architecture.md) defines file ownership, permitted service calls, and Rust/Python responsibilities throughout these stages. For boundary changes, record the affected owners, compatibility, checks, and rollback. Import checks provide partial enforcement. Documentation does not complete any M1-M5 acceptance gate.
+
 | Stage | Dependencies | Deliverables | Accountable role |
 | --- | --- | --- | --- |
 | M0: Research and documentation baseline | Lawful source access and version identity | Current-state summary, design boundaries and acceptance plan | Knowledge lead; review by verification lead |

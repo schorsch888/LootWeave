@@ -77,6 +77,7 @@ The [CI workflow](.github/workflows/checks.yml) uploads four verified release fi
 | [Development guide](docs/development.md) | Source setup, checks, Windows builds, and troubleshooting |
 | [Implementation](docs/implementation.md) | Current source behavior, service ownership, and contracts |
 | [Design](docs/design.md) | Product boundaries, data model, architecture, and privacy |
+| [Architecture contract](docs/architecture.md) | Rust/Python ownership, permitted calls, agent constraints, and verification limits |
 | [Roadmap](docs/roadmap.md) | Milestones, dependencies, and acceptance conditions |
 | [Research guide](docs/research.md) | Evidence catalog, prerequisites, reproduction, and limits |
 | [Validation record](docs/validation.md) | Dated measurements, build identities, failures, and open gates |
@@ -99,7 +100,7 @@ English is the primary documentation language; the Chinese README is an equivale
 | [services/](services/) | Python services organized by business capability, plus OCR infrastructure |
 | [runtime.py](runtime.py) | Local development launcher |
 
-The architecture requires Rust + Python, a Windows single-EXE entry point, an FSD frontend, and DDD backend microservices. The current host, framework, responsibility split, and packaging approach remain subject to validation; see the [design](docs/design.md#local-architecture).
+The architecture requires Rust + Python, a Windows single-EXE entry point, an FSD frontend, and DDD backend microservices. The current host, framework, and Rust/Python responsibilities follow the [architecture contract](docs/architecture.md). Packaging, deployment on clean machines, and real-game support still require acceptance evidence.
 
 ## Contributing and help
 
