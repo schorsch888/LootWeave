@@ -1,7 +1,7 @@
 import { newId } from "../../shared/api";
 import type { GameContext, Item, Snapshot } from "../../shared/api";
 
-export type ObservedItemField = { field: string; value: number | null; unit: string | null; ambiguous: boolean };
+export type ObservedItemField = { field: string; value: number | null; unit: string | null; ambiguous: boolean; raw_text?: string };
 export const statLabels: Record<string, string> = { vitality: "活力", armor: "护甲", strength: "力量", dexterity: "敏捷", intelligence: "智力", max_health: "最大生命", max_mana: "最大法力", attack_speed: "攻击速度", critical_chance: "暴击率", critical_damage: "暴击伤害", fire_damage: "火焰伤害", cold_damage: "冰冷伤害", lightning_damage: "闪电伤害", physical_damage: "物理伤害", "fixture-vitality": "示例活力", "fixture-cold-bonus": "示例冰冷加成" };
 export const unitLabels: Record<string, string> = { points: "点", percent: "%", percent_points: "百分点", per_second: "每秒", seconds: "秒" };
 export { slots } from "../../shared/equipment-labels";
@@ -30,6 +30,53 @@ export function mapItemField(item: Item, field: ObservedItemField, evidenceId: s
     const affix = { id: field.field, value: field.value!, unit: field.unit!, evidence_ids: [evidenceId] };
     const index = next.affixes.findIndex(row => row.id === field.field);
     if (index < 0) next.affixes.push(affix); else next.affixes[index] = affix;
+  }
+  return next;
+}
+
+export type ReviewedItemField = { kind: "affix"; id: string; value: number; unit: string } | { kind: "required_level"; value: number };
+export type ObservationRow = { key: string; rawText: string; proposal?: ObservedItemField };
+
+export function observationRows(rawText: string, fields: ObservedItemField[]): ObservationRow[] {
+  // Only merge a proposal with a complete matching line. Partial or missing source
+  // metadata stays visible separately, so an unparsed part cannot disappear.
+  const remaining = new Set(fields.map((_, index) => index));
+  const rows: ObservationRow[] = rawText.split(/\r\n|\r|\n/).flatMap((line, index) => {
+    if (!line.trim()) return [];
+    const match = [...remaining].find(i => fields[i].raw_text?.trim() === line.trim());
+    if (match !== undefined) remaining.delete(match);
+    return [{ key: "line-" + index, rawText: line, proposal: match === undefined ? undefined : fields[match] }];
+  });
+  for (const index of remaining) {
+    const proposal = fields[index];
+    rows.push({ key: "field-" + index, rawText: proposal.raw_text ?? proposal.field, proposal });
+  }
+  return rows.length ? rows : [{ key: "empty", rawText: "" }];
+}
+
+export function validReviewedItemField(field: ReviewedItemField): boolean {
+  return field.kind === "required_level"
+    ? Number.isSafeInteger(field.value) && field.value >= 1
+    : /^[a-zA-Z0-9_.-]{1,100}$/.test(field.id) && Number.isFinite(field.value)
+      && field.unit.trim().length > 0 && field.unit.length <= 40;
+}
+
+export function reviewTarget(field: ReviewedItemField): string {
+  return field.kind === "required_level" ? "required_level" : "affix:" + field.id;
+}
+
+export function mapReviewedItemFields(item: Item, fields: ReviewedItemField[], evidenceId: string): Item {
+  if (!fields.every(validReviewedItemField)) throw new Error("请核对每一行的字段标识、实际数值和单位。");
+  if (new Set(fields.map(reviewTarget)).size !== fields.length) throw new Error("同一字段有多行，请合并或忽略重复行后再应用。");
+  const next = structuredClone(item);
+  if (fields.length) next.evidence_ids = [...new Set([...next.evidence_ids, evidenceId])];
+  for (const field of fields) {
+    if (field.kind === "required_level") next.required_level = field.value;
+    else {
+      const affix = { id: field.id, value: field.value, unit: field.unit, evidence_ids: [evidenceId] };
+      const index = next.affixes.findIndex(row => row.id === field.id);
+      if (index < 0) next.affixes.push(affix); else next.affixes[index] = affix;
+    }
   }
   return next;
 }

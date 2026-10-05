@@ -670,6 +670,12 @@ try {
   assert.equal(await immutableOcrText.getAttribute("aria-label"), "OCR 识别原文（未校正）");
   assert.equal(await immutableOcrText.innerText(),
     acceptedOcr.raw_text || "未识别到可用文字，请手动填写原始文本。");
+  const reviewRows = page.locator(".ocr-fields .review-row");
+  const reviewRowCount = await reviewRows.count();
+  assert(reviewRowCount > 0, "ocr_review_has_no_rows_to_process");
+  const finalApply = page.getByRole("button", { name: "应用核对结果并完成", exact: true });
+  assert.equal(await finalApply.isEnabled(), false,
+    "ocr_review_final_apply_enabled_while_rows_are_pending");
   await page.setViewportSize({ width: 390, height: 844 });
   const imageViewport = page.getByRole("region", { name: "原始区域查看区", exact: true });
   const viewportWidths = await imageViewport.evaluate(element => ({
@@ -689,6 +695,16 @@ try {
   const previewConsent = page.getByRole("checkbox", {
     name: "我已核对原文、实例词条和完整构筑，确认这些输入。"
   });
+  assert.equal(await previewConsent.isEnabled(), false,
+    "global_confirmation_enabled_while_ocr_rows_are_pending");
+  for (let index = 0; index < reviewRowCount; index += 1) {
+    await reviewRows.nth(index).getByRole("button", { name: "忽略这一行", exact: true }).click();
+  }
+  assert.equal(await finalApply.isEnabled(), true,
+    "ocr_review_final_apply_stayed_disabled_after_all_rows_were_processed");
+  await finalApply.click();
+  assert.equal(await previewConsent.isEnabled(), true,
+    "global_confirmation_stayed_disabled_after_ocr_review_was_applied");
   await previewConsent.check();
   const textBeforeRecapture = await rawTextField.inputValue();
   const ocrBeforeRecaptureFailure = ocrRequests;
@@ -710,6 +726,10 @@ try {
   await windowCapture.click();
   await capturePreview.waitFor({ state: "visible" });
   assert.equal(await previewConsent.isChecked(), false, "new_image_reused_old_confirmation");
+  assert.equal(await previewConsent.isEnabled(), false,
+    "new_capture_did_not_reset_ocr_review_confirmation");
+  assert.equal(await finalApply.isEnabled(), false,
+    "new_capture_reused_previous_ocr_review_completion");
   simulatedNativeChecks.push("original_region_review_preserves_raw_ocr_and_clears_stale_image_confirmation");
 
   await page.getByLabel("游戏范围", { exact: true }).fill("lootweave-fixture");

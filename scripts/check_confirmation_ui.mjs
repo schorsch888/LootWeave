@@ -39,7 +39,7 @@ try {
   globalThis.history = { replaceState: () => {} };
   const { ConfirmSnapshot } = await server.ssrLoadModule("/src/features/confirm-snapshot/index.tsx");
   const { api } = await server.ssrLoadModule("/src/shared/api/index.ts");
-  const { emptySnapshot } = await server.ssrLoadModule("/src/features/edit-equipment/model.ts");
+  const { emptySnapshot, mapReviewedItemFields } = await server.ssrLoadModule("/src/features/edit-equipment/model.ts");
   const context = { game_id: "fixture-game", edition: "base", game_build: "fixture-build", mode: "softcore", season: "fixture-season", ruleset_id: "fixture-rules", content_entitlements: [] };
   const facts = { ...emptySnapshot(context), captured_at: "2026-01-01T00:00:00.123Z",
     evidence: [{ id: "e1", kind: "manual_confirmation", source_ref: "observation://old", captured_at: "2026-01-01T00:00:00.123Z", verification: "confirmed", conflicts: [] }], evidence_ids: ["e1"] };
@@ -52,7 +52,7 @@ try {
     const render = () => {
       cursor = 0;
       const tree = ConfirmSnapshot({
-        onBusyChange: value => busy.push(value), draftApplied: seed.draftApplied ?? true,
+        onBusyChange: value => busy.push(value), draftApplied: seed.draftApplied ?? true, captureReviewed: seed.captureReviewed ?? true,
         capture: seed.capture === null ? undefined : seed.capture ?? capture, facts: seed.facts ?? facts,
         rawText: seed.rawText ?? "Fixture manual text", profileId: seed.profileId ?? "fixture-profile", revision: seed.revision ?? 4,
         onConfirmed: (...args) => completed.push(args), onError: message => errors.push(message),
@@ -144,6 +144,38 @@ print(json.dumps({"responses": responses, "counts": counts, "reopened": reopened
     return JSON.parse(result.stdout);
   };
 
+  await check("pending OCR review stays blocked even when unknown markers are removed", async () => {
+    const unmarked = { ...facts, unknowns: [] };
+    const h = make({ facts: unmarked, captureReviewed: false });
+    assert.equal(checkBox(h).props.disabled, true); assert.equal(button(h).props.disabled, true);
+    // Directly invoking disabled handlers must not POST a confirmation either.
+    await submit(h);
+    assert.deepEqual(h.calls, []); assert.deepEqual(h.completed, []);
+    assert.ok(renderToStaticMarkup(h.render()).includes("请先逐行采用或忽略截图内容，并应用核对结果。"));
+  });
+  await check("reviewed signed and custom OCR affixes persist their exact capture reference in real SQLite", async () => {
+    const original = structuredClone(facts);
+    const reviewed = structuredClone(facts);
+    reviewed.evidence.push({ id: "mapped-capture", kind: "ocr_confirmation", source_ref: "observation://capture-1",
+      captured_at: "2026-01-01T00:00:00.123Z", verification: "confirmed", conflicts: [] });
+    reviewed.candidate_item = mapReviewedItemFields(reviewed.candidate_item,
+      [{ kind: "affix", id: "strength", value: -18.25, unit: "points" },
+       { kind: "affix", id: "cold-resist", value: 0, unit: "%" }, { kind: "required_level", value: 12 }], "mapped-capture");
+    const raw = "Strength -18.25\nCold resist 0%\nLevel 12";
+    const h = make({ facts: reviewed, capture: { ...capture, raw_text: raw }, captureReviewed: true,
+      rawText: "Player correction keeps the original OCR intact", revision: 0 });
+    await submit(h);
+    const verified = realProfile(h.calls);
+    assert.deepEqual(verified.counts, { observations: 1, revisions: 1, confirmations: 1 });
+    const stored = verified.reopened.facts;
+    assert.deepEqual(stored.candidate_item.affixes.map(row => [row.id, row.value, row.unit, row.evidence_ids]),
+      [["strength", -18.25, "points", ["mapped-capture"]], ["cold-resist", 0, "%", ["mapped-capture"]]]);
+    assert.equal(stored.candidate_item.required_level, 12);
+    assert.deepEqual(stored.equipped_items, original.equipped_items); assert.deepEqual(stored.skills, original.skills);
+    assert.equal(stored.captured_at, original.captured_at);
+    assert.equal(verified.responses[0].result.raw_text, raw);
+    assert.deepEqual(facts, original);
+  });
   await check("manual preparation confirmation reaches real SQLite evaluation and frozen replay", async () => {
     const produced = spawnSync(process.env.LOOTWEAVE_PYTHON || "python", ["-c", "import json; from tests.test_preparation import prepared_case; f,p=prepared_case(); print(json.dumps({'facts':f,'intent':p}))"],
       { cwd: root, windowsHide: true, encoding: "utf8", timeout: 10000 });

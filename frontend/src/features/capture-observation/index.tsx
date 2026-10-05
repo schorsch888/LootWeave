@@ -43,7 +43,7 @@ export type CaptureObservation = {
   bounds: Bounds;
   raw_text: string;
   language: string;
-  fields: { field: string; value: number | null; unit: string | null; ambiguous: boolean }[];
+  fields: { field: string; value: number | null; unit: string | null; ambiguous: boolean; raw_text?: string }[];
   requires_confirmation: boolean;
   capture_context?: CaptureContext;
   error?: string;

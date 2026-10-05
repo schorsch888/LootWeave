@@ -3,11 +3,12 @@ import { api, newId } from "../../shared/api";
 import type { Snapshot } from "../../shared/api";
 
 type Capture = { observation_id: string; method: string; image_ref: string; bounds: Record<string, number>; raw_text: string; capture_context?: { game_id: string; captured_at_ms?: number } };
-type Props = { onBusyChange: (busy: boolean) => void; draftApplied: boolean; capture?: Capture; facts: Snapshot; rawText: string; profileId: string; revision: number; onConfirmed: (revision: number, confirmed: Snapshot, buildHash: string) => void; onError: (message: string) => void };
+type Props = { onBusyChange: (busy: boolean) => void; draftApplied: boolean; captureReviewed?: boolean; capture?: Capture; facts: Snapshot; rawText: string; profileId: string; revision: number; onConfirmed: (revision: number, confirmed: Snapshot, buildHash: string) => void; onError: (message: string) => void };
 
-export function ConfirmSnapshot({ onBusyChange, draftApplied, capture, facts, rawText, profileId, revision, onConfirmed, onError }: Props) {
+export function ConfirmSnapshot({ onBusyChange, draftApplied, captureReviewed = false, capture, facts, rawText, profileId, revision, onConfirmed, onError }: Props) {
   const sourceGame = capture?.capture_context?.game_id;
   const sourceMatches = !sourceGame || sourceGame === facts.context.game_id;
+  const reviewComplete = !capture || captureReviewed;
   const captureMs = capture?.capture_context?.captured_at_ms;
   const capturedAt = typeof captureMs === "number" && Number.isSafeInteger(captureMs) && captureMs > 0
     && captureMs <= 253402300799999 ? new Date(captureMs).toISOString() : undefined;
@@ -15,7 +16,7 @@ export function ConfirmSnapshot({ onBusyChange, draftApplied, capture, facts, ra
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<{ key: string; observationId: string; requestId: string; inputEvidenceId: string }>();
   const submit = async () => {
-    if (!checked || busy || !draftApplied || !sourceMatches) return;
+    if (!checked || busy || !draftApplied || !sourceMatches || !reviewComplete) return;
     setBusy(true);
     onBusyChange(true);
     const key = JSON.stringify({ capture, facts, rawText, profileId, revision });
@@ -81,8 +82,9 @@ export function ConfirmSnapshot({ onBusyChange, draftApplied, capture, facts, ra
   return <div className="confirmation">
     {capturedAt && <p className="muted">原始截图采集时间（UTC）：<time dateTime={capturedAt}>{capturedAt}</time>。请将这份截图的关联依据记在该时点；其他时点的来源应保留原时间。</p>}
     {!sourceMatches && <p className="warning">采集来源为 {sourceGame}，请先核对游戏范围，再确认快照。</p>}
+    {!reviewComplete && <p className="warning">请先逐行采用或忽略截图内容，并应用核对结果。</p>}
     {!draftApplied && <p className="warning">请先应用完整构筑修改，再确认快照。</p>}
-    <label className="check"><input disabled={!draftApplied || !sourceMatches} type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)}/>我已核对原文、实例词条和完整构筑，确认这些输入。</label>
-    <button className="primary" type="button" onClick={submit} disabled={!checked || busy || !rawText.trim() || !draftApplied || !sourceMatches}>{busy ? "正在保存…" : "确认并保存快照"}</button>
+    <label className="check"><input disabled={!draftApplied || !sourceMatches || !reviewComplete} type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)}/>我已核对原文、实例词条和完整构筑，确认这些输入。</label>
+    <button className="primary" type="button" onClick={submit} disabled={!checked || busy || !rawText.trim() || !draftApplied || !sourceMatches || !reviewComplete}>{busy ? "正在保存…" : "确认并保存快照"}</button>
   </div>;
 }
