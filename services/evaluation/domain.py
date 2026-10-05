@@ -340,10 +340,15 @@ def evaluate(profile: dict, knowledge: dict, purpose: dict, *, evaluator_version
             modified["conditions"] = future["conditions"]
             blockers.extend("unknown_future_skill:" + x for x in future["skills"] if x not in known_skills)
             future_rows = report["comparison"]["after"] if full_future else resolve(modified, pack, evaluator_version)
+            future_candidate_sources = candidate_sources
+            if full_future:
+                projected = modified["equipped_items"][candidate["slot"]]
+                future_candidate_sources = {projected["instance_id"], *(
+                    projected["instance_id"] + ":" + entry["id"] for entry in projected["embedded_items"])}
             for rule in future_rows:
-                if candidate_sources.intersection(rule["source_ids"]) and rule["state"] == "unknown":
+                if future_candidate_sources.intersection(rule["source_ids"]) and rule["state"] == "unknown":
                     blockers.append("unknown_future_condition:" + rule["rule_id"])
-                if candidate_sources.intersection(rule["source_ids"]) and rule["state"] == "active":
+                if future_candidate_sources.intersection(rule["source_ids"]) and rule["state"] == "active":
                     reason = {**rule, "future_build_index": index, "feasibility": future["feasibility"]}
                     if owned_equipment:
                         reason["future_equipment"] = [{key: item[key] for key in ("instance_id", "slot", "name")

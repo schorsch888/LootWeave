@@ -234,7 +234,7 @@ class DomainCases(unittest.TestCase):
         quote = skill_quote(self.facts, rank=2, cost=0)
         removal = skill_quote(self.facts, self.facts["skills"][0]["id"], rank=0, option_id="remove-cold", cost=0)
         self.facts["preparation_options"] = [quote, removal]
-        purpose["future_builds"] = [{"skills": ["fixture-fire-bolt"], "conditions": {},
+        purpose["future_builds"] = [{"skills": ["fixture-fire-bolt"], "conditions": copy.deepcopy(self.facts["conditions"]),
                                     "feasibility": "hypothetical", "preparation_options": [quote["id"], removal["id"]]}]
         result = run_evaluation(self.facts, self.pack, purpose)
         self.assertEqual("candidate", result["retention"])

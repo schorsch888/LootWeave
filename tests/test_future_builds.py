@@ -248,6 +248,28 @@ class CompleteFutureBuildCases(unittest.TestCase):
         self.assertEqual([], report["comparison"]["after"])
         self.assertFalse(any(reason["kind"] == "future_use" for reason in result["reasons"]))
 
+    def test_new_projected_embedded_source_is_attributed_to_the_candidate_future_use(self):
+        facts, purpose = prepared_case()
+        quote = next(option for option in facts["preparation_options"] if option["kind"] == "equipment")
+        quote["result"]["socket_state"] = {"known": True, "count": 1}
+        quote["result"]["embedded_items"] = [{"id": "planned-focus-gem", "actor": "hero",
+            "effects": ["fixture-temporary-focus"], "evidence_ids": ["demo-input"]}]
+        purpose["future_builds"][0]["conditions"]["buff_active"] = "active"
+        before = digest(facts)
+        result = full_result(facts, purpose)
+        report = result["future_preparation"][0]
+        self.assertEqual("feasible", report["status"])
+        reason = next(row for row in result["reasons"]
+                      if row["kind"] == "future_use" and row["capability"] == "temporary_focus")
+        self.assertIn(facts["candidate_item"]["instance_id"] + ":planned-focus-gem", reason["source_ids"])
+        self.assertEqual("hero", reason["actor"])
+        self.assertEqual(report["comparison"], reason["future_comparison"])
+        self.assertEqual([], facts["candidate_item"]["embedded_items"])
+        self.assertEqual(before, digest(facts))
+        quote["unknowns"] = ["outcome_not_confirmed"]
+        self.assertFalse(any(row["kind"] == "future_use" and row["capability"] == "temporary_focus"
+                             for row in full_result(facts, purpose)["reasons"]))
+
     def test_one_unreliable_future_plan_never_changes_another_plans_comparison(self):
         extra = {"id": "unverified-buff", "actor": "hero", "effects": ["unverified-future-effect"],
                  "evidence_ids": ["demo-input"]}
@@ -470,6 +492,7 @@ class CompleteFuturePersistence(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary)
             facts, purpose = full_case()
+            facts["evidence"][0]["source_ref"] = "observation://full-text"
             profile = Profile(path)
             profile.observe({"observation_id": "full-text", "method": "text", "raw_text": "Confirmed fictional complete future plan"})
             saved = profile.confirm({"request_id": "full-confirm", "profile_id": "full-build",
