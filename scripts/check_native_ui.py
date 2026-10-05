@@ -212,7 +212,8 @@ def owned_process_state(process):
     size = wintypes.DWORD(len(image))
     known = kernel.QueryFullProcessImageNameW(process.handle, 0, image, ctypes.byref(size))
     if known:
-        process.image_basename = Path(image.value).name
+        process.image_path = Path(image.value).resolve()
+        process.image_basename = process.image_path.name
     return {"pid": kernel.GetProcessId(process.handle),
             "image_basename": getattr(process, "image_basename", "query_unavailable"),
             "exited": process.exited()}
@@ -403,6 +404,16 @@ def run(executable, resources, node, output, index):
     checkpoint(folder, index, "native_host_launch")
     port = free_port()
     env = frozen_environment()
+    if (executable.parent / "portable.json").is_file():
+        # Synthetic inherited overrides must not redirect or pause a portable GUI.
+        invalid_data = folder / "inherited-user-data-file"
+        invalid_data.write_text("fictional portable environment fixture", encoding="utf-8")
+        env.update({
+            "WEBVIEW2_BROWSER_EXECUTABLE_FOLDER": str(folder / "missing-runtime"),
+            "WEBVIEW2_USER_DATA_FOLDER": str(invalid_data),
+            "WEBVIEW2_WAIT_FOR_SCRIPT_DEBUGGER": "1",
+            "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS": "--remote-debugging-port=1",
+        })
     start = time.perf_counter()
     error_log = (folder / "native-stderr.log").open("wb")
     host_args = [str(executable), "--resource-dir", str(resources), "--data-dir", str(folder / "state"),
@@ -465,6 +476,19 @@ def run(executable, resources, node, output, index):
         memory = [handle.memory() for handle in handles if not handle.exited()]
         for handle in handles:
             owned_process_state(handle)  # Cache image names before natural exit hides them.
+        portable_checks = []
+        if (executable.parent / "portable.json").is_file():
+            browser = (executable.parent / "webview2/msedgewebview2.exe").resolve()
+            browser_handles = [handle for handle in handles
+                               if getattr(handle, "image_basename", "").lower() == "msedgewebview2.exe"]
+            expect(browser_handles and all(getattr(handle, "image_path", None) == browser
+                                           for handle in browser_handles), "portable_bundled_browser_not_used")
+            marker = json.loads((executable.parent / "portable.json").read_text(encoding="utf-8"))
+            expect(ready["webview_version"].rsplit("/", 1)[-1] == marker["webview_version"],
+                   "portable_browser_version_mismatch")
+            expect((folder / "state/webview").is_dir() and invalid_data.is_file(),
+                   "portable_browser_data_redirected")
+            portable_checks.append("portable_bundled_fixed_browser_path_version_and_local_data")
         stage = "native_window_close"
         checkpoint(folder, index, stage, host, probe)
         close_window(host.pid)
@@ -480,7 +504,7 @@ def run(executable, resources, node, output, index):
         expect(natural_exit, "native_descendant_remained")
         passed = True
         result = {"readiness_seconds": round(seconds, 4), "webview_version": ready["webview_version"],
-                "checks": [*done["checks"], "owned_window_hidden_and_nonforeground"],
+                "checks": [*done["checks"], "owned_window_hidden_and_nonforeground", *portable_checks],
                 "processes_at_idle": len(memory),
                 "working_set_mib": round(sum(value[0] for value in memory) / 2**20, 2),
                 "private_commit_mib": round(sum(value[1] for value in memory) / 2**20, 2)}
@@ -522,6 +546,7 @@ SAFE_FAILURE_CODES = frozenset({
     "native_window_detection_contract_failed", "native_window_detection_status_failed",
     "native_window_capture_bounds_failed", "native_browser_error", "cdp_disconnect_failed",
     "interactive_probe_disabled", "probe_arguments_required", "probe_mode_required",
+    "portable_bundled_browser_not_used", "portable_browser_version_mismatch", "portable_browser_data_redirected",
     "CheckFailed", "OSError", "ValueError", "KeyError", "Empty", "TimeoutExpired",
     "Error", "TimeoutError",
 })
@@ -539,6 +564,8 @@ SAFE_CONNECTION_ERRORS = frozenset({
 SAFE_ENDPOINT_STATES = frozenset({"responded", "timeout", "connection_refused", "connection_error"})
 SAFE_STARTUP_CODES = frozenset({
     "hidden_ui_debug_port_invalid", "resource_directory_required",
+    "portable_webview_runtime_missing", "portable_webview_permissions_failed", "system_directory_unavailable",
+    "portable_webview_com_initialization_failed", "portable_webview_environment_failed",
     "choose_one_maintenance_operation", "packaged_runtime_missing",
     "bundle_manifest_missing", "invalid_bundle_manifest", "bundle_integrity_failed",
     "session_entropy_unavailable", "job_creation_failed", "job_configuration_failed",

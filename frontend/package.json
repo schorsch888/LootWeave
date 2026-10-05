@@ -11,7 +11,8 @@
     "check:acquisition": "node ../scripts/check_acquisition_ui.mjs",
     "check:confirmation": "node ../scripts/check_confirmation_ui.mjs",
     "check:ui": "node ../scripts/check_ui.mjs",
-    "check:core": "node ../scripts/check_core_ui.mjs"
+    "check:core": "node ../scripts/check_core_ui.mjs",
+    "check:capture": "node ../scripts/check_capture_ui.mjs"
   },
   "dependencies": {
     "react": "19.3.0",

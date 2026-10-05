@@ -50,6 +50,8 @@ jobs:
         run: pnpm --dir frontend check:acquisition
       - name: Check snapshot confirmation rendering and handlers without a browser
         run: pnpm --dir frontend check:confirmation
+      - name: Check captured-observation persistence without a browser or desktop input
+        run: pnpm --dir frontend check:capture
       - name: Verify three-state and historical evaluation rendering
         run: node scripts/check_evaluation_render.mjs
       - name: Install the pinned browser runtime
@@ -127,3 +129,50 @@ jobs:
           $nativeCheckExit = $LASTEXITCODE
           Write-Host "Native WebView checker exit code: $nativeCheckExit"
           exit $nativeCheckExit
+
+      - name: Build and verify the portable ZIP with the pinned Fixed Version runtime
+        shell: pwsh
+        run: |
+          $webviewPin = Get-Content -LiteralPath scripts/webview-runtime.json -Raw | ConvertFrom-Json
+          $portableWork = Join-Path (Get-Location).Path '.local/portable-ci'
+          New-Item -ItemType Directory -Path $portableWork -ErrorAction Stop | Out-Null
+          $webviewCab = Join-Path $portableWork 'webview2-fixed.cab'
+          Invoke-WebRequest -Uri $webviewPin.url -OutFile $webviewCab
+          if ((Get-FileHash -LiteralPath $webviewCab -Algorithm SHA256).Hash.ToLowerInvariant() -ne $webviewPin.sha256) {
+            throw 'fixed_webview_download_hash_mismatch'
+          }
+          $expandedRuntime = Join-Path $portableWork 'expanded'
+          New-Item -ItemType Directory -Path $expandedRuntime -ErrorAction Stop | Out-Null
+          & "$env:SystemRoot/System32/expand.exe" $webviewCab '-F:*' $expandedRuntime | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'fixed_webview_expand_failed' }
+          $runtimeFolder = Join-Path $expandedRuntime ('Microsoft.WebView2.FixedVersionRuntime.' + $webviewPin.version + '.x64')
+          $runtimeSignature = Get-AuthenticodeSignature -LiteralPath (Join-Path $runtimeFolder 'msedgewebview2.exe')
+          if ($runtimeSignature.Status -ne 'Valid' -or $runtimeSignature.SignerCertificate.Subject -notmatch 'O=Microsoft Corporation') {
+            throw 'fixed_webview_signature_invalid'
+          }
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $visualStudioPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $crtVersions = Get-ChildItem -LiteralPath (Join-Path $visualStudioPath 'VC/Redist/MSVC') -Directory | Where-Object Name -Match '^\d+\.\d+\.\d+$' | Sort-Object { [version]$_.Name } -Descending
+          $vcRuntime = $null
+          foreach ($crtVersion in $crtVersions) {
+            $crtFolders = @(Get-ChildItem -LiteralPath (Join-Path $crtVersion.FullName 'x64') -Directory -Filter 'Microsoft.VC*.CRT' -ErrorAction SilentlyContinue)
+            if ($crtFolders.Count -eq 1 -and (Test-Path -LiteralPath (Join-Path $crtFolders[0].FullName 'vcruntime140_1.dll'))) {
+              $vcRuntime = $crtFolders[0].FullName
+              break
+            }
+          }
+          if (-not $vcRuntime) { throw 'visual_studio_redistributable_crt_missing' }
+          foreach ($crtName in @('vcruntime140.dll', 'vcruntime140_1.dll')) {
+            if ((Get-AuthenticodeSignature -LiteralPath (Join-Path $vcRuntime $crtName)).Status -ne 'Valid') { throw 'vc_runtime_signature_invalid' }
+          }
+          $portableSourceCommit = git rev-parse HEAD
+          python scripts/build_portable.py --executable desktop/target/release/lootweave-desktop.exe --webview-runtime $runtimeFolder --vc-runtime-dir $vcRuntime --output dist/LootWeave-portable-windows-x64.zip --source-commit $portableSourceCommit
+          if ($LASTEXITCODE -ne 0) { throw 'portable_package_failed' }
+          python scripts/check_portable_desktop.py --archive dist/LootWeave-portable-windows-x64.zip --report .local/portable-ci/report.json
+          if ($LASTEXITCODE -ne 0) { throw 'portable_headless_check_failed' }
+          $portableGui = Join-Path $portableWork 'passive-ui'
+          Expand-Archive -LiteralPath dist/LootWeave-portable-windows-x64.zip -DestinationPath $portableGui
+          python scripts/check_native_ui.py --cycles 2 --executable (Join-Path $portableGui 'LootWeave.exe') --resources (Join-Path $portableGui 'sidecar')
+          $portableNativeExit = $LASTEXITCODE
+          Write-Host "Portable passive WebView checker exit code: $portableNativeExit"
+          exit $portableNativeExit

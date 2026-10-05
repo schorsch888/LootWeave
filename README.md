@@ -41,9 +41,14 @@ New trial records must keep XP and levels within the exact-integer range and pro
 
 ## Try the Windows MVP
 
-Install `dist/LootWeave-MVP-0.1.0-20261005-ocr-review-windows-x64-setup.exe` to use the OCR equipment-review and preparation workflows. The five earlier installers remain available as historical builds.
+The existing installer is `dist/LootWeave-MVP-0.1.0-20261005-ocr-review-windows-x64-setup.exe`; it supports OCR review but predates the save-before-review persistence fix. Build the portable ZIP below to use that source change.
 
-The installer starts with a blank profile. Record candidate and current equipment, review each captured line as an actual affix or explicitly ignore it, apply the reviewed fields, then confirm and save. Owned resources, preparation quotes and future plans remain available. SQLite preserves profile revisions and frozen evaluations across restart. Unknown requirements remain unknown; real-game recommendations, visible GUI, OCR human holdout and two-machine release acceptance remain open.
+### Portable ZIP (no installation)
+
+The portable archive target is `dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip`. After it is built, extract it to a writable local folder and double-click `LootWeave.exe`; no administrator rights or application installation are required. The build bundles Python and the Microsoft WebView2 Fixed Version runtime. Its `portable.json` marker automatically selects sibling `sidecar/`, `webview2/` and `data/` folders; SQLite, OCR and browser data stay under `data/`. Exit LootWeave before moving the folder; replace app/runtime files on upgrade while retaining `data/`. The regular installer continues to store data in `%LOCALAPPDATA%/LootWeave`. This build guidance does not assert portable artifact acceptance.
+Screenshot capture is first stored as an unconfirmed observation in the updated source. Recapture, OCR failure, and manual saving preserve its original screenshot reference; only human-confirmed fields become snapshot facts. See Microsoft WebView2 [distribution guidance](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution). Windows OCR uses installed language models; manual entry remains available if they are missing.
+
+The existing installer starts with a blank profile. Record candidate and current equipment, review each captured line as an affix or explicitly ignore it, apply the reviewed fields, then confirm and save. Its source is the earlier `eb33ccf1d303cf9554735a1d6238878f02c8517c` build; it does not include the new save-before-review observation persistence fix. The portable ZIP described above is intended for that updated source workflow. Owned resources, preparation quotes, future plans, SQLite profile revisions, and frozen evaluations remain available. Missing Windows OCR language models still allow manual entry.
 
 ## Run locally
 

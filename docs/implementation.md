@@ -44,6 +44,35 @@ python scripts/build_desktop.py
 
 Use --sidecar-only to bundle Python without compiling Rust; --debug builds a debug host; --installer requests NSIS after the frontend and sidecar are built. --test-native runs release Rust tests with the same path-remapping flags as packaging. Build products are local and ignored. An installer build does not complete clean-machine acceptance.
 
+### Portable Windows ZIP
+
+Build the frontend and run `python scripts/build_desktop.py` to produce the frozen services and Rust host. Download and verify the official x64 CAB pinned in `scripts/webview-runtime.json`, expand all files, and package its named runtime directory:
+
+~~~powershell
+$sourceCommit = git rev-parse HEAD
+$webviewPin = Get-Content scripts/webview-runtime.json -Raw | ConvertFrom-Json
+$portableBuild = Join-Path (Get-Location).Path '.local/portable-runtime'
+New-Item -ItemType Directory -Path $portableBuild -Force | Out-Null
+$webviewCab = Join-Path $portableBuild 'webview2-fixed.cab'
+Invoke-WebRequest -Uri $webviewPin.url -OutFile $webviewCab
+if ((Get-FileHash $webviewCab -Algorithm SHA256).Hash.ToLowerInvariant() -ne $webviewPin.sha256) { throw 'fixed_webview_download_hash_mismatch' }
+$expandedRuntime = Join-Path $portableBuild 'expanded'
+New-Item -ItemType Directory -Path $expandedRuntime -Force | Out-Null
+& "$env:SystemRoot/System32/expand.exe" $webviewCab '-F:*' $expandedRuntime | Out-Null
+if ($LASTEXITCODE -ne 0) { throw 'fixed_webview_expand_failed' }
+$runtimeFolder = Join-Path $expandedRuntime ('Microsoft.WebView2.FixedVersionRuntime.' + $webviewPin.version + '.x64')
+# Set this to the x64 Microsoft.VC*.CRT folder shipped in Visual Studio VC/Redist/MSVC.
+$vcRuntime = '<Visual Studio x64 redistributable CRT directory>'
+python scripts/build_portable.py --executable desktop/target/release/lootweave-desktop.exe --webview-runtime $runtimeFolder --vc-runtime-dir $vcRuntime --output dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip --source-commit $sourceCommit
+python scripts/check_portable_desktop.py --archive dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip --report .local/portable-report.json
+~~~
+
+The package also copies `vcruntime140.dll` and `vcruntime140_1.dll` from Visual Studio's x64 redistributable folder beside both executables; these DLLs are required by the current Rust host. Their hashes join the portable and sidecar manifests. See Microsoft's [application-local C++ deployment guidance](https://learn.microsoft.com/en-us/cpp/windows/choosing-a-deployment-method?view=msvc-170).
+
+When built, the portable ZIP packages `LootWeave.exe`, embedded Python, the fixed WebView2 runtime, application-local C++ runtime DLLs, and a `portable.json` marker. Extract it to a writable local directory and double-click `LootWeave.exe`; no application install or administrator rights are needed. The marker selects sibling `sidecar/`, `webview2/`, and `data/` folders, which keep SQLite, OCR captures, and browser data beside the app. Exit LootWeave before moving the folder. Upgrades replace app/runtime files while preserving `data/`; the regular installer continues to use `%LOCALAPPDATA%/LootWeave`. This describes packaging behavior, not portable acceptance evidence.
+
+Screenshot captures in the updated source are persisted first as unconfirmed observations. Recapture, OCR failure, and manual saving preserve the original screenshot reference; reviewed fields become snapshot facts only after human confirmation. Missing Windows OCR language models still allow manual text entry.
+
 English en-US and Simplified Chinese zh-Hans-CN OCR models are installed Windows capabilities. Text confirmation remains usable when a model or capture is unavailable. The current OCR adapter supports three generic demonstration labels: level, vitality and armor. It does not identify arbitrary affixes, icons or game layouts. Numeric parsing rejects split or incomplete digits and scientific-notation fragments, and preserves the original text, sign and unit. A readable primary recognition remains the numeric source; consistent English recognition is recorded separately as `numeric_corroboration`. `numeric_source` is reserved for cases where an unreadable number was actually recovered. The original observation and every interpreted value remain unconfirmed until the user reviews and confirms them.
 
 Unresolved fields with a unique mapped label, explicit unit and uncontested native row geometry can request English numeric-region recognition. The worker uses the original BMP and one additional helper for at most three crops, projects word bounds back to original pixels and retains the original text/span. Readable primary values and explicit signs are preserved; conflicting candidates remain ambiguous, and consistent crops corroborate rather than replace readable values. The helper has a six-second maximum within the remaining twelve-second request budget; failure is recorded as `numeric_region_error` while primary observations remain usable. Each crop bitmap and input stream is disposed, and the helper stays in the service process scope. All values still require confirmation. The frozen current adapter's fresh synthetic v7 measurement is documented below; real-game acceptance remains open.
@@ -105,6 +134,7 @@ Acquisition cards use the API `source_id` and show their target event. Manual sa
 ## OCR equipment entry delivery
 
 The new local installer is `dist/LootWeave-MVP-0.1.0-20261005-ocr-review-windows-x64-setup.exe` (226,036,621 bytes; SHA-256 `b846e6e0dc60c1c136ec547b75ec0108663ea49078029b9ba012e16382074834`), compiled from `eb33ccf1d303cf9554735a1d6238878f02c8517c` in 227.831 seconds. All 524 bundled files match their integrity manifest; all three packaged frontend files match the production build. The five earlier installers are unchanged. The previous preparation delivery remains documented below and in PR #6.
+This earlier installer predates the current save-before-review screenshot persistence fix; it is not the same source state as the portable build instructions above.
 
 Against the actual packaged Rust headless host and frozen workers, fictional OCR-confirmed signed/custom/zero and legacy-percent affixes passed six checks (6.8597 s), including original observation text and capture-time binding, exact profile/evaluation reads after restart, raw deltas of -28.25 points and -4%, and ten frozen replays before and after restart. The eight packaged preparation checks passed (9.1709 s), and thirteen two-cycle lifecycle checks passed with owned-worker cleanup. These local reports cover API persistence and process behavior; they do not establish visible WebView interaction, live OCR accuracy, real-game mechanics, installer/uninstaller acceptance or the two-clean-machine gate. Evaluator 0.1.7 and SQLite schema v1 are unchanged. Remote CI and merge are tracked in the current phase PR.
 
