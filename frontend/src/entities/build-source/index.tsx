@@ -18,7 +18,7 @@ function listValue(value: string): string[] {
   return value.split(",").map(part => part.trim()).filter(Boolean);
 }
 
-function SourceFields({ source, ranks, setIds, defaultActor, onChange, onDelete }: {
+export function SourceFields({ source, ranks, setIds, defaultActor, onChange, onDelete }: {
   source: Source;
   ranks: boolean;
   setIds: boolean;

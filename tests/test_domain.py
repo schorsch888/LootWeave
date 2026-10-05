@@ -226,8 +226,12 @@ class DomainCases(unittest.TestCase):
     def test_future_build_is_explicit_and_explained(self):
         self.facts["candidate_item"]["effects"] = ["fixture-fire-focus"]
         purpose = copy.deepcopy(DEMO["intent"])
+        from tests.test_preparation import skill_quote
+        quote = skill_quote(self.facts, rank=2, cost=0)
+        removal = skill_quote(self.facts, self.facts["skills"][0]["id"], rank=0, option_id="remove-cold", cost=0)
+        self.facts["preparation_options"] = [quote, removal]
         purpose["future_builds"] = [{"skills": ["fixture-fire-bolt"], "conditions": {},
-                                    "feasibility": "hypothetical"}]
+                                    "feasibility": "hypothetical", "preparation_options": [quote["id"], removal["id"]]}]
         result = run_evaluation(self.facts, self.pack, purpose)
         self.assertEqual("candidate", result["retention"])
         self.assertEqual("hypothetical", result["reasons"][0]["feasibility"])

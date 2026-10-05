@@ -44,6 +44,11 @@ def validate_pack(pack: dict) -> dict:
         require(rule.get("context") == scope, "rule_scope_mismatch")
         strings(rule.get("conditions"), "invalid_rule_conditions")
         strings(rule.get("requires_skills"), "rule_skills_required")
+        if "requires_skill_ranks" in rule:
+            ranks = object_value(rule["requires_skill_ranks"])
+            for skill_id, rank in ranks.items():
+                identifier(skill_id)
+                require(type(rank) is int and 1 <= rank < 2**53, "rule_skill_rank_required")
         require(rule.get("actor") in ("hero", "companion"), "effect_owner_required")
         require(rule.get("stacking") in ("unique", "source") and rule.get("unit") == "capability",
                 "rule_semantics_required")

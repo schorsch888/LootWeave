@@ -100,7 +100,7 @@ class UncertainMechanismTests(unittest.TestCase):
         self.assertEqual(expected["retention"], result["retention"])
         self.assertEqual(expected["comparison"], {
             key: result["comparison"].get(key) for key in expected["comparison"]})
-        self.assertEqual("0.1.6", result["pin"]["evaluator_version"])
+        self.assertEqual("0.1.7", result["pin"]["evaluator_version"])
 
     def test_all_provider_pairs_preserve_three_states_and_actor_ownership(self):
         for actor in ("hero", "companion"):

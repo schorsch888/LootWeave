@@ -144,7 +144,7 @@ class Profile:
         require(digest(result["facts"]) == result["facts_hash"], "profile_integrity_error", 409)
         # A legacy payload may contain previously untyped inventory extensions.
         # Validate the current wire shape before serving them as confirmed facts.
-        if "inventory_items" in result["facts"]:
+        if any(key in result["facts"] for key in ("inventory_items", "owned_resources", "preparation_options")):
             snapshot(result["facts"])
         # Additive wire metadata for older v1 records; stored facts remain immutable.
         expected_build = build_fingerprint(result["facts"])

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { newId } from "../../shared/api";
-import { SourceList } from "../../entities/build-source";
-import type { Item, Snapshot } from "../../shared/api";
+import { isExactCount, newId } from "../../shared/api";
+import { SourceFields, SourceList } from "../../entities/build-source";
+import type { Item, PreparationOption, Snapshot } from "../../shared/api";
 import { canMapField, emptyItem, slots, statLabels, unitLabels } from "./model";
 import type { ObservedItemField } from "./model";
 export { emptySnapshot, mapItemField } from "./model";
@@ -9,9 +9,9 @@ export { emptySnapshot, mapItemField } from "./model";
 const entries = (text: string) => [...new Set(text.split(/[,，\n]/).map(x => x.trim()).filter(Boolean))];
 const numeric = (text: string) => text.trim() ? Number(text) : Number.NaN;
 
-export function ItemEditor({ item, onChange, kind = "equipped" }: { item: Item; onChange: (item: Item) => void; kind?: "candidate" | "equipped" | "inventory" }) {
+export function ItemEditor({ item, onChange, kind = "equipped" }: { item: Item; onChange: (item: Item) => void; kind?: "candidate" | "equipped" | "inventory" | "projected" }) {
   const candidate = kind === "candidate";
-  const itemKind = kind === "candidate" ? "候选物品" : kind === "inventory" ? "库存物品" : "已装备物品";
+  const itemKind = kind === "projected" ? "预计改后物品" : kind === "candidate" ? "候选物品" : kind === "inventory" ? "库存物品" : "已装备物品";
   const update = (patch: Partial<Item>) => onChange({ ...item, ...patch });
   const changeAffix = (index: number, patch: Partial<Item["affixes"][number]>) => update({ affixes: item.affixes.map((row, i) => i === index ? { ...row, ...patch } : row) });
   return <div className="item-editor">
@@ -19,7 +19,7 @@ export function ItemEditor({ item, onChange, kind = "equipped" }: { item: Item; 
       {(candidate || kind === "inventory") && <label>{candidate ? "替换槽位" : "物品槽位"}<select aria-label={candidate ? "候选槽位" : "库存物品槽位"} value={item.slot} onChange={e => update({ slot: e.target.value })}>{Object.entries(slots).map(([id, name]) => <option key={id} value={id}>{name}</option>)}{!slots[item.slot] && <option value={item.slot}>{item.slot}</option>}</select></label>}
       <label>穿戴等级<input type="number" min="1" step="1" placeholder="未知时留空" value={item.required_level ?? ""} onChange={e => update({ required_level: e.target.value ? Number(e.target.value) : null })}/></label>
       <label>限定职业<input placeholder="不限职业时留空" value={item.class_id || ""} onChange={e => update({ class_id: e.target.value.trim() || undefined })}/></label></div>
-    <h3>实际词条</h3><p className="muted">同一词条请选择相同标识和单位；这里记录实际值，数值增加不等于构筑更强。</p>
+    <h3>{kind === "projected" ? "已核对的预计词条" : "实际词条"}</h3><p className="muted">同一词条请选择相同标识和单位；这里记录实际值，数值增加不等于构筑更强。</p>
     <div className="affix-list editable-affixes">{item.affixes.map((row, i) => <div className="affix-row" key={i}>
       <label>词条<select aria-label="词条标识" value={statLabels[row.id] ? row.id : "custom"} onChange={e => changeAffix(i, { id: e.target.value === "custom" ? newId("stat") : e.target.value })}>{Object.entries(statLabels).map(([id, name]) => <option key={id} value={id}>{name}</option>)}<option value="custom">其他词条</option></select></label>
       {!statLabels[row.id] && <label>词条标识<input aria-label="自定义词条标识" value={row.id} onChange={e => changeAffix(i, { id: e.target.value })}/></label>}
@@ -75,4 +75,93 @@ export function ObservationFields({ fields, onApply, onReviewed }: { fields: Obs
     {fields.map((field, index) => <div className="observation-row" key={index}><span>{field.field === "level" ? "等级（含义待确认）" : statLabels[field.field] || field.field}：{field.value ?? "数值未知"} {unitLabels[field.unit || ""] || field.unit || "单位未知"}{field.ambiguous ? " · 存在歧义" : ""}</span><button type="button" disabled={!canMapField(field)} onClick={() => onApply(field)}>{field.field === "level" ? "确认是穿戴要求，填入穿戴等级" : "填入候选物品"}</button></div>)}
     <button type="button" onClick={onReviewed}>已逐项核对，未使用字段已手动处理或忽略</button>
   </div>;
+}
+
+
+export function PreparationOptionsEditor({ facts, onChange }: { facts: Snapshot; onChange: (facts: Snapshot) => void }) {
+  const options = facts.preparation_options ?? [];
+  const ownedItems = [facts.candidate_item, ...Object.values(facts.equipped_items), ...(facts.inventory_items ?? [])];
+  const replace = (index: number, option: PreparationOption) => onChange({ ...facts,
+    preparation_options: options.map((entry, i) => i === index ? option : entry) });
+  const remove = (index: number) => onChange({ ...facts, preparation_options: options.filter((_, i) => i !== index) });
+  const add = (kind: "equipment" | "skill") => {
+    const common = { id: newId("preparation"), context: structuredClone(facts.context), class_id: facts.class_id,
+      evidence_ids: [...facts.evidence_ids], unknowns: ["outcome_not_confirmed"], costs: null,
+      requirements: { required_level: null, max_rank: null, unlock_state: "unknown" as const } };
+    const item = facts.candidate_item;
+    const skillId = newId("skill");
+    const option: PreparationOption = kind === "equipment"
+      ? { ...common, kind, target_id: item.instance_id, input: structuredClone(item),
+          result: { ...structuredClone(item), record_kind: "projected_item" } }
+      : { ...common, kind, target_id: skillId, input: null,
+          result: { id: skillId, rank: 0, effects: [], actor: "hero", evidence_ids: [...facts.evidence_ids] } };
+    onChange({ ...facts, preparation_options: [...options, option] });
+  };
+  const count = (raw: string) => isExactCount(raw) ? Number(raw) : Number.NaN;
+  const shown = (amount: number) => Number.isSafeInteger(amount) && amount >= 0 ? amount : "";
+  return <details className="panel">
+    <summary>学习技能与装备改造方案（{options.length}）</summary>
+    <p className="muted">按游戏中已核对的学习、升级或改造条件录入。这里只保存计划；随机结果和未知费用请保留待确认。实际执行后须重新核对物品或技能并保存新档案。</p>
+    {options.map((option, index) => <details key={option.id}>
+      <summary>{option.kind === "skill" ? "技能" : "装备改造"} · {option.target_id}</summary>
+      <p className="muted">方案依据：{option.evidence_ids.join("、")} · 版本：{option.context.edition} / {option.context.game_build}</p>
+      {option.kind === "equipment" ? <>
+        <label>要改造的持有物品<select aria-label="改造目标物品" value={option.target_id}
+          onChange={event => {
+            const selected = ownedItems.find(item => item.instance_id === event.target.value);
+            if (selected) replace(index, { ...option, target_id: selected.instance_id,
+              input: structuredClone(selected), result: { ...structuredClone(selected), record_kind: "projected_item" },
+              unknowns: [...new Set([...option.unknowns, "outcome_not_confirmed"])] });
+          }}>
+          {ownedItems.map(item => <option key={item.instance_id} value={item.instance_id}>{slots[item.slot] || item.slot} · {item.name || item.instance_id}</option>)}
+          {!ownedItems.some(item => item.instance_id === option.target_id) && <option value={option.target_id}>已缺失 · {option.target_id}</option>}
+        </select></label>
+        <ItemEditor kind="projected" item={option.result} onChange={result => replace(index, { ...option, result,
+          unknowns: [...new Set([...option.unknowns, "outcome_not_confirmed"])] })} />
+      </> : <>
+        <p className="muted">填写计划完成后的技能等级与效果；等级 0 表示撤销分配。原等级：{option.input?.rank ?? "当前未分配"}。</p>
+        <SourceFields source={option.result} ranks setIds={false} defaultActor="hero" onDelete={() => remove(index)}
+          onChange={result => replace(index, { ...option, result, target_id: result.id,
+            input: result.id === option.target_id ? option.input : structuredClone(facts.skills.find(skill => skill.id === result.id) ?? null),
+            unknowns: [...new Set([...option.unknowns, "outcome_not_confirmed"])] })} />
+      </>}
+      <div className="fields">
+        <label>此操作要求的角色等级<input aria-label="方案要求等级" type="number" min="1" step="1" value={option.requirements.required_level ?? ""}
+          onChange={event => replace(index, { ...option, requirements: { ...option.requirements,
+            required_level: event.target.value === "" ? null : count(event.target.value) } })} /></label>
+        {option.kind === "skill" && <label>已确认技能等级上限<input aria-label="方案技能等级上限" type="number" min="1" step="1" value={option.requirements.max_rank ?? ""}
+          onChange={event => replace(index, { ...option, requirements: { ...option.requirements,
+            max_rank: event.target.value === "" ? null : count(event.target.value) } })} /></label>}
+        <label>学习或改造条件<select aria-label="方案解锁状态" value={option.requirements.unlock_state}
+          onChange={event => replace(index, { ...option, requirements: { ...option.requirements,
+            unlock_state: event.target.value as "unlocked" | "locked" | "unknown" } })}>
+          <option value="unknown">尚未确认解锁</option><option value="unlocked">已确认可以操作</option><option value="locked">已确认尚未解锁</option>
+        </select></label>
+      </div>
+      <label className="check"><input aria-label="已核对方案全部费用" type="checkbox" checked={option.costs !== null && !option.unknowns.includes("costs_not_confirmed")}
+        onChange={event => replace(index, { ...option, costs: event.target.checked ? option.costs ?? [] : option.costs,
+          unknowns: event.target.checked ? option.unknowns.filter(value => value !== "costs_not_confirmed")
+            : [...new Set([...option.unknowns, "costs_not_confirmed"])] })} />我已核对全部费用；确实免费时费用列表留空。</label>
+      {option.costs !== null && <>
+        {option.costs.map((cost, costIndex) => <div className="fields" key={costIndex}>
+          <label>消耗的材料或货币英文 ID<input aria-label="方案费用资源" value={cost.resource_id}
+            onChange={event => replace(index, { ...option, costs: option.costs!.map((entry, i) => i === costIndex ? { ...entry, resource_id: event.target.value } : entry) })} /></label>
+          <label>消耗个数<input aria-label="方案费用个数" type="number" min="0" step="1" value={shown(cost.amount)}
+            onChange={event => replace(index, { ...option, costs: option.costs!.map((entry, i) => i === costIndex ? { ...entry, amount: count(event.target.value) } : entry) })} /></label>
+          <button type="button" onClick={() => replace(index, { ...option, costs: option.costs!.filter((_, i) => i !== costIndex) })}>删除费用</button>
+        </div>)}
+        <button type="button" onClick={() => replace(index, { ...option, costs: [...option.costs!, { resource_id: "", amount: Number.NaN }] })}>添加方案费用</button>
+      </>}
+      <label className="check"><input aria-label="已核对方案预计结果" type="checkbox" checked={!option.unknowns.includes("outcome_not_confirmed")}
+        onChange={event => replace(index, { ...option, unknowns: event.target.checked
+          ? option.unknowns.filter(value => value !== "outcome_not_confirmed")
+          : [...new Set([...option.unknowns, "outcome_not_confirmed"])] })} />我已核对以上预计结果；不存在未记录的随机结果。</label>
+      <label>其他不确定项（每行一项）<textarea rows={2} value={option.unknowns.filter(value => value !== "outcome_not_confirmed").join("\n")}
+        onChange={event => replace(index, { ...option, unknowns: [...option.unknowns.filter(value => value === "outcome_not_confirmed"),
+          ...event.target.value.split("\n").map(value => value.trim()).filter(Boolean)] })} /></label>
+      <button type="button" onClick={() => remove(index)}>删除准备方案</button>
+    </details>)}
+    <div className="fields"><button type="button" onClick={() => add("skill")}>添加技能准备方案</button>
+      <button type="button" onClick={() => add("equipment")}>添加装备改造方案</button></div>
+  </details>;
 }

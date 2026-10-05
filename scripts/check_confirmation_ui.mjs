@@ -86,7 +86,7 @@ try {
   const check = async (name, fn) => { try { await fn(); checks.push({ name, passed: true }); } catch (error) { checks.push({ name, passed: false, error: error.message }); } };
 
   const confirmBody = h => h.calls.find(call => call.path === "profile/confirmations").body;
-  const realProfile = calls => {
+  const realProfile = (calls, preparationIntent = null) => {
     const python = `
 import json
 from pathlib import Path
@@ -95,8 +95,10 @@ import tempfile
 from contracts import DomainError
 from services.profile.app import Profile
 
-calls = json.load(sys.stdin)
+payload = json.load(sys.stdin)
+calls = payload["calls"]
 responses = []
+preparation = None
 with tempfile.TemporaryDirectory(prefix="lootweave-confirmation-") as directory:
     app = Profile(Path(directory))
     saved = None
@@ -113,10 +115,27 @@ with tempfile.TemporaryDirectory(prefix="lootweave-confirmation-") as directory:
         counts = {table: db.execute("SELECT COUNT(*) FROM " + table).fetchone()[0]
                   for table in ("observations", "revisions", "confirmations")}
     reopened = Profile(Path(directory)).read(saved["profile_id"], saved["revision"]) if saved else None
-print(json.dumps({"responses": responses, "counts": counts, "reopened": reopened}, ensure_ascii=True))
+    if saved and payload["intent"] is not None:
+        from services.evaluation.app import Evaluation
+        from services.knowledge.app import Knowledge
+        class API:
+            def __init__(self, service): self.service = service
+            def call(self, method, route, body=None):
+                if self.service is None: raise AssertionError("live source dependency used during replay")
+                return self.service.handle(method, route, body or {})
+        knowledge = Knowledge(Path.cwd() / "knowledge-packs")
+        pack = next(row for row in knowledge.handle("GET", "/v1/packs", {})["packs"] if row["execution_policy"] == "synthetic_only")
+        evaluator = Evaluation(Path(directory), API(app), API(knowledge))
+        result = evaluator.create({"request_id": "confirmation-preparation", "profile_id": saved["profile_id"],
+            "profile_revision": saved["revision"], "pack_id": pack["pack_id"], "pack_version": pack["version"],
+            "pack_hash": pack["pack_hash"], "intent": payload["intent"]})
+        evaluator = Evaluation(Path(directory), API(None), API(None))
+        replayed = [evaluator.replay("confirmation-preparation")["identical"] for _ in range(10)]
+        preparation = {"result": result, "replayed": replayed}
+print(json.dumps({"responses": responses, "counts": counts, "reopened": reopened, "preparation": preparation}, ensure_ascii=True))
 `;
     const result = spawnSync(process.env.LOOTWEAVE_PYTHON || "python", ["-c", python], {
-      cwd: root, encoding: "utf8", input: JSON.stringify(calls), windowsHide: true,
+      cwd: root, encoding: "utf8", input: JSON.stringify({ calls, intent: preparationIntent }), windowsHide: true,
       timeout: 10000, maxBuffer: 4 * 1024 * 1024,
       env: { ...process.env, PYTHONUTF8: "1", PYTHONDONTWRITEBYTECODE: "1" },
     });
@@ -124,6 +143,28 @@ print(json.dumps({"responses": responses, "counts": counts, "reopened": reopened
     assert.equal(result.status, 0, `Real Profile fixture failed: ${result.stderr}`);
     return JSON.parse(result.stdout);
   };
+
+  await check("manual preparation confirmation reaches real SQLite evaluation and frozen replay", async () => {
+    const produced = spawnSync(process.env.LOOTWEAVE_PYTHON || "python", ["-c", "import json; from tests.test_preparation import prepared_case; f,p=prepared_case(); print(json.dumps({'facts':f,'intent':p}))"],
+      { cwd: root, windowsHide: true, encoding: "utf8", timeout: 10000 });
+    assert.ifError(produced.error);
+    assert.equal(produced.status, 0, produced.stderr);
+    const fixture = JSON.parse(produced.stdout);
+    const h = make({ facts: fixture.facts, capture: null, profileId: "quoted-confirmation", revision: 0 });
+    await submit(h);
+    const saved = confirmBody(h).facts;
+    const newEvidence = saved.evidence.at(-1).id;
+    assert.ok(saved.owned_resources.balances[0].evidence_ids.includes(newEvidence));
+    assert.ok(saved.preparation_options.every(option => option.evidence_ids.includes(newEvidence) && option.result.evidence_ids.includes(newEvidence)));
+    assert.deepEqual(saved.preparation_options[1].input, fixture.facts.preparation_options[1].input);
+    const verified = realProfile(h.calls, fixture.intent);
+    assert.deepEqual(verified.counts, { observations: 1, revisions: 1, confirmations: 1 });
+    assert.equal(verified.preparation.result.future_preparation[0].status, "feasible");
+    assert.equal(verified.preparation.result.future_preparation[0].resources[0].cost, 12);
+    assert.ok(verified.preparation.result.reasons.some(reason => reason.kind === "future_use" && reason.capability === "fire_focus"));
+    assert.deepEqual(verified.preparation.replayed, Array(10).fill(true));
+    assert.deepEqual(verified.reopened.facts, saved);
+  });
 
   await check("capture time renders exact millisecond UTC", () => {
     const html = renderToStaticMarkup(make().render());

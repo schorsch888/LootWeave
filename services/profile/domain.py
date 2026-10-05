@@ -18,9 +18,10 @@ def source(value: dict, known: set[str]) -> None:
     evidence_refs(value, known)
 
 
-def item(value: dict, known: set[str]) -> None:
+def item(value: dict, known: set[str], *, record_kind="item_instance") -> None:
     object_value(value)
-    require(value.get("record_kind") == "item_instance", "actual_item_instance_required")
+    require(value.get("record_kind") == record_kind,
+            "actual_item_instance_required" if record_kind == "item_instance" else "projected_item_required")
     identifier(value.get("instance_id"))
     identifier(value.get("slot"))
     evidence_refs(value, known)
@@ -51,6 +52,90 @@ def item(value: dict, known: set[str]) -> None:
         require(number(affix.get("value")) and isinstance(affix.get("unit"), str)
                 and 0 < len(affix["unit"]) <= 40, "actual_roll_and_unit_required")
         evidence_refs(affix, known)
+
+
+def resource_costs(value) -> None:
+    require(value is None or isinstance(value, list), "preparation_costs_required")
+    if value is None:
+        return
+    ids = set()
+    for entry in value:
+        object_value(entry)
+        resource_id = identifier(entry.get("resource_id"))
+        require(resource_id not in ids, "duplicate_resource_cost")
+        ids.add(resource_id)
+        require(type(entry.get("amount")) is int and 0 <= entry["amount"] < 2**53,
+                "resource_amount_required")
+
+
+def preparation_facts(value: dict, known: set[str]) -> None:
+    """Player-confirmed quotes are facts about a plan, never executed changes."""
+    if "owned_resources" in value:
+        resources = object_value(value["owned_resources"])
+        require(resources.get("coverage") in ("complete", "partial", "unknown"),
+                "resource_coverage_required")
+        require(isinstance(resources.get("balances"), list), "resource_balances_required")
+        ids = set()
+        for entry in resources["balances"]:
+            object_value(entry)
+            resource_id = identifier(entry.get("resource_id"))
+            require(resource_id not in ids, "duplicate_resource_balance")
+            ids.add(resource_id)
+            require(type(entry.get("amount")) is int and 0 <= entry["amount"] < 2**53,
+                    "resource_amount_required")
+            evidence_refs(entry, known)
+    if "preparation_options" not in value:
+        return
+    require(isinstance(value["preparation_options"], list), "preparation_options_required")
+    ids = set()
+    for option in value["preparation_options"]:
+        object_value(option)
+        option_id = identifier(option.get("id"))
+        require(option_id not in ids, "duplicate_preparation_option")
+        ids.add(option_id)
+        require(option.get("kind") in ("equipment", "skill"), "preparation_kind_required")
+        context(option.get("context"))
+        identifier(option.get("class_id"))
+        target_id = identifier(option.get("target_id"))
+        evidence_refs(option, known)
+        strings(option.get("unknowns"), "preparation_unknowns_required")
+        require("costs" in option, "preparation_costs_required")
+        resource_costs(option["costs"])
+        requirements = object_value(option.get("requirements"))
+        require(requirements.get("unlock_state") in ("unlocked", "locked", "unknown"),
+                "preparation_unlock_required")
+        for key in ("required_level", "max_rank"):
+            require(key in requirements and (requirements[key] is None or
+                    (type(requirements[key]) is int and 1 <= requirements[key] < 2**53)),
+                    "preparation_requirements_required")
+        require("input" in option, "preparation_input_required")
+        if option["kind"] == "equipment":
+            item(option["input"], known)
+            item(option.get("result"), known, record_kind="projected_item")
+            before, after = option["input"], option["result"]
+            require(before["instance_id"] == target_id == after["instance_id"]
+                    and before["slot"] == after["slot"]
+                    and before.get("class_id") == after.get("class_id"),
+                    "preparation_item_identity_conflict")
+            for key, count in (("upgrade_state", "level"), ("socket_state", "count")):
+                state = after[key]
+                require(not state["known"] or (type(state.get(count)) is int and
+                        0 <= state[count] < 2**53), "projected_item_state_required")
+            require(not after["socket_state"]["known"] or
+                    len(after["embedded_items"]) <= after["socket_state"]["count"],
+                    "projected_socket_capacity_exceeded")
+        else:
+            before, after = option["input"], option.get("result")
+            if before is not None:
+                source(before, known)
+                require(before["id"] == target_id and type(before.get("rank")) is int
+                        and before["rank"] >= 0, "preparation_skill_required")
+            source(after, known)
+            require(after["id"] == target_id and type(after.get("rank")) is int
+                    and 0 <= after["rank"] < 2**53, "preparation_skill_required")
+            require(after["rank"] != 0 or not after["effects"], "unallocated_source_has_effects")
+            require(before is None or before.get("actor", "hero") == after.get("actor", "hero"),
+                    "preparation_skill_owner_conflict")
 
 
 def snapshot(value: dict) -> dict:
@@ -116,6 +201,7 @@ def snapshot(value: dict) -> dict:
                 "panel_provenance_required")
         strings(entry.get("source_ids"), "panel_provenance_required")
         evidence_refs(entry, known)
+    preparation_facts(value, known)
     return value
 
 

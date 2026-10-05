@@ -91,7 +91,7 @@ class HistoricalStorageTests(unittest.TestCase):
                 read()
 
     def test_archived_evaluator_replays_without_source_services_or_relabeling(self):
-        cases = [case for version in ("0.1.0", "0.1.1", "0.1.2", "0.1.3", "0.1.4", "0.1.5")
+        cases = [case for version in ("0.1.0", "0.1.1", "0.1.2", "0.1.3", "0.1.4", "0.1.5", "0.1.6")
                  for case in json.loads((ROOT/f"fixtures/evaluation-{version}.json").read_text(encoding="utf-8"))["cases"]]
         bodies = []
         for case in cases:
@@ -120,11 +120,11 @@ class HistoricalStorageTests(unittest.TestCase):
                     self.assertTrue(replay["identical"])
                     self.assertEqual(case["inputs"]["evaluator_version"], replay["result"]["pin"]["evaluator_version"])
                     self.assertEqual(case["result_hash"], digest(replay["result"]))
-        self.assertEqual(36, len(self.evaluation.recent()["evaluations"]))
+        self.assertEqual(42, len(self.evaluation.recent()["evaluations"]))
 
     def test_new_evaluations_pin_the_corrected_engine(self):
         result = self.evaluation.create(self.body)
-        self.assertEqual("0.1.6", EVALUATOR_VERSION)
+        self.assertEqual("0.1.7", EVALUATOR_VERSION)
         self.assertEqual(EVALUATOR_VERSION, result["pin"]["evaluator_version"])
         self.assertEqual(result, self.evaluation.replay(result["evaluation_id"])["result"])
 
