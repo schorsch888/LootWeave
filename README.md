@@ -31,6 +31,8 @@ An item's value depends on its actual rolls, the complete build, and the intende
 | Runtime | Eager startup by default; explicit on-demand experiment | The declared startup-latency comparison failed; visible cold-start acceptance remains open |
 | Windows packaging | Installer and portable ZIP tooling, with a CI path for preview releases | Visible GUI and installation/removal on two clean machines remain unaccepted |
 
+Engine 0.1.8 adds explicitly confirmed future-preparation options for equipment and six types: skill, talent, Paragon, rune, companion, and temporary effect. Future plans carry complete sources, gear, and conditions; feasibility and game-mechanic outcomes are shown separately and never change the actual build. Companion options require the specific companion, actual level, and evidence. Unconfirmed or missing/deleted options, unreviewed builds, pack conflicts, changed inputs, or capture-time conflicts block definite outcomes; unknown costs or resources remain pending. Earlier engines reject unsupported option types rather than silently ignoring them.
+
 Game scopes are isolated by game, edition, build, mode, and season:
 
 | Game scope | Status |

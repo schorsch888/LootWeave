@@ -198,6 +198,33 @@ print(json.dumps({"responses": responses, "counts": counts, "reopened": reopened
     assert.deepEqual(verified.reopened.facts, saved);
   });
 
+  await check("complete future confirmation preserves nullable removals and actual facts through real SQLite replay", async () => {
+    const produced = spawnSync(process.env.LOOTWEAVE_PYTHON || "python", ["-c", "import json; from tests.test_future_builds import full_case; f,p=full_case(); print(json.dumps({'facts':f,'intent':p}))"],
+      { cwd: root, windowsHide: true, encoding: "utf8", timeout: 10000 });
+    assert.ifError(produced.error); assert.equal(produced.status, 0, produced.stderr);
+    const fixture = JSON.parse(produced.stdout);
+    const h = make({ facts: fixture.facts, capture: null, profileId: "full-future-confirmation", revision: 0 });
+    await submit(h);
+    assert.equal(h.errors.length, 0); assert.equal(h.completed.length, 1);
+    const saved = confirmBody(h).facts, evidence = saved.evidence.at(-1).id;
+    const removedRune = saved.preparation_options.find(option => option.kind === "rune" && option.result === null);
+    assert.ok(removedRune && removedRune.evidence_ids.includes(evidence));
+    for (const option of saved.preparation_options) {
+      assert.ok(option.evidence_ids.includes(evidence));
+      if (option.result) assert.ok(option.result.evidence_ids.includes(evidence));
+    }
+    const verified = realProfile(h.calls, fixture.intent), report = verified.preparation.result.future_preparation[0];
+    assert.equal(report.status, "feasible"); assert.equal(report.resources[0].cost, 24);
+    assert.equal(report.build_sources.talents.length, 0); assert.equal(report.build_sources.paragon.length, 0);
+    assert.equal(report.build_sources.runes.length, 1);
+    assert.ok(report.comparison.lost_capabilities.includes("survival"));
+    assert.ok(report.comparison.missing_requirements.includes("survival"));
+    assert.equal(verified.preparation.result.pin.evaluator_version, "0.1.8");
+    assert.equal(verified.reopened.facts.talents.length, 1); assert.equal(verified.reopened.facts.runes.length, 2);
+    assert.deepEqual(verified.reopened.facts, saved);
+    assert.deepEqual(verified.preparation.replayed, Array(10).fill(true));
+  });
+
   await check("capture time renders exact millisecond UTC", () => {
     const html = renderToStaticMarkup(make().render());
     assert.ok(html.includes('<time dateTime="2026-01-01T00:00:00.123Z">2026-01-01T00:00:00.123Z</time>'));

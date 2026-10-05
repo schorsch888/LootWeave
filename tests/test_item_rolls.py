@@ -151,8 +151,8 @@ class ItemRollTests(unittest.TestCase):
         self.assertEqual(expected, compare_item_rolls(facts))
 
     def test_previous_versions_keep_their_original_output_shape_and_scope_notice(self):
-        self.assertEqual("0.1.7", EVALUATOR_VERSION)
-        self.assertEqual(("0.1.0", "0.1.1", "0.1.2", "0.1.3", "0.1.4", "0.1.5", "0.1.6", "0.1.7"), EVALUATOR_VERSIONS)
+        self.assertEqual("0.1.8", EVALUATOR_VERSION)
+        self.assertEqual(("0.1.0", "0.1.1", "0.1.2", "0.1.3", "0.1.4", "0.1.5", "0.1.6", "0.1.7", "0.1.8"), EVALUATOR_VERSIONS)
         facts = facts_for([affix("mana", 20)], [affix("mana", 35)])
         facts["context"] = deepcopy(RESEARCH["context"])
         for version in EVALUATOR_VERSIONS[:EVALUATOR_VERSIONS.index("0.1.5")]:
@@ -170,6 +170,17 @@ class ItemRollTests(unittest.TestCase):
                 # Archived fixtures retain their original missing inventory and hashes.
                 profile = deepcopy(inputs["profile"])
                 profile["facts"]["inventory_items"] = []
+                # Both engines compare the same newly confirmed ownership facts.
+                facts = profile["facts"]
+                if any(entry.get("actor", "hero") == "companion"
+                       for item in (*facts["equipped_items"].values(), facts["candidate_item"])
+                       for entry in item["embedded_items"]):
+                    facts["companions"].append({"id": "confirmed-owner", "actor": "companion",
+                                               "effects": [], "evidence_ids": facts["evidence_ids"][:]})
+                    for item in (*facts["equipped_items"].values(), facts["candidate_item"]):
+                        for entry in item["embedded_items"]:
+                            if entry.get("actor", "hero") == "companion":
+                                entry["companion_id"] = "confirmed-owner"
                 profile["facts_hash"] = digest(profile["facts"])
                 old = evaluate(profile, inputs["knowledge"], inputs["intent"], evaluator_version="0.1.4")
                 current = evaluate(profile, inputs["knowledge"], inputs["intent"])
@@ -234,7 +245,7 @@ class ItemRollHistoryTests(unittest.TestCase):
             self.assertEqual(1, frozen["profile"]["revision"])
             self.assertEqual(35, frozen["profile"]["facts"]["candidate_item"]["affixes"][0]["value"])
             self.assertEqual(["candidate-roll"], frozen["profile"]["facts"]["candidate_item"]["affixes"][0]["evidence_ids"])
-            self.assertEqual("0.1.7", frozen["evaluator_version"])
+            self.assertEqual("0.1.8", frozen["evaluator_version"])
 
 
 if __name__ == "__main__":

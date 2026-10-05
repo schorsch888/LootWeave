@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT / "tests"))
 from check_desktop import CheckFailed, Desktop, expect
 from contracts import DomainError, digest
 from test_preparation import prepared_case
+from test_future_builds import full_case
 
 
 def require(condition, code):
@@ -80,8 +81,8 @@ def main():
                 app.ensure(service)
             health = app.call("GET", "/api/evaluation/health")
             version = health.get("evaluator_version")
-            require(version == "0.1.7", "packaged_evaluator_version_mismatch")
-            checks.append("packaged_evaluator_0_1_7")
+            require(version == "0.1.8", "packaged_evaluator_version_mismatch")
+            checks.append("packaged_evaluator_0_1_8")
 
             stage = "profile_observation_and_confirmation"
             app.call("POST", "/api/profile/observations", {
@@ -166,11 +167,40 @@ def main():
                     "unknown_revision_facts_changed")
             checks.append("omitted_owned_resources_remain_unknown")
 
+            stage = "complete_future_profile_and_projection"
+            full_facts, full_purpose = full_case()
+            full_profile = app.call("POST", "/api/profile/confirmations", {
+                "request_id": "full-future-confirm", "profile_id": "full-future-fixture",
+                "observation_id": "demo-text", "expected_revision": 0,
+                "player_confirmed": True, "facts": full_facts,
+            })
+            full_result = app.call("POST", "/api/evaluation/evaluations", {
+                **base_body, "request_id": "preparation-full-future", "profile_id": "full-future-fixture",
+                "profile_revision": full_profile["revision"], "intent": full_purpose,
+            })
+            full_report = future_report(full_result)
+            require(full_report["status"] == "feasible" and resource(full_report)["cost"] == 24,
+                    "complete_future_quote_costs_invalid")
+            require(full_report["projection_kind"] == "future_plan", "complete_future_projection_kind_missing")
+            require(full_report["build_sources"]["talents"] == [] and full_report["build_sources"]["paragon"] == []
+                    and len(full_report["build_sources"]["runes"]) == 1, "complete_future_sources_not_applied")
+            full_comparison = full_report["comparison"]
+            require(full_comparison["status"] == "mechanism_loss"
+                    and {"resource_efficiency", "survival", "frost_cycle"}.issubset(full_comparison["lost_capabilities"])
+                    and "survival" in full_comparison["missing_requirements"], "complete_future_dependency_loss_hidden")
+            require({"fire_focus", "temporary_focus"}.issubset(full_comparison["gained_capabilities"]),
+                    "complete_future_qualified_gains_missing")
+            actual_full = app.call("GET", "/api/profile/profiles/full-future-fixture/revisions/1")
+            require(actual_full["facts_hash"] == digest(full_facts) and actual_full["facts"] == full_facts,
+                    "complete_future_projection_overwrote_actual_profile")
+            checks.append("all_six_future_source_groups_and_costs_preserve_actual_facts")
+
             stage = "first_run_replays"
             results = {
                 "preparation-budget-12": feasible,
                 "preparation-budget-10": low,
                 "preparation-resources-unknown": unknown,
+                "preparation-full-future": full_result,
             }
             for evaluation_id, expected in results.items():
                 for _ in range(10):
@@ -188,6 +218,10 @@ def main():
                 app.ensure(service)
             reloaded = app.call("GET", "/api/profile/profiles/preparation-fixture/revisions/2")
             require(reloaded["facts_hash"] == digest(unknown_facts), "profile_restart_read_mismatch")
+            full_reloaded = app.call("GET", "/api/profile/profiles/full-future-fixture/revisions/1")
+            require(full_reloaded["facts"] == full_facts, "complete_future_profile_restart_mismatch")
+            require(any(option["kind"] == "rune" and option["result"] is None
+                        for option in full_reloaded["facts"]["preparation_options"]), "nullable_quote_restart_mismatch")
             for evaluation_id, expected in results.items():
                 saved = app.call("GET", f"/api/evaluation/evaluations/{evaluation_id}")
                 require(saved == expected, "evaluation_restart_read_mismatch")
@@ -221,7 +255,7 @@ def main():
     report = {
         "passed": failure_code is None,
         "scope": "Windows Rust headless host and frozen workers with fictional preparation facts.",
-        "evaluator_version": "0.1.7",
+        "evaluator_version": "0.1.8",
         "checks": checks,
         "check_count": len(checks),
         "fixture_hashes": fixture_hashes,

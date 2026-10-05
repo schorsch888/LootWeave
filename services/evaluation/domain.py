@@ -5,10 +5,13 @@ from copy import deepcopy
 
 from contracts import CONTEXT_KEYS, digest, identifier, object_value, require, strings, timestamp
 from services.evaluation.rolls import compare_item_rolls
-from services.evaluation.preparation import prepare_future, validate_preparation_intent
+from services.evaluation.preparation import (
+    FUTURE_SOURCE_FIELDS, prepare_full_future, prepare_future,
+    validate_full_future_intent, validate_preparation_intent,
+)
 
-EVALUATOR_VERSION = "0.1.7"
-EVALUATOR_VERSIONS = ("0.1.0", "0.1.1", "0.1.2", "0.1.3", "0.1.4", "0.1.5", "0.1.6", EVALUATOR_VERSION)
+EVALUATOR_VERSION = "0.1.8"
+EVALUATOR_VERSIONS = ("0.1.0", "0.1.1", "0.1.2", "0.1.3", "0.1.4", "0.1.5", "0.1.6", "0.1.7", EVALUATOR_VERSION)
 
 
 def intent(value: dict, evaluator_version=EVALUATOR_VERSION) -> dict:
@@ -20,6 +23,8 @@ def intent(value: dict, evaluator_version=EVALUATOR_VERSION) -> dict:
     require(isinstance(value.get("future_builds"), list), "future_builds_required")
     for build in value["future_builds"]:
         object_value(build)
+        if evaluator_version != "0.1.8":
+            require(not (FUTURE_SOURCE_FIELDS & build.keys()), "unsupported_future_build_fields")
         require(isinstance(build.get("skills"), list), "future_skills_required")
         require(all(isinstance(x, str) for x in build["skills"]), "future_skills_required")
         states = object_value(build.get("conditions"))
@@ -27,7 +32,7 @@ def intent(value: dict, evaluator_version=EVALUATOR_VERSION) -> dict:
                 "invalid_condition_state")
         require(build.get("feasibility") in ("owned", "obtainable", "hypothetical"),
                 "future_feasibility_required")
-        if evaluator_version in ("0.1.6", "0.1.7"):
+        if evaluator_version in ("0.1.6", "0.1.7", "0.1.8"):
             refs = strings(build.get("equipment_items", []), "future_equipment_required")
             for ref in refs:
                 identifier(ref)
@@ -35,6 +40,8 @@ def intent(value: dict, evaluator_version=EVALUATOR_VERSION) -> dict:
     object_value(value.get("budget"))
     if evaluator_version == "0.1.7":
         validate_preparation_intent(value)
+    elif evaluator_version == "0.1.8":
+        validate_full_future_intent(value)
     return value
 
 
@@ -50,8 +57,11 @@ def all_sources(facts: dict, evaluator_version=EVALUATOR_VERSION) -> list[dict]:
             result.append(embedded)
     for key in ("skills", "talents", "paragon", "runes", "companions", "temporary_effects"):
         for entry in facts[key]:
-            result.append({**entry, "id": key + ":" + entry["id"], "kind": key,
-                           "actor": entry.get("actor", "companion" if key == "companions" else "hero")})
+            source = {**entry, "id": key + ":" + entry["id"], "kind": key,
+                      "actor": entry.get("actor", "companion" if key == "companions" else "hero")}
+            if evaluator_version == "0.1.8" and key == "companions":
+                source["companion_id"] = entry.get("companion_id", entry["id"])
+            result.append(source)
     return result
 
 
@@ -62,6 +72,8 @@ def condition_state(states: list[str]) -> str:
 
 
 def resolve(facts: dict, pack: dict, evaluator_version=EVALUATOR_VERSION) -> list[dict]:
+    if evaluator_version == "0.1.8":
+        return resolve_full_future(facts, pack)
     sources = all_sources(facts, evaluator_version)
     result = []
     for rule in sorted(pack["rules"], key=lambda x: x["id"]):
@@ -132,6 +144,20 @@ def source_blockers(facts: dict, pack: dict, evaluator_version: str) -> list[str
     blockers.extend("unknown_set:" + entry["set_id"]
                     for entry in [*facts["equipped_items"].values(), *facts["runes"]]
                     if entry.get("set_id") and entry["set_id"] not in known_sets)
+    if evaluator_version == "0.1.8":
+        companions = {entry["id"] for entry in facts["companions"]
+                      if entry.get("actor", "companion") == "companion"}
+        for entry in all_sources(facts, evaluator_version):
+            owner = entry.get("companion_id")
+            if entry["kind"] == "companions" and owner != entry["id"].removeprefix("companions:"):
+                blockers.append("source_owner_conflict:" + entry["id"])
+            if entry["actor"] == "companion":
+                if not owner:
+                    blockers.append("companion_owner_unknown:" + entry["id"])
+                elif owner not in companions:
+                    blockers.append("companion_owner_not_selected:" + entry["id"])
+            elif owner is not None:
+                blockers.append("source_owner_conflict:" + entry["id"])
     return blockers
 
 
@@ -168,11 +194,15 @@ def evaluate(profile: dict, knowledge: dict, purpose: dict, *, evaluator_version
     require(profile.get("facts_hash") == digest(facts), "profile_integrity_error", 409)
     require(knowledge.get("pack_hash") == digest(pack), "pack_integrity_error", 409)
     require(pack.get("contract_version") == 1, "incompatible_pack_contract")
+    if evaluator_version != "0.1.8":
+        require(all(option.get("kind") in ("equipment", "skill")
+                    for option in facts.get("preparation_options", [])), "unsupported_preparation_kind")
     purpose = intent(purpose, evaluator_version)
-    strict_requirements = evaluator_version in ("0.1.3", "0.1.4", "0.1.5", "0.1.6", "0.1.7")
-    uncertainty_aware = evaluator_version in ("0.1.4", "0.1.5", "0.1.6", "0.1.7")
-    owned_equipment = evaluator_version in ("0.1.6", "0.1.7")
-    preparation_aware = evaluator_version == "0.1.7"
+    strict_requirements = evaluator_version in ("0.1.3", "0.1.4", "0.1.5", "0.1.6", "0.1.7", "0.1.8")
+    uncertainty_aware = evaluator_version in ("0.1.4", "0.1.5", "0.1.6", "0.1.7", "0.1.8")
+    owned_equipment = evaluator_version in ("0.1.6", "0.1.7", "0.1.8")
+    preparation_aware = evaluator_version in ("0.1.7", "0.1.8")
+    full_future = evaluator_version == "0.1.8"
     pin = {"context": facts["context"], "profile_id": profile["profile_id"],
            "profile_revision": profile["revision"], "facts_hash": profile["facts_hash"],
            "item_instance_id": facts["candidate_item"]["instance_id"],
@@ -231,7 +261,7 @@ def evaluate(profile: dict, knowledge: dict, purpose: dict, *, evaluator_version
         if result["state"] == "unknown":
             blockers.append("unknown_condition:" + result["rule_id"])
     # Engines through 0.1.1 aggregate names; later engines preserve the actor.
-    actor_aware = evaluator_version in ("0.1.2", "0.1.3", "0.1.4", "0.1.5", "0.1.6", "0.1.7")
+    actor_aware = evaluator_version in ("0.1.2", "0.1.3", "0.1.4", "0.1.5", "0.1.6", "0.1.7", "0.1.8")
     active_before = {(r["actor"] if actor_aware else None, r["capability"])
                      for r in before if r["state"] == "active"}
     active_after = {(r["actor"] if actor_aware else None, r["capability"])
@@ -242,6 +272,15 @@ def evaluate(profile: dict, knowledge: dict, purpose: dict, *, evaluator_version
     relevant = [r for r in candidate_rules if r["state"] == "active"]
     future_reasons = []
     future_preparation, prepared_builds = [], {}
+    # Every plan shares the actual current-input reliability, never another plan's blockers.
+    current_plan_blockers = []
+    if full_future:
+        current_plan_blockers = [code for code in blockers
+            if code.startswith(("unknown_context:", "incompatible_context:", "input_unknown:", "unknown_skill:"))
+            or code in ("unsupported_class", "missing_content_entitlement", "game_mechanics_not_accepted",
+                        "unsupported_scenario", "candidate_class_incompatible", "cross_time_snapshot", "conflicting_evidence")]
+        current_plan_blockers.extend(item_blockers(list(before_facts["equipped_items"].values()), pack))
+        current_plan_blockers.extend(source_blockers(before_facts, pack, "0.1.8"))
     if preparation_aware:
         for index, future in enumerate(purpose["future_builds"]):
             refs = future.get("equipment_items", [])
@@ -253,7 +292,12 @@ def evaluate(profile: dict, knowledge: dict, purpose: dict, *, evaluator_version
             if ((set(future["skills"]) != current_skills and "skills" not in purpose["allowed_build_changes"])
                     or (refs and "equipment" not in purpose["allowed_build_changes"])):
                 plan_blockers.append("future_build_change_not_permitted")
-            modified, report = prepare_future(facts, configured, future, purpose, index, plan_blockers)
+            prepare = prepare_full_future if full_future else prepare_future
+            modified, report = prepare(facts, configured, future, purpose, index, plan_blockers)
+            if full_future:
+                report["comparison"] = compare_future_plan(
+                    before, modified, pack, purpose, scoped, report["blockers"], current_plan_blockers)
+                blockers.extend(report["comparison"]["blockers"])
             prepared_builds[index] = (modified, report, selected)
             future_preparation.append(report)
             blockers.extend(report["blockers"])
@@ -295,10 +339,16 @@ def evaluate(profile: dict, knowledge: dict, purpose: dict, *, evaluator_version
                                           for x in future["skills"]]
             modified["conditions"] = future["conditions"]
             blockers.extend("unknown_future_skill:" + x for x in future["skills"] if x not in known_skills)
-            for rule in resolve(modified, pack, evaluator_version):
-                if candidate_sources.intersection(rule["source_ids"]) and rule["state"] == "unknown":
+            future_rows = report["comparison"]["after"] if full_future else resolve(modified, pack, evaluator_version)
+            future_candidate_sources = candidate_sources
+            if full_future:
+                projected = modified["equipped_items"][candidate["slot"]]
+                future_candidate_sources = {projected["instance_id"], *(
+                    projected["instance_id"] + ":" + entry["id"] for entry in projected["embedded_items"])}
+            for rule in future_rows:
+                if future_candidate_sources.intersection(rule["source_ids"]) and rule["state"] == "unknown":
                     blockers.append("unknown_future_condition:" + rule["rule_id"])
-                if candidate_sources.intersection(rule["source_ids"]) and rule["state"] == "active":
+                if future_candidate_sources.intersection(rule["source_ids"]) and rule["state"] == "active":
                     reason = {**rule, "future_build_index": index, "feasibility": future["feasibility"]}
                     if owned_equipment:
                         reason["future_equipment"] = [{key: item[key] for key in ("instance_id", "slot", "name")
@@ -309,6 +359,8 @@ def evaluate(profile: dict, knowledge: dict, purpose: dict, *, evaluator_version
                         reason["input_evidence_ids"] = sorted(set(reason["input_evidence_ids"]) |
                                                              set(report["input_evidence_ids"]))
                         reason["preparation_status"] = report["status"]
+                        if full_future:
+                            reason["future_comparison"] = deepcopy(report["comparison"])
                     future_reasons.append(reason)
     equip_blockers = []
     if candidate["required_level"] is not None and candidate["required_level"] > facts["character_level"]:
@@ -371,7 +423,7 @@ def evaluate(profile: dict, knowledge: dict, purpose: dict, *, evaluator_version
                                 ("missing_mechanisms", missing_mechanisms)):
             comparison[key] = [{"actor": actor, "capability": capability} for actor, capability in mechanisms]
     scope_notice = "Synthetic mechanism check; no validated game recommendation or DPS."
-    if evaluator_version in ("0.1.5", "0.1.6", "0.1.7"):
+    if evaluator_version in ("0.1.5", "0.1.6", "0.1.7", "0.1.8"):
         comparison["item_rolls"] = compare_item_rolls(facts)
         if not scoped:
             scope_notice = "Confirmed item affix comparison only; no validated game recommendation or DPS."
@@ -383,3 +435,116 @@ def evaluate(profile: dict, knowledge: dict, purpose: dict, *, evaluator_version
     if preparation_aware:
         result["future_preparation"] = future_preparation
     return result
+
+
+def resolve_full_future(facts: dict, pack: dict) -> list[dict]:
+    """Evaluate each companion's providers and dependencies in its own ownership scope."""
+    sources = all_sources(facts, "0.1.8")
+    companions = {entry["id"] for entry in facts["companions"]
+                  if entry.get("actor", "companion") == "companion"}
+    rows = []
+    for rule in sorted(pack["rules"], key=lambda entry: entry["id"]):
+        if rule["source_kind"] == "effect":
+            matching = [entry for entry in sources if rule["source_id"] in entry["effects"]
+                        and entry["actor"] == rule["actor"]]
+        else:
+            equipment = rule["source_kind"] == "equipment_set"
+            items = list(facts["equipped_items"].values()) if equipment else facts["runes"]
+            matching = [{"id": entry.get("instance_id", entry.get("id")),
+                         "evidence_ids": entry["evidence_ids"],
+                         "companion_id": entry.get("companion_id")}
+                        for entry in items if entry.get("set_id") == rule["source_id"]
+                        and ("hero" if equipment else entry.get("actor", "hero")) == rule["actor"]]
+        providers = {}
+        if rule["actor"] == "hero":
+            providers[None] = matching
+        else:
+            for entry in matching:
+                providers.setdefault(entry.get("companion_id"), []).append(entry)
+        provider_states = []
+        for owner, entries in providers.items():
+            if rule["actor"] == "companion" and owner not in companions:
+                provider_states.append("unknown")
+                continue
+            skills = {entry["id"]: entry["rank"] for entry in facts["skills"]
+                      if entry.get("actor", "hero") == rule["actor"] and entry["rank"] > 0
+                      and (rule["actor"] == "hero" or entry.get("companion_id") == owner)}
+            present = len(entries) >= rule.get("min_count", 1)
+            skills_met = set(rule.get("requires_skills", [])).issubset(skills)
+            ranks_met = all(skills.get(ref, 0) >= rank
+                            for ref, rank in rule.get("requires_skill_ranks", {}).items())
+            if not present or not skills_met or not ranks_met:
+                provider_states.append("inactive")
+            else:
+                provider_states.append(condition_state([
+                    facts["conditions"].get(key, "unknown") for key in rule["conditions"]]))
+        state = ("active" if "active" in provider_states else
+                 "unknown" if "unknown" in provider_states else "inactive")
+        rows.append({"rule_id": rule["id"], "capability": rule["capability"], "state": state,
+                     "actor": rule["actor"], "source_ids": sorted(entry["id"] for entry in matching),
+                     "input_evidence_ids": sorted({ref for entry in matching for ref in entry["evidence_ids"]}),
+                     "evidence_ids": rule["evidence_ids"], "explanation": rule["explanation"]})
+    return rows
+
+
+def compare_future_plan(before: list[dict], configured: dict, pack: dict, purpose: dict,
+                        scoped: bool, preparation_blockers: list[str], current_blockers: list[str]) -> dict:
+    """A payable plan is compared separately against the actual current build."""
+    blockers = [*preparation_blockers, *current_blockers]
+    blockers.extend(item_blockers(list(configured["equipped_items"].values()), pack))
+    blockers.extend(source_blockers(configured, pack, "0.1.8"))
+    known_skills = {ref for rule in pack["rules"] for ref in rule.get("requires_skills", [])}
+    known_skills.update(ref for rule in pack["rules"] for ref in rule.get("requires_skill_ranks", {}))
+    blockers.extend("unknown_future_skill:" + entry["id"] for entry in configured["skills"]
+                    if entry["rank"] > 0 and entry["id"] not in known_skills)
+    # Payment uncertainty does not erase a separately confirmed hypothetical outcome.
+    # An unconfirmed/stale/partial source projection cannot establish either gain or loss.
+    cost_codes = ("preparation_cost_unknown:", "preparation_cost_out_of_range:",
+                  "preparation_resource_unknown:", "preparation_resource_insufficient:",
+                  "preparation_budget_exceeded:")
+    projection_reliable = scoped and all(code.startswith(cost_codes) or
+        (code.startswith("preparation_unknown:") and code.endswith(":costs_not_confirmed"))
+        for code in blockers)
+    after = resolve(configured, pack, "0.1.8") if projection_reliable else []
+    blockers.extend("unknown_future_condition:" + entry["rule_id"] for entry in after
+                    if entry["state"] == "unknown")
+    known_capabilities = {rule["capability"] for rule in pack["rules"]}
+    required = set(purpose["required_capabilities"])
+    if scoped:
+        blockers.extend("unknown_required_capability:" + ref for ref in sorted(required - known_capabilities))
+        required &= known_capabilities
+    else:
+        required.clear()
+    states_before, states_after = capability_states(before), capability_states(after)
+    lost = sorted(key for key in states_before if states_before[key] == "active"
+                  and states_after.get(key, "inactive") == "inactive")
+    gained = sorted(key for key in states_after if states_after[key] == "active"
+                    and states_before.get(key, "inactive") == "inactive")
+    missing = sorted(("hero", ref) for ref in required
+                     if states_after.get(("hero", ref), "inactive") == "inactive")
+    uncertain = [{"actor": actor, "capability": capability,
+                  "before": states_before.get((actor, capability), "inactive"),
+                  "after": states_after.get((actor, capability), "inactive")}
+                 for actor, capability in sorted(states_before.keys() | states_after.keys())
+                 if "unknown" in (states_before.get((actor, capability), "inactive"),
+                                  states_after.get((actor, capability), "inactive"))]
+    if not projection_reliable:
+        lost, gained, missing, uncertain = [], [], [], []
+    equip_blockers = []
+    for entry in configured["equipped_items"].values():
+        if entry["required_level"] is not None and entry["required_level"] > configured["character_level"]:
+            equip_blockers.append("future_required_level_not_met:" + entry["instance_id"])
+        if entry.get("class_id") not in (None, configured["class_id"]):
+            equip_blockers.append("future_item_class_incompatible:" + entry["instance_id"])
+    blockers = sorted(set(blockers))
+    return {"status": "blocked" if blockers or equip_blockers else
+            "mechanism_loss" if lost or missing else "mechanism_change" if gained else "no_known_change",
+            "scope_compatible": scoped, "before": deepcopy(before), "after": after,
+            "lost_capabilities": sorted({capability for _, capability in lost}),
+            "gained_capabilities": sorted({capability for _, capability in gained}),
+            "missing_requirements": [capability for _, capability in missing],
+            "lost_mechanisms": [{"actor": actor, "capability": capability} for actor, capability in lost],
+            "gained_mechanisms": [{"actor": actor, "capability": capability} for actor, capability in gained],
+            "missing_mechanisms": [{"actor": actor, "capability": capability} for actor, capability in missing],
+            "uncertain_mechanisms": uncertain, "equip_blockers": sorted(set(equip_blockers)),
+            "blockers": blockers}

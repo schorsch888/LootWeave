@@ -1,4 +1,5 @@
-import type { EvaluationResult } from "../../shared/api";
+import { sourceGroups, sourceKinds } from "../../shared/build-sources";
+import type { EvaluationComparison, EvaluationResult } from "../../shared/api";
 import { slots } from "../../shared/equipment-labels";
 
 const retention: Record<string, string> = { keep: "建议保留", candidate: "未来构筑候选", low_current_relevance: "当前相关性低", needs_confirmation: "需要补充确认" };
@@ -9,15 +10,19 @@ const feasibility: Record<string, string> = { owned: "已拥有", obtainable: "�
 const owners: Record<string, string> = { hero: "角色", companion: "仆从" };
 const mechanismStates: Record<string, string> = { active: "已确认生效", inactive: "已确认未生效", unknown: "未知 · 待确认" };
 const unknownRequirement = "unknown_required_capability:";
-const blockerNames: Record<string, string> = { game_mechanics_not_accepted: "真实游戏机制尚未验证，当前只比较已确认的物品字段。", inventory_not_fully_scanned: "库存尚未完整核对，不能判断全部未来用途。", inventory_not_recorded: "此快照尚未记录库存；请核对后保存，缺少记录不等于空库存。", future_build_change_not_permitted: "所选未来组合包含未允许的技能或装备更改。", candidate_class_incompatible: "候选装备不适用于当前职业；当前场景不能给出构筑用途结论。", cross_time_snapshot: "存在其他时点的来源，请核对同一时点的构筑。", "input_unknown:build_not_reviewed": "当前构筑尚未完整核对。", "input_unknown:current_slot_not_reviewed": "当前同槽装备尚未核对。", "input_unknown:ocr_fields_not_mapped": "请逐项核对截图识别字段。" };
+const blockerNames: Record<string, string> = { game_mechanics_not_accepted: "真实游戏机制尚未验证，当前只比较已确认的物品字段。", inventory_not_fully_scanned: "库存尚未完整核对，不能判断全部未来用途。", inventory_not_recorded: "此快照尚未记录库存；请核对后保存，缺少记录不等于空库存。", future_build_change_not_permitted: "所选未来组合包含未允许的构筑更改。", candidate_class_incompatible: "候选装备不适用于当前职业；当前场景不能给出构筑用途结论。", cross_time_snapshot: "存在其他时点的来源，请核对同一时点的构筑。", "input_unknown:build_not_reviewed": "当前构筑尚未完整核对。", "input_unknown:current_slot_not_reviewed": "当前同槽装备尚未核对。", "input_unknown:ocr_fields_not_mapped": "请逐项核对截图识别字段。" };
 const preparationBlockers: Record<string, string> = {
+  unknown_condition: "机制的条件或作用者归属尚未确认", unknown_future_condition: "未来机制的条件或作用者归属尚未确认",
+  future_source_not_recorded: "未来来源或预计状态尚未记录", future_source_removal_not_recorded: "撤销当前来源的条件和费用尚未记录",
+  preparation_source_selection_conflict: "方案预计状态与未来来源选择不一致", preparation_source_owner_conflict: "方案的作用者或仆从归属发生变化",
+  preparation_companion_not_recorded: "条件对应的仆从尚未记录", preparation_companion_not_selected: "方案所依赖的仆从未选入未来配置",
   preparation_option_not_recorded: "准备方案未记录", preparation_evidence_unconfirmed: "方案依据存在冲突或来自其他时点",
   preparation_scope_mismatch: "方案的游戏版本、模式或职业已变化", preparation_unknown: "准备方案仍有不确定项",
   preparation_target_conflict: "同一目标选择了多个互相冲突的方案", preparation_unlock_unknown: "学习或改造条件尚未确认",
   preparation_unlock_not_met: "尚未解锁学习或改造条件", preparation_level_unknown: "操作等级要求尚未确认",
-  preparation_level_not_met: "角色等级未达到操作要求", preparation_input_changed: "原物品或技能已变化，需要重新核对方案",
+  preparation_level_not_met: "角色等级未达到操作要求", preparation_input_changed: "原物品或构筑来源已变化，需要重新核对方案",
   preparation_skill_selection_conflict: "方案目标技能与未来构筑选择不一致", preparation_rank_limit_unknown: "技能等级上限尚未确认",
-  preparation_rank_not_met: "目标技能等级超过已确认上限", preparation_companion_requirements_unknown: "仆从专属学习条件尚未确认",
+  preparation_rank_not_met: "目标技能等级超过已确认上限", preparation_companion_requirements_unknown: "具体仆从的归属、实际等级或专属条件尚未确认",
   preparation_item_not_selected: "改造目标物品尚未选入未来配套", preparation_outcome_unknown: "预计改后属性存在未知或随机结果",
   preparation_cost_unknown: "准备方案的全部费用尚未确认", future_skill_not_recorded: "未来技能的等级和来源尚未记录",
   future_skill_removal_not_recorded: "撤销原技能的条件和费用尚未记录", preparation_cost_out_of_range: "合计费用超出可靠整数范围",
@@ -45,14 +50,24 @@ const rollStates: Record<string, string> = { comparable: "同词条、同单位"
 const rollValue = (value: number | null, unit: string | null) => value === null ? "未提供" : value + " " + (units[unit || ""] || unit || "");
 const mechanismLabel = (capability: string, actor?: string) => actor ? (owners[actor] || actor) + " · " + label(capability) : label(capability);
 
+function MechanismChanges({ comparison, future = false }: { comparison: EvaluationComparison; future?: boolean }) {
+  if (future && comparison.status === "blocked" && !comparison.after.length)
+    return <p className="warning">完整未来配置尚待核对，暂不判断机制得失。</p>;
+  const lost = comparison.lost_mechanisms?.map(x => mechanismLabel(x.capability, x.actor)) ?? comparison.lost_capabilities.map(label);
+  const gained = comparison.gained_mechanisms?.map(x => mechanismLabel(x.capability, x.actor)) ?? comparison.gained_capabilities.map(label);
+  const missing = comparison.missing_mechanisms?.map(x => mechanismLabel(x.capability, x.actor)) ?? comparison.missing_requirements.map(label);
+  const uncertain = comparison.uncertain_mechanisms ?? [];
+  return <>
+    {comparison.scope_compatible === false ? <p className="warning">游戏机制尚未验证，或范围、版本不匹配；物品字段差异仍可查看。</p> : <div className="delta-grid">
+      <div><h3>{future ? "计划失去" : "换装失去"}</h3>{lost.length ? <ul>{lost.map(x => <li key={x}>{x}</li>)}</ul> : <p>未发现已知机制损失</p>}</div>
+      <div><h3>{future ? "计划获得" : "换装获得"}</h3>{gained.length ? <ul>{gained.map(x => <li key={x}>{x}</li>)}</ul> : <p>未发现已知机制增益</p>}</div>
+    </div>}
+    {missing.length > 0 && <p className="warning">{future ? "未来配置未满足所需机制：" : "未满足所需机制："}{missing.join("、")}</p>}
+    {uncertain.length > 0 && <div className="warning"><strong>{future ? "计划机制状态待确认" : "机制状态待确认"}</strong><ul>{uncertain.map(x => <li key={x.actor + ":" + x.capability}>{mechanismLabel(x.capability, x.actor)}：{future ? "当前" : "替换前"} {mechanismStates[x.before]} → {future ? "未来" : "替换后"} {mechanismStates[x.after]}</li>)}</ul><p>请核对条件和来源后再判断。</p></div>}
+  </>;
+}
+
 export function EvaluationCard({ result, onReplay, replaying, replayed }: { result: EvaluationResult; onReplay: () => void; replaying: boolean; replayed: boolean }) {
-  const lost = result.comparison.lost_mechanisms?.map(x => mechanismLabel(x.capability, x.actor))
-    ?? result.comparison.lost_capabilities.map(label);
-  const gained = result.comparison.gained_mechanisms?.map(x => mechanismLabel(x.capability, x.actor))
-    ?? result.comparison.gained_capabilities.map(label);
-  const missing = result.comparison.missing_mechanisms?.map(x => mechanismLabel(x.capability, x.actor))
-    ?? result.comparison.missing_requirements.map(label);
-  const uncertain = result.comparison.uncertain_mechanisms || [];
   return <section className="panel result" aria-labelledby="result-title">
     <div className="section-heading"><div><span className="eyebrow">DECISION RECORD</span><h2 id="result-title">{retention[result.retention] || result.retention}</h2></div><span className="tag">快照 r{result.pin.profile_revision}</span></div>
     <p className="notice">{result.pin.context.game_id === "lootweave-fixture" ? "这是合成机制验证结果，尚不代表已验证的游戏建议或 DPS。" : "下方显示已确认物品的字段差异；真实游戏机制和 DPS 尚未验证。"}</p>
@@ -69,9 +84,28 @@ export function EvaluationCard({ result, onReplay, replaying, replayed }: { resu
         <p>预计技能：{plan.skill_allocations.map(skill => skill.id + " · " + skill.rank + " 级 · " + (owners[skill.actor || "hero"] || skill.actor)).join("、") || "未记录"}</p>
         {plan.options.filter(option => option.kind === "equipment").map(option => {
           const item = option.projected_result;
-          return "affixes" in item ? <p key={option.id}>预计改后物品：{item.name || option.target_id} · 强化 {item.upgrade_state.known ? item.upgrade_state.level : "未知"}
+          return item && "affixes" in item ? <p key={option.id}>预计改后物品：{item.name || option.target_id} · 强化 {item.upgrade_state.known ? item.upgrade_state.level : "未知"}
             {item.affixes.map(affix => " · " + (statNames[affix.id] || affix.id) + " " + rollValue(affix.value, affix.unit)).join("")}</p> : null;
         })}
+        {plan.build_sources && <details><summary>完整未来配置（计划，不会写入当前档案）</summary>
+          {sourceKinds.map(kind => { const group = sourceGroups[kind]; return <p key={kind}>{group.title}：{plan.build_sources![group.key].map(source =>
+            source.id + (group.ranks ? " · " + source.rank + " 级" : "") + " · " + (owners[source.actor ?? group.actor] || source.actor)
+            + (source.companion_id ? " · 归属 " + source.companion_id : "") + (source.level ? " · 仆从等级 " + source.level : "")
+            + (source.set_id ? " · 符文组 " + source.set_id : "") + (source.effects.length ? " · 效果 " + source.effects.join("、") : "")).join("；") || "无选定来源"}</p>; })}
+          {plan.equipped_items && <p>预计装备：{Object.entries(plan.equipped_items).map(([slot, item]) =>
+            (slots[slot] || slot) + " · " + (item.name || item.instance_id)).join("；")}</p>}
+          {plan.conditions && <p>预计条件：{Object.entries(plan.conditions).map(([id, state]) => id + " · " + (mechanismStates[state] || state)).join("；") || "无已记录条件"}</p>}
+        </details>}
+        {plan.comparison && <div className="future-comparison"><h4>完整未来配置的机制变化</h4>
+          <p className="muted">实际当前配置 → 此计划的完整预计配置。准备费用满足与配置需求满足分别核对。</p>
+          {plan.comparison.status === "blocked" && <p className="warning">计划配置的机制比较受阻，请先核对缺失依据。</p>}
+          <MechanismChanges comparison={plan.comparison} future />
+          {(plan.comparison.blockers ?? []).length > 0 && <ul>{plan.comparison.blockers!.map(code => <li key={code}>{blockerLabel(code)}</li>)}</ul>}
+          <details><summary>未来机制来源与依据</summary><table><thead><tr><th>机制</th><th>归属</th><th>实际当前</th><th>计划未来</th><th>来源与依据</th></tr></thead>
+            <tbody>{plan.comparison.after.map(row => <tr key={row.rule_id}><td>{label(row.capability || "")}</td><td>{owners[row.actor || ""] || "归属未知"}</td>
+              <td>{mechanismStates[plan.comparison!.before.find(original => original.rule_id === row.rule_id)?.state || "unknown"]}</td><td>{mechanismStates[row.state || "unknown"]}</td>
+              <td>{row.source_ids?.join("、") || "无"} · 输入：{row.input_evidence_ids.join("、")} · 规则：{row.evidence_ids.join("、")}</td></tr>)}</tbody></table></details>
+        </div>}
         {plan.resources.length > 0 && <table><thead><tr><th>材料或货币</th><th>已确认费用合计</th><th>持有</th><th>预算上限</th><th>材料缺口</th><th>超出预算</th></tr></thead>
           <tbody>{plan.resources.map(row => <tr key={row.resource_id}><td>{row.resource_id}</td><td>{row.cost ?? "待确认"}</td><td>{row.available ?? "待核对"}</td><td>{row.budget_limit ?? "未设上限"}</td><td>{row.missing ?? "待核对"}</td><td>{row.budget_excess ?? "未设上限"}</td></tr>)}</tbody></table>}
         {plan.blockers.length > 0 && <ul>{plan.blockers.map(reason => <li key={reason}>{blockerLabel(reason)}</li>)}</ul>}
@@ -79,12 +113,7 @@ export function EvaluationCard({ result, onReplay, replaying, replayed }: { resu
       </details>)}
     </div>}
     <div className="verdict"><strong>{status[result.comparison.status] || result.comparison.status}</strong><span>保留价值与立即换装分别判断</span></div>
-    {result.comparison.scope_compatible === false ? <p className="warning">游戏机制尚未验证，或范围、版本不匹配；物品字段差异仍可查看。</p> : <div className="delta-grid">
-      <div><h3>换装失去</h3>{lost.length ? <ul>{lost.map(x => <li key={x}>{x}</li>)}</ul> : <p>未发现已知机制损失</p>}</div>
-      <div><h3>换装获得</h3>{gained.length ? <ul>{gained.map(x => <li key={x}>{x}</li>)}</ul> : <p>未发现已知机制增益</p>}</div>
-    </div>}
-    {missing.length > 0 && <p className="warning">未满足所需机制：{missing.join("、")}</p>}
-    {uncertain.length > 0 && <div className="warning"><strong>机制状态待确认</strong><ul>{uncertain.map(x => <li key={x.actor + ":" + x.capability}>{mechanismLabel(x.capability, x.actor)}：替换前 {mechanismStates[x.before]} → 替换后 {mechanismStates[x.after]}</li>)}</ul><p>请核对条件和来源后再判断。</p></div>}
+    <MechanismChanges comparison={result.comparison} />
     {result.comparison.equip_blockers.map(x => <p className="warning" key={x}>{x === "required_level_not_met" ? "尚未达到穿戴等级；仍可保留。" : "职业穿戴要求不满足。"}</p>)}
     {result.blockers.length > 0 && <details open><summary>缺失依据与待确认项（{result.blockers.length}）</summary><ul>{result.blockers.map(x => <li key={x}>{blockerLabel(x)}</li>)}</ul></details>}
     {result.reasons.length > 0 && <h3>用途说明与依据</h3>}

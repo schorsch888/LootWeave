@@ -1,4 +1,5 @@
 import { isExactCount } from "../../shared/api";
+import { sourceGroups, sourceKinds } from "../../shared/build-sources";
 import type { Intent, ResourceCost, Snapshot } from "../../shared/api";
 import { SourceList } from "../../entities/build-source";
 import { slots } from "../../shared/equipment-labels";
@@ -44,7 +45,11 @@ export function BuildEditor({ facts, intent, onFactsChange, onIntentChange }: {
   const addFuture = () => updateIntent(current => ({ ...current, future_builds: [
     ...current.future_builds,
     { skills: facts.skills.filter(skill => skill.rank && skill.rank > 0).map(skill => skill.id),
-      conditions: { ...facts.conditions }, feasibility: "", equipment_items: [] },
+      conditions: { ...facts.conditions }, feasibility: "", equipment_items: [],
+      ...Object.fromEntries(sourceKinds.filter(kind => kind !== "skill").map(kind => {
+        const group = sourceGroups[kind];
+        return [group.key, facts[group.key].filter(source => !group.ranks || (source.rank ?? 0) > 0).map(source => source.id)];
+      })) },
   ] }));
 
   const limits = Array.isArray(intent.budget.resource_limits) ? intent.budget.resource_limits as ResourceCost[] : [];
@@ -69,12 +74,12 @@ export function BuildEditor({ facts, intent, onFactsChange, onIntentChange }: {
     </details>
 
     <div className="build-source">
-      <SourceList title="技能" sources={facts.skills} evidenceIds={facts.evidence_ids} ranks onChange={skills => updateFacts({ skills })} />
-      <SourceList title="天赋" sources={facts.talents} evidenceIds={facts.evidence_ids} ranks onChange={talents => updateFacts({ talents })} />
-      <SourceList title="巅峰" sources={facts.paragon} evidenceIds={facts.evidence_ids} ranks onChange={paragon => updateFacts({ paragon })} />
-      <SourceList title="符文" sources={facts.runes} evidenceIds={facts.evidence_ids} setIds onChange={runes => updateFacts({ runes })} />
-      <SourceList title="仆从" sources={facts.companions} evidenceIds={facts.evidence_ids} defaultActor="companion" onChange={companions => updateFacts({ companions })} />
-      <SourceList title="临时效果" sources={facts.temporary_effects} evidenceIds={facts.evidence_ids} onChange={temporary_effects => updateFacts({ temporary_effects })} />
+      {sourceKinds.map(kind => {
+        const group = sourceGroups[kind];
+        return <SourceList key={kind} title={group.title} sources={facts[group.key]} evidenceIds={facts.evidence_ids}
+          ranks={group.ranks} setIds={group.setIds} defaultActor={group.actor} levels={kind === "companion"}
+          onChange={sources => updateFacts({ [group.key]: sources })} />;
+      })}
     </div>
 
     <details>
@@ -87,10 +92,14 @@ export function BuildEditor({ facts, intent, onFactsChange, onIntentChange }: {
           }} /></label>
         <fieldset className="check">
           <legend>允许改变的构筑部分</legend>
-          <label><input type="checkbox" checked={intent.allowed_build_changes.includes("skills")}
-            onChange={event => updateIntent(current => ({ ...current, allowed_build_changes: event.target.checked
-              ? [...new Set([...current.allowed_build_changes, "skills"])]
-              : current.allowed_build_changes.filter(value => value !== "skills") }))} /> 技能</label>
+          {sourceKinds.map(kind => {
+            const group = sourceGroups[kind];
+            return <label key={kind}><input type="checkbox" aria-label={kind === "skill" ? undefined : "允许更改" + group.title}
+              checked={intent.allowed_build_changes.includes(group.key)}
+              onChange={event => updateIntent(current => ({ ...current, allowed_build_changes: event.target.checked
+                ? [...new Set([...current.allowed_build_changes, group.key])]
+                : current.allowed_build_changes.filter(value => value !== group.key) }))} /> {group.title}</label>;
+          })}
           <label><input type="checkbox" aria-label="允许更改装备" checked={intent.allowed_build_changes.includes("equipment")}
             onChange={event => updateIntent(current => ({ ...current, allowed_build_changes: event.target.checked
               ? [...new Set([...current.allowed_build_changes, "equipment"])]
@@ -115,9 +124,14 @@ export function BuildEditor({ facts, intent, onFactsChange, onIntentChange }: {
         </fieldset>
         {intent.future_builds.map((build, index) => <div className="source-list" key={index}>
           <strong>未来构筑 {index + 1}</strong>
-          <label>技能标识（逗号分隔）<input value={build.skills.join(", ")}
-            onChange={event => updateIntent(current => ({ ...current, future_builds: current.future_builds.map((item, i) => i === index
-              ? { ...item, skills: listValue(event.target.value) } : item) }))} /></label>
+          {sourceKinds.map(kind => {
+            const group = sourceGroups[kind];
+            const selected = build[group.key] ?? facts[group.key].filter(source => !group.ranks || (source.rank ?? 0) > 0).map(source => source.id);
+            return <label key={kind}>{group.title}标识（逗号分隔）<input aria-label={"未来" + group.title + "标识"}
+              value={selected.join(", ")} onChange={event => updateIntent(current => ({ ...current,
+                future_builds: current.future_builds.map((item, i) => i === index ? { ...item, [group.key]: listValue(event.target.value) } : item) }))} /></label>;
+          })}
+          <p className="muted">未单独填写的部分沿用当前已确认来源；清空表示计划移除全部该类来源。新增、移除和调整都需要选择对应准备方案。</p>
           <label>可行性<select value={build.feasibility} onChange={event => updateIntent(current => ({ ...current,
             future_builds: current.future_builds.map((item, i) => i === index ? { ...item, feasibility: event.target.value } : item),
           }))}>
@@ -131,25 +145,29 @@ export function BuildEditor({ facts, intent, onFactsChange, onIntentChange }: {
             return skillId + " · " + (source?.rank === undefined ? "等级待记录" : source.rank + " 级") + " · " + (source?.actor === "companion" ? "仆从" : "角色");
           }).join("、") || "暂无"}</p>
           <fieldset>
-            <legend>选择学习技能与装备改造方案</legend>
-            {!(facts.preparation_options ?? []).length && <p className="muted">需要改变技能等级或改造装备时，请先在上方记录准备方案、条件和费用。</p>}
+            <legend>选择构筑与装备准备方案</legend>
+            {!(facts.preparation_options ?? []).length && <p className="muted">需要改变配置或改造装备时，请先在上方记录准备方案、条件和费用。</p>}
             {(facts.preparation_options ?? []).map(option => <label className="check" key={option.id}>
               <input type="checkbox" data-preparation-id={option.id} aria-label={"未来构筑 " + (index + 1) + " 准备方案 " + option.id}
-                disabled={!intent.allowed_build_changes.includes(option.kind === "skill" ? "skills" : "equipment")}
+                disabled={!intent.allowed_build_changes.includes(option.kind === "equipment" ? "equipment" : sourceGroups[option.kind].key)}
                 checked={(build.preparation_options ?? []).includes(option.id)}
                 onChange={event => updateIntent(current => ({ ...current, future_builds: current.future_builds.map((entry, i) => {
                   if (i !== index) return entry;
-                  let skills = entry.skills;
-                  if (option.kind === "skill") {
-                    const include = event.target.checked ? (option.result.rank ?? 0) > 0
-                      : facts.skills.some(skill => skill.id === option.target_id && (skill.rank ?? 0) > 0);
-                    skills = include ? [...new Set([...skills, option.target_id])] : skills.filter(id => id !== option.target_id);
-                  }
-                  return { ...entry, skills, preparation_options: event.target.checked
-                    ? [...new Set([...(entry.preparation_options ?? []), option.id])]
-                    : (entry.preparation_options ?? []).filter(ref => ref !== option.id) };
-                }) }))} />{option.kind === "skill" ? "技能 " + option.target_id + " → " + option.result.rank + " 级"
-                  : "装备改造 · " + (option.result.name || option.target_id)} · {option.costs === null || option.unknowns.includes("costs_not_confirmed") ? "费用待核对"
+                  const refs = event.target.checked ? [...new Set([...(entry.preparation_options ?? []), option.id])]
+                    : (entry.preparation_options ?? []).filter(ref => ref !== option.id);
+                  if (option.kind === "equipment") return { ...entry, preparation_options: refs };
+                  const group = sourceGroups[option.kind];
+                  const selected = entry[group.key] ?? facts[group.key].filter(source => !group.ranks || (source.rank ?? 0) > 0).map(source => source.id);
+                  const remaining = (facts.preparation_options ?? []).find(quote => quote.kind === option.kind
+                    && quote.target_id === option.target_id && refs.includes(quote.id));
+                  const projected = remaining && remaining.kind !== "equipment" ? remaining.result
+                    : facts[group.key].find(source => source.id === option.target_id);
+                  const include = projected != null && (!group.ranks || (projected.rank ?? 0) > 0);
+                  return { ...entry, [group.key]: include ? [...new Set([...selected, option.target_id])]
+                    : selected.filter(id => id !== option.target_id), preparation_options: refs };
+                }) }))} />{option.kind === "equipment" ? "装备改造 · " + (option.result.name || option.target_id)
+                  : sourceGroups[option.kind].title + " " + option.target_id + " → " + (option.result === null ? "移除"
+                    : sourceGroups[option.kind].ranks ? option.result.rank + " 级" : "已记录的预计状态")} · {option.costs === null || option.unknowns.includes("costs_not_confirmed") ? "费用待核对"
                     : option.costs.length ? option.costs.map(cost => cost.resource_id + " × " + cost.amount).join("、") : "已核对免费"}
             </label>)}
             {(build.preparation_options ?? []).filter(ref => !(facts.preparation_options ?? []).some(option => option.id === ref)).map(ref =>
