@@ -13,7 +13,6 @@ LootWeave has a local Windows prototype. Real-game support and release acceptanc
 - Examine the working-tree status and related diffs first. Keep existing user changes.
 - Keep changes in the approved task scope. Continue the approved work without repeated confirmation.
 - Use `rg` to find files and text. Use the standard library or existing dependencies before you add dependencies.
-- Use Luna for simple inventories and documentation scans. Use 6.1-sol for implementation and complex repairs. If a required model is not available, tell the user.
 - Give each agent independent work and explicit file ownership. Examine their changes before you use them.
 - When scope or behavior changes, update the design and roadmap.
 

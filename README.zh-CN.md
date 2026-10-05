@@ -1,119 +1,183 @@
-# LootWeave
+<div align="center">
 
-[English](README.md) · 简体中文
+# 🧩 LootWeave
 
-**以物品事实、角色构筑和版本化证据为依据，研究装备决策。**
+**把装备、构筑和证据放进同一个本地工作台。**
 
-LootWeave 是一个开源研究与设计项目，面向 Windows 本地装备决策助手。它希望解释物品怎样使用、是否适合某个构筑，以及为什么值得保留，无需玩家自行填写词条权重。
+[![仓库检查](https://github.com/schorsch888/LootWeave/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/schorsch888/LootWeave/actions/workflows/checks.yml)
+[![许可证：Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue)](LICENSE)
+[![平台：Windows x64](https://img.shields.io/badge/Platform-Windows_x64-0078D4)](docs/development.md#prerequisites)
+[![阶段：实验性](https://img.shields.io/badge/Stage-Experimental-orange)](docs/roadmap.md)
 
-> **当前阶段：研究与开发。** 仓库包含复现工具、精选证据和实验性源码。唯一可执行的游戏知识包使用虚构数据；真实游戏建议与正式 Windows 版本尚未通过验收。
+[English](README.md) · **简体中文**
 
-[开始使用](#开始使用) · [文档导航](#文档导航) · [参与贡献](CONTRIBUTING.md) · [路线图](docs/roadmap.md)
+[📦 下载](https://github.com/schorsch888/LootWeave/releases) · [🚀 快速开始](#快速开始) · [📚 文档导航](#文档导航) · [🤝 参与贡献](CONTRIBUTING.md)
+
+</div>
+
+LootWeave 是一个面向装备决策的开源 Windows 原型。
+它把实际物品数据、完整角色构筑和版本化证据联系起来。
+玩家无需自行填写词条权重。
+
+> **🧪 实验阶段：** 只有虚构知识包包含可执行的游戏规则。
+> Deskrawl 是研究对象。真实游戏建议与正式 Windows 版本仍需验收证据。
 
 ## 为什么做 LootWeave
 
-物品价值取决于实际词条、完整构筑和使用目标。LootWeave 探索的工作流程包括：
+物品价值取决于实际词条、完整构筑和使用目标。
+工作台将这些输入放在一起：
 
-- 记录已拥有的物品与构筑事实，并由用户手动确认 OCR 观察。
-- 区分保留物品的理由与当前能否装备。
-- 记录准备操作报价，单独说明资源或预算缺口，区分这些结果与机制结论。
-- 比较完整构筑中的机制变化，并保留用于回放的输入和规则。
-- 明确展示缺失或冲突的证据，阻止缺乏依据的结论。
-
-## 当前状态
-
-| 领域 | 已有范围 | 验收边界 |
-| --- | --- | --- |
-| 研究 | 精选 Deskrawl 证据与只读复现工具 | 需要合法取得的匹配源文件；静态解码不代表完整机制已验证 |
-| 实验性流程 | 物品／构筑录入、已拥有物品与资源、准备操作报价与预算、SQLite 档案、字段差异与冻结回放 | 真实游戏 DPS 和保留／换装建议尚未验收 |
-| 采集与 OCR | 持久保存未确认截图、逐行采用／忽略核对，以及手动映射已有／自定义词条 | 自动解析仅覆盖三个通用演示标签；真实游戏布局覆盖与独立真值复核仍待完成 |
-| 规划 | 手动记录的经验／耗时试验与样本估计 | 不提供已验证的最优路线或最终物品掉落概率 |
-| 运行时 | 默认完整启动（eager），可显式启用按需启动实验 | 预先声明的启动延迟比较未通过；可见 GUI 冷启动仍待验收 |
-| Windows 打包 | 安装包与绿色版 ZIP 构建工具，以及预览版本的 CI 发布流程 | 可见 GUI 与两台干净机器上的安装／卸载尚未验收 |
-
-引擎 0.1.8 新增明确核对的未来准备方案：装备及技能、天赋、巅峰、符文、仆从和临时效果六类。未来计划记录完整来源、装备与条件；准备可行性和游戏机制结果分开展示，且不会修改实际构筑。仆从方案必须有具体仆从、实际等级和证据。未确认或缺失／删除的方案、未核对构筑状态、知识包冲突、原输入已变化或采集时点冲突都会阻止确定结果；未知成本或资源仍待确认。旧引擎会拒绝不支持的方案类型，不会静默忽略。
-
-规则按游戏、版本分支、构建、模式和赛季隔离：
-
-| 游戏范围 | 状态 |
+| 能力 | 可以做什么 |
 | --- | --- |
-| `lootweave-fixture` | 完全虚构；`synthetic-leveling` 知识包可用于开发检查 |
-| Deskrawl build `25690430` | 首个研究对象：Sorcerer 升级场景；研究包不含可执行规则 |
-| Diablo II、III、IV | 未来研究对象；尚无通过验收的适配器 |
+| 🧩 **装备与构筑** | 记录已拥有的物品、技能、效果和资源。将实际装备与未来计划分开。 |
+| 📷 **OCR 核对** | 查看截图和识别文本。逐行采用或忽略内容，再确认事实。 |
+| 🔎 **比较与解释** | 查看字段差异、已有规则支持的机制变化，以及缺失证据。区分保留理由与装备资格。 |
+| 🧰 **准备计划** | 记录已确认的方案和预算。查看已知成本、资源缺口与未知的前置条件。 |
+| 🧭 **实测试验** | 记录实际经验值和完整耗时。比较条件一致的试验。 |
+| 🔁 **结果回放** | 保留每次评估的输入、证据与规则版本。回放冻结结果。 |
 
-当前源码行为见[实现说明](docs/implementation.md)，有日期的结果与构建身份见[验证记录](docs/validation.md)。历史测试结果不能证明最新源码或其他构建已通过验收。
+准备计划覆盖装备、技能、天赋、巅峰、符文、仆从和临时效果。
+准备可行性与游戏机制结果分开记录。计划不会修改实际构筑。
+确认要求与结果阻断条件见[准备工作流](docs/implementation.md#core-workflow)。
 
-## 开始使用
+## 工作流程
 
-浏览并检查仓库需要 **Git 和 Python 3.12 或更高版本**。以下命令不需要游戏文件或前端构建：
+```mermaid
+flowchart LR
+    A["📝 文本或 OCR 观察"] --> B["👤 用户确认"]
+    B --> C["📌 快照与规则版本"]
+    C --> D["🔎 比较与回放"]
+```
+
+观察、已确认事实和推导结果分别保存。
+缺失或冲突的证据会阻止缺乏依据的结论。
+职责与数据流见[架构约束](docs/architecture.md)。
+
+## 快速开始
+
+### 体验 Windows 预览版
+
+1. 从 [GitHub Releases](https://github.com/schorsch888/LootWeave/releases) 下载安装包或绿色版 ZIP。
+2. 将文件哈希与同一版本的 `SHA256SUMS.txt` 比较。通过 `build-manifest.json` 确认源码身份。
+3. 使用绿色版 ZIP 时，将完整压缩包解压到可写文件夹。打开 `LootWeave.exe`。
+
+发布包包含 Python 运行时。绿色版 ZIP 还包含 WebView2 和 C++ 运行库。
+绿色版数据保存在相邻的 `data/` 文件夹。安装版使用 `%LOCALAPPDATA%/LootWeave`。
+移动文件夹前，请退出程序。替换程序文件时，请保留 `data/`。
+
+Windows OCR 使用已安装的语言能力。OCR 不可用时，请手动录入。
+构建与运行前提见[桌面开发指南](docs/development.md#build-the-windows-desktop)。
+预览版处于实验阶段。
+
+### 从源码运行
+
+请先安装 **Git、Python 3.12+、Node.js 24+ 和 pnpm 11.19.0**。
+环境要求见[开发指南](docs/development.md#prerequisites)。
 
 ```powershell
 git clone https://github.com/schorsch888/LootWeave.git
 cd LootWeave
+pnpm --dir frontend install --frozen-lockfile --ignore-scripts
+pnpm --dir frontend build
+python runtime.py --data-dir .local/development
+```
+
+启动器会打开浏览器工作台，并把开发数据保存在 `.local/development`。
+请保持终端打开。按 **Ctrl+C** 停止启动器及其工作进程。
+请勿分享浏览器会话凭据。使用原生截图功能时，需要 Windows 桌面宿主。
+
+新档案需要先录入装备与构筑事实。保存快照前，请确认这些事实。
+可使用虚构示例查看可执行规则。
+完整流程见[源码环境与故障排查](docs/development.md)。
+
+### 检查仓库
+
+以下检查使用 Git 和 Python，无需游戏文件或前端构建。
+
+```powershell
 python -m unittest discover -s tests -v
+python scripts/check_architecture.py
 python scripts/check_public_docs.py
 python -m compileall -q scripts
 ```
 
-测试会报告受环境限制而跳过的用例，请一并查看。检查通过仅说明所覆盖的仓库行为符合预期，不能证明游戏机制或发布条件已经验收。
+请查看结果及因环境限制而跳过的检查。
+修改前端、原生宿主或研究工具时，请执行相应的[组件检查](docs/development.md#validate-a-change)。
 
-- **了解设计：** 从[设计基线](docs/design.md)和[验收路线图](docs/roadmap.md)开始。
-- **体验 Windows 预览版：** 查看[预览版说明](#体验-windows-预览版)，了解下载与数据保存方式。
-- **体验实验性源码：** 按[开发指南](docs/development.md)准备环境、启动本地流程，并查看预期行为和故障排查。
-- **复现研究：** 按[研究指南](docs/research.md)操作；匹配的游戏资源和外部工具需单独取得。
+## 支持范围与验证
 
-本地安装包和生成的构建产物不随仓库分发。验证记录中的路径用于标识本地产物，并非克隆仓库即可获得的下载文件。
+| 游戏范围 | 状态 |
+| --- | --- |
+| 🧪 `lootweave-fixture` | 虚构开发数据。`synthetic-leveling` 知识包包含可执行规则。 |
+| 🔬 Deskrawl build `25690430` | 首个研究对象：Sorcerer 升级场景。研究包不含可执行规则。 |
+| 🗺️ Diablo II、III、IV | 未来研究对象。尚无通过验收的适配器。 |
 
-## 体验 Windows 预览版
+规则按游戏、版本分支、构建、模式和赛季隔离。
+真实游戏 DPS、最终掉落概率和全局最优路线尚未验证。
+OCR 解析器覆盖三个通用演示标签。真实游戏布局覆盖与独立人工真值复核仍待完成。
+可见 GUI 行为与两台干净 Windows 机器上的安装／卸载仍需验收证据。
 
-在 [GitHub Releases](https://github.com/schorsch888/LootWeave/releases) 查看可用的 MVP 预发布版本。选择同一版本的安装包或绿色版 ZIP，并使用随附的 `build-manifest.json` 与 `SHA256SUMS.txt` 核对源码身份和文件哈希。预览版处于实验阶段；真实游戏与两台干净机器上的验收仍待完成。
+运行时默认使用 `eager` 启动。
+显式启用的按需启动实验没有通过预先声明的启动延迟比较。详见[性能结果](docs/performance-results.md)。
 
-使用绿色版 ZIP 时，将完整压缩包解压到可写的本地文件夹，双击 `LootWeave.exe`。包内已包含 Python、WebView2 和 C++ 运行库。个人数据保存在相邻的 `data/` 文件夹；移动整个目录前退出程序，升级时保留 `data/`。安装版使用 `%LOCALAPPDATA%/LootWeave`。Windows OCR 需要已安装的语言能力，缺失时仍可手动录入。
-
-[CI 工作流](.github/workflows/checks.yml) 在 Windows 打包成功后保留四个已验证发布文件七天。推送到 main 或手动选择 main 运行时，仅在浏览器／接口检查和 Windows 打包均通过后发布预览版。详见 [CI 与发布约定](docs/implementation.md#github-ci-and-releases)；工作流配置本身不能证明某次运行成功或已有版本发布。历史本地构建的独立身份见[验证记录](docs/validation.md)。
+[验证记录](docs/validation.md)保存有日期的结果与构建身份。
+历史检查不能证明最新源码已经验收。
+记录中的本地构建路径不是下载链接。
+[CI 与发布约定](docs/implementation.md#github-ci-and-releases)说明了预览版发布流程。
 
 ## 文档导航
 
-| 文档 | 内容 |
+| 从这里开始 | 内容 |
 | --- | --- |
-| [开发指南](docs/development.md) | 源码环境、检查、Windows 构建与故障排查 |
-| [实现说明](docs/implementation.md) | 当前源码行为、服务归属与接口约定 |
-| [设计](docs/design.md) | 产品边界、数据模型、架构与隐私 |
-| [架构约束](docs/architecture.md) | Rust/Python 职责、允许的调用关系、agent 约束与验证范围 |
-| [路线图](docs/roadmap.md) | 里程碑、依赖与验收条件 |
-| [研究指南](docs/research.md) | 证据目录、前置条件、复现方法与限制 |
-| [验证记录](docs/validation.md) | 有日期的测量、构建身份、失败与未通过的验收条件 |
-| [性能计划](docs/performance-plan.md) | 运行时实现状态与暂缓的工作 |
-| [性能结果](docs/performance-results.md) | 已记录的实验、未通过的启动验收条件及保留的 eager 默认策略 |
-| [贡献指南](CONTRIBUTING.md) | 文档约定、证据要求与审阅步骤 |
+| 🚀 [开发指南](docs/development.md) | 环境、命令、检查、打包与故障排查 |
+| 🧱 [架构约束](docs/architecture.md) | Rust/Python 职责、服务调用与存储边界 |
+| 🧩 [设计](docs/design.md) | 产品范围、数据模型与证据要求 |
+| 🗺️ [路线图](docs/roadmap.md) | 里程碑、依赖与验收条件 |
+| 🔬 [研究指南](docs/research.md) | 证据、合法源文件前提与复现方法 |
+| 🧪 [验证记录](docs/validation.md) | 已记录的测量、构建身份与未完成的验收条件 |
+| 🤝 [贡献指南](CONTRIBUTING.md) | 贡献类型、公开规则与审阅步骤 |
 
-英文是主要文档语言；中文 README 与英文版本语义一致。
+更多细节：[源码实现](docs/implementation.md) · [性能计划](docs/performance-plan.md) · [性能结果](docs/performance-results.md)。
+英文是主要文档语言。中文 README 与英文版本语义一致。
 
-## 仓库结构
+<details>
+<summary>🗂️ 仓库结构</summary>
 
 | 路径 | 内容 |
 | --- | --- |
 | [docs/](docs/) | 设计、开发、研究与验证指南 |
 | [research/](research/) | 精选证据与来源记录 |
 | [scripts/](scripts/) 和 [tests/](tests/) | 复现工具与仓库检查 |
-| [fixtures/](fixtures/) 和 [knowledge-packs/](knowledge-packs/) | 合成示例、冻结回放输入与限定范围的知识包 |
-| [frontend/](frontend/) | 按 Feature-Sliced Design 组织的实验性 React/TypeScript 前端 |
+| [fixtures/](fixtures/) 和 [knowledge-packs/](knowledge-packs/) | 合成示例、冻结输入与限定范围的知识包 |
+| [frontend/](frontend/) | 采用 Feature-Sliced Design 的 React/TypeScript 前端 |
 | [desktop/](desktop/) | Rust/Tauri Windows 宿主 |
-| [services/](services/) | 按业务能力组织的 Python 服务，以及 OCR 基础设施 |
+| [services/](services/) | 按业务能力组织的 Python 服务，以及 OCR |
 | [runtime.py](runtime.py) | 本地开发启动器 |
 
-架构要求采用 Rust + Python、Windows 单 EXE 启动入口、FSD 前端与 DDD 后端微服务。当前宿主、框架与 Rust/Python 职责遵循[架构约束](docs/architecture.md)。打包、干净机器部署和真实游戏支持仍需验收证据。
+架构要求使用 Rust + Python、Windows 单 EXE 启动入口、FSD 前端和 DDD 微服务。
+组件职责遵循[架构约束](docs/architecture.md)。
+
+</details>
 
 ## 参与贡献与获取帮助
 
-欢迎提交文档纠错、复现改进和范围明确的研究贡献。请先阅读[贡献指南](CONTRIBUTING.md)，再通过 [Issues](https://github.com/schorsch888/LootWeave/issues) 提问、报告问题或提出方案，并说明相关版本、证据、已执行的检查与剩余未知。
+请先阅读[贡献指南](CONTRIBUTING.md)。
+通过 [Issues](https://github.com/schorsch888/LootWeave/issues) 提问、报告问题或提出方案。
+请提供适用版本、证据、检查结果与未知项。
+文档纠错、复现改进和范围明确的研究都有助于项目。
 
 ## 隐私与边界
 
-数据默认在本地处理。项目不读取或修改玩家存档、不修改游戏文件、不注入游戏、不访问进程内存或 DMA、不控制游戏操作，也不自动处置物品。
+项目默认在本地处理数据。
+项目不访问玩家存档，也不修改游戏文件。
+项目不注入游戏，也不访问进程内存或 DMA。
+项目不控制游戏操作，也不自动处置物品。
 
-请勿提交个人资料、真实角色快照、私人截图、凭据、玩家存档、原始游戏资源或下载工具。[公开规则](docs/design.md#privacy-and-publication)说明了可纳入仓库的内容以及必须留在本地的材料。
+请在 issue 和 pull request 中使用虚构示例。
+请勿公开凭据、私人截图、真实角色数据、玩家存档、原始游戏资源或下载工具。
+共享材料必须遵循[公开规则](docs/design.md#privacy-and-publication)。
 
 ## 许可证
 
-项目代码与文档采用 [Apache-2.0](LICENSE)。第三方游戏内容和工具保留各自条款；本许可证不授予其再分发权。
+项目代码与文档采用 [Apache-2.0](LICENSE)。
+第三方游戏内容和工具保留各自条款。本许可证不授予其再分发权。

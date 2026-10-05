@@ -1,119 +1,183 @@
-# LootWeave
+<div align="center">
 
-English · [简体中文](README.zh-CN.md)
+# 🧩 LootWeave
 
-**Equipment decisions grounded in item facts, character builds, and versioned evidence.**
+**A local workbench for equipment, builds, and evidence.**
 
-LootWeave is an open-source research and design project for a local Windows equipment decision assistant. Its goal is to explain how an item can be used, whether it fits a build, and why it may be worth keeping, without asking players to assign stat weights.
+[![Repository checks](https://github.com/schorsch888/LootWeave/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/schorsch888/LootWeave/actions/workflows/checks.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue)](LICENSE)
+[![Platform: Windows x64](https://img.shields.io/badge/Platform-Windows_x64-0078D4)](docs/development.md#prerequisites)
+[![Stage: Experimental](https://img.shields.io/badge/Stage-Experimental-orange)](docs/roadmap.md)
 
-> **Status: research and development.** This repository includes reproducibility tools, selected evidence, and experimental source. The only executable game knowledge pack uses fictional data. Real-game recommendations and a production Windows release have not passed acceptance.
+**English** · [简体中文](README.zh-CN.md)
 
-[Get started](#get-started) · [Documentation](#documentation) · [Contributing](CONTRIBUTING.md) · [Roadmap](docs/roadmap.md)
+[📦 Downloads](https://github.com/schorsch888/LootWeave/releases) · [🚀 Quickstart](#quickstart) · [📚 Documentation](#documentation) · [🤝 Contributing](CONTRIBUTING.md)
+
+</div>
+
+LootWeave is an open-source Windows prototype for equipment decisions.
+It connects actual item facts, the complete character build, and versioned evidence.
+Players do not supply stat weights.
+
+> **🧪 Experimental:** Only the fictional knowledge pack has executable game rules.
+> Deskrawl is a research target. Real-game recommendations and a production Windows release still need acceptance evidence.
 
 ## Why LootWeave
 
-An item's value depends on its actual rolls, the complete build, and the intended use. LootWeave explores a workflow that:
+An item's value depends on its actual rolls, the complete build, and the intended use.
+The workbench keeps those inputs together:
 
-- Records owned items and build facts, with manual confirmation of OCR observations.
-- Separates reasons to keep an item from eligibility to equip it now.
-- Records preparation quotes and explains resource or budget gaps separately from mechanic conclusions.
-- Compares whole-build mechanisms and preserves the inputs and rules used for replay.
-- Keeps missing or conflicting evidence visible instead of producing unsupported conclusions.
-
-## Current status
-
-| Area | Available scope | Acceptance limit |
-| --- | --- | --- |
-| Research | Selected Deskrawl evidence and read-only reproduction tools | Matching lawful source files are required; static decoding does not establish complete mechanics |
-| Experimental workflow | Item/build entry, owned inventory/resources, preparation quotes and budgets, SQLite profiles, field differences, and frozen replay | Real-game DPS and keep/equip recommendations remain unaccepted |
-| Capture and OCR | Durable unconfirmed captures, per-line accept/ignore review, and manual mapping to known/custom affixes | Automatic parsing covers three generic demonstration labels; real-game layout coverage and independent truth review remain open |
-| Planning | Manually measured XP/time trials and sample-based estimates | No verified optimal route or final item-drop probabilities |
-| Runtime | Eager startup by default; explicit on-demand experiment | The declared startup-latency comparison failed; visible cold-start acceptance remains open |
-| Windows packaging | Installer and portable ZIP tooling, with a CI path for preview releases | Visible GUI and installation/removal on two clean machines remain unaccepted |
-
-Engine 0.1.8 adds explicitly confirmed future-preparation options for equipment and six types: skill, talent, Paragon, rune, companion, and temporary effect. Future plans carry complete sources, gear, and conditions; feasibility and game-mechanic outcomes are shown separately and never change the actual build. Companion options require the specific companion, actual level, and evidence. Unconfirmed or missing/deleted options, unreviewed builds, pack conflicts, changed inputs, or capture-time conflicts block definite outcomes; unknown costs or resources remain pending. Earlier engines reject unsupported option types rather than silently ignoring them.
-
-Game scopes are isolated by game, edition, build, mode, and season:
-
-| Game scope | Status |
+| Capability | What you can do |
 | --- | --- |
-| `lootweave-fixture` | Entirely fictional; the `synthetic-leveling` pack is executable for development checks |
-| Deskrawl build `25690430` | First research target: Sorcerer leveling; research packs contain no executable rules |
-| Diablo II, III, and IV | Future research targets; no accepted adapters |
+| 🧩 **Equipment and builds** | Record owned items, skills, effects, and resources. Keep actual equipment separate from future plans. |
+| 📷 **OCR review** | Examine captured text and images. Accept or ignore each line before you confirm facts. |
+| 🔎 **Comparisons** | Examine field differences, supported mechanism changes, and missing evidence. Separate retention reasons from equip eligibility. |
+| 🧰 **Preparation plans** | Record confirmed options and budgets. Examine known costs, resource gaps, and unknown prerequisites. |
+| 🧭 **Measured trials** | Record actual XP and complete elapsed time. Compare trials with matching conditions. |
+| 🔁 **Replay** | Keep the inputs, evidence, and rule versions for each evaluation. Replay frozen results. |
 
-See the [implementation](docs/implementation.md) for source behavior and the [validation record](docs/validation.md) for dated results and artifact identities. Historical test results do not establish acceptance of the latest source or another build.
+Preparation plans include equipment, skills, talents, Paragon, runes, companions, and temporary effects.
+They keep feasibility separate from game-mechanic outcomes. A plan does not change the actual build.
+See the [preparation workflow](docs/implementation.md#core-workflow) for confirmation requirements and blocked results.
 
-## Get started
+## How it works
 
-To inspect and check the repository, install **Git and Python 3.12 or newer**. These commands need no game files or frontend build:
+```mermaid
+flowchart LR
+    A["📝 Text or OCR observation"] --> B["👤 Human confirmation"]
+    B --> C["📌 Snapshot and rule versions"]
+    C --> D["🔎 Comparison and replay"]
+```
+
+Observations, confirmed facts, and derived results stay separate.
+Missing or conflicting evidence prevents unsupported conclusions.
+See the [architecture contract](docs/architecture.md) for ownership and data flow.
+
+## Quickstart
+
+### Try a Windows preview
+
+1. Download an installer or portable ZIP from [GitHub Releases](https://github.com/schorsch888/LootWeave/releases).
+2. Compare its file hash with `SHA256SUMS.txt` from the same release. Use `build-manifest.json` to identify the source.
+3. For the portable ZIP, extract the complete archive to a writable folder. Open `LootWeave.exe`.
+
+The packages include the Python runtime. The portable ZIP also includes WebView2 and C++ runtimes.
+Portable data stays in the adjacent `data/` folder. The installer uses `%LOCALAPPDATA%/LootWeave`.
+Before you move the folder, exit the app. When you replace application files, keep `data/`.
+
+Windows OCR uses installed language capabilities. If OCR is not available, use manual input.
+See the [desktop guide](docs/development.md#build-the-windows-desktop) for build and runtime prerequisites.
+Preview releases are experimental.
+
+### Run from source
+
+Install **Git, Python 3.12+, Node.js 24+, and pnpm 11.19.0** first.
+The [development guide](docs/development.md#prerequisites) gives the setup requirements.
 
 ```powershell
 git clone https://github.com/schorsch888/LootWeave.git
 cd LootWeave
+pnpm --dir frontend install --frozen-lockfile --ignore-scripts
+pnpm --dir frontend build
+python runtime.py --data-dir .local/development
+```
+
+The launcher opens a browser workbench and saves development data in `.local/development`.
+Keep the terminal open. Press **Ctrl+C** to stop the launcher and its workers.
+Do not share the browser session credential. For native capture, use the Windows desktop host.
+
+On a new profile, record equipment and build facts. Confirm the facts before you save a snapshot.
+Use the fictional example to examine executable rules.
+See [source setup and troubleshooting](docs/development.md) for the complete workflow.
+
+### Check the repository
+
+These checks use Git and Python. They do not need game files or a frontend build.
+
+```powershell
 python -m unittest discover -s tests -v
+python scripts/check_architecture.py
 python scripts/check_public_docs.py
 python -m compileall -q scripts
 ```
 
-The suite reports environment-dependent skips; review them with the results. Passing checks verifies the covered repository behavior, not game mechanics or release readiness.
+Read the results and any environment-dependent skips.
+Use the [component checks](docs/development.md#validate-a-change) for changes to the frontend, native host, or research tools.
 
-- **Explore the design:** start with the [design baseline](docs/design.md) and [acceptance roadmap](docs/roadmap.md).
-- **Try a Windows preview:** see the [preview instructions](#try-a-windows-preview) for downloads and data storage.
-- **Try the experimental source:** follow the [development guide](docs/development.md) for prerequisites, launch steps, expected behavior, and troubleshooting.
-- **Reproduce research:** follow the [research guide](docs/research.md). Matching game resources and external tools must be obtained separately.
+## Support and validation
 
-Local installers and generated build outputs are excluded from the repository. Paths in validation records identify local artifacts; they are not downloads supplied by a clean clone.
+| Game scope | Status |
+| --- | --- |
+| 🧪 `lootweave-fixture` | Fictional development data. The `synthetic-leveling` knowledge pack has executable rules. |
+| 🔬 Deskrawl build `25690430` | First research target: Sorcerer leveling. Research packs contain no executable rules. |
+| 🗺️ Diablo II, III, and IV | Future research targets. No accepted adapters. |
 
-## Try a Windows preview
+Rules stay separate by game, edition, build, mode, and season.
+Real-game DPS, final drop probabilities, and global optimal routes are not validated.
+The OCR parser covers three generic demonstration labels. Real-game layout coverage and independent human truth review are incomplete.
+Visible GUI behavior and installation/removal on two clean Windows machines still need acceptance evidence.
 
-Check [GitHub Releases](https://github.com/schorsch888/LootWeave/releases) for available MVP prereleases. Use the installer or portable ZIP from the same release, with its `build-manifest.json` and `SHA256SUMS.txt` to verify the source identity and file hashes. A preview is experimental; real-game and two-clean-machine acceptance remain open.
+The runtime uses `eager` startup by default.
+The explicit on-demand experiment did not pass its declared startup-latency comparison. See the [performance results](docs/performance-results.md).
 
-For the portable ZIP, extract the whole archive to a writable local folder and double-click `LootWeave.exe`. Python, WebView2, and C++ runtimes are bundled. Personal data stays in the adjacent `data/` folder. Exit the app before moving the folder; preserve `data/` when upgrading. The installer uses `%LOCALAPPDATA%/LootWeave`. Windows OCR needs installed language capabilities; manual entry remains available.
-
-The [CI workflow](.github/workflows/checks.yml) uploads four verified release files for seven days after successful Windows packaging. Main pushes or manual runs targeting main publish prereleases only after both browser/contracts and Windows packaging jobs pass. See the [CI and release contract](docs/implementation.md#github-ci-and-releases); workflow configuration alone does not establish a successful run or a published preview. Historical local builds have separate identities in the [validation record](docs/validation.md).
+The [validation record](docs/validation.md) gives dated results and artifact identities.
+Historical checks do not establish acceptance of the latest source.
+Local build paths in those records are not download links.
+The [CI and release contract](docs/implementation.md#github-ci-and-releases) gives rules for preview publication.
 
 ## Documentation
 
-| Document | Read it for |
+| Start here | Purpose |
 | --- | --- |
-| [Development guide](docs/development.md) | Source setup, checks, Windows builds, and troubleshooting |
-| [Implementation](docs/implementation.md) | Current source behavior, service ownership, and contracts |
-| [Design](docs/design.md) | Product boundaries, data model, architecture, and privacy |
-| [Architecture contract](docs/architecture.md) | Rust/Python ownership, permitted calls, agent constraints, and verification limits |
-| [Roadmap](docs/roadmap.md) | Milestones, dependencies, and acceptance conditions |
-| [Research guide](docs/research.md) | Evidence catalog, prerequisites, reproduction, and limits |
-| [Validation record](docs/validation.md) | Dated measurements, build identities, failures, and open gates |
-| [Performance plan](docs/performance-plan.md) | Runtime implementation status and deferred work |
-| [Performance results](docs/performance-results.md) | Recorded experiment, failed startup gate, and retained eager default |
-| [Contributing](CONTRIBUTING.md) | Documentation conventions, evidence requirements, and review steps |
+| 🚀 [Development](docs/development.md) | Setup, commands, checks, packaging, and troubleshooting |
+| 🧱 [Architecture](docs/architecture.md) | Rust/Python ownership, service calls, and storage boundaries |
+| 🧩 [Design](docs/design.md) | Product scope, data model, and evidence requirements |
+| 🗺️ [Roadmap](docs/roadmap.md) | Milestones, dependencies, and acceptance conditions |
+| 🔬 [Research](docs/research.md) | Evidence, lawful source prerequisites, and reproduction |
+| 🧪 [Validation](docs/validation.md) | Recorded measurements, build identities, and open gates |
+| 🤝 [Contributing](CONTRIBUTING.md) | Contribution types, publication rules, and review steps |
 
-English is the primary documentation language; the Chinese README is an equivalent translation.
+More detail: [source implementation](docs/implementation.md) · [performance plan](docs/performance-plan.md) · [performance results](docs/performance-results.md).
+English is the primary documentation language. The Chinese README has the same meaning.
 
-## Repository layout
+<details>
+<summary>🗂️ Repository map</summary>
 
 | Path | Contents |
 | --- | --- |
 | [docs/](docs/) | Design, development, research, and validation guides |
-| [research/](research/) | Selected evidence and source provenance |
+| [research/](research/) | Selected evidence and source records |
 | [scripts/](scripts/) and [tests/](tests/) | Reproduction tools and repository checks |
-| [fixtures/](fixtures/) and [knowledge-packs/](knowledge-packs/) | Synthetic examples, frozen replay inputs, and scoped packs |
-| [frontend/](frontend/) | Experimental React/TypeScript frontend organized with Feature-Sliced Design |
+| [fixtures/](fixtures/) and [knowledge-packs/](knowledge-packs/) | Synthetic examples, frozen inputs, and scoped packs |
+| [frontend/](frontend/) | React/TypeScript frontend with Feature-Sliced Design |
 | [desktop/](desktop/) | Rust/Tauri Windows host |
-| [services/](services/) | Python services organized by business capability, plus OCR infrastructure |
+| [services/](services/) | Python services for business capabilities and OCR |
 | [runtime.py](runtime.py) | Local development launcher |
 
-The architecture requires Rust + Python, a Windows single-EXE entry point, an FSD frontend, and DDD backend microservices. The current host, framework, and Rust/Python responsibilities follow the [architecture contract](docs/architecture.md). Packaging, deployment on clean machines, and real-game support still require acceptance evidence.
+The architecture must use Rust + Python, one Windows EXE entry point, an FSD frontend, and DDD microservices.
+Follow the [architecture contract](docs/architecture.md) for component responsibilities.
+
+</details>
 
 ## Contributing and help
 
-Documentation corrections, reproducibility improvements, and scoped research contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md), then use [Issues](https://github.com/schorsch888/LootWeave/issues) for questions, problems, or proposals. Include the relevant version, evidence, checks run, and remaining unknowns.
+Start with [CONTRIBUTING.md](CONTRIBUTING.md).
+Use [Issues](https://github.com/schorsch888/LootWeave/issues) for questions, problems, and proposals.
+Include the applicable version, evidence, check results, and unknowns.
+Documentation corrections, reproducibility improvements, and scoped research are useful contributions.
 
 ## Privacy and boundaries
 
-Data is processed locally by default. The project does not read or modify player saves, modify game files, inject into games, access process memory or DMA, control gameplay, or dispose of items automatically.
+The project processes data locally by default.
+It does not access player saves or change game files.
+It does not inject into games or access process memory or DMA.
+It does not control gameplay or discard items automatically.
 
-Do not submit personal data, real character snapshots, private screenshots, credentials, player saves, raw game resources, or downloaded tools. The [publication rules](docs/design.md#privacy-and-publication) explain what can be included and what must stay local.
+Use fictional examples in issues and pull requests.
+Do not publish credentials, private screenshots, real character data, player saves, raw game resources, or downloaded tools.
+Follow the [publication rules](docs/design.md#privacy-and-publication) for shared material.
 
 ## License
 
-Project code and documentation use [Apache-2.0](LICENSE). Third-party game content and tools retain their own terms; this license does not authorize their redistribution.
+Project code and documentation use [Apache-2.0](LICENSE).
+Third-party game content and tools keep their own terms. This license does not give redistribution rights for them.
