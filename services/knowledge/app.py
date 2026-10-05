@@ -4,7 +4,7 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-from contracts import DomainError, canonical, digest, identifier, parse_json, require
+from contracts import DomainError, canonical, context, digest, identifier, object_value, parse_json, require
 from services.knowledge.domain import validate_pack
 
 
@@ -37,10 +37,40 @@ class Knowledge:
             for value in self.packs.values():
                 decoded = parse_json(value)
                 pack = decoded["pack"]
-                result.append({key: pack[key] for key in
-                               ("pack_id", "version", "context", "class_id", "scenario", "execution_policy")}
-                              | {"pack_hash": decoded["pack_hash"]})
+                metadata = {key: pack[key] for key in
+                            ("pack_id", "version", "context", "class_id", "scenario", "execution_policy")}
+                metadata["pack_hash"] = decoded["pack_hash"]
+                if pack.get("item_dependencies"):
+                    metadata["dependency_templates"] = [
+                        {"template_id": item["template_id"], "label": item["template_name"]}
+                        for item in pack["item_dependencies"]]
+                result.append(metadata)
             return {"contract_version": 1, "packs": result}
+        if method == "POST" and path == "/v1/item-dependencies":
+            body = object_value(_body)
+            pack_id = identifier(body.get("pack_id"))
+            version = identifier(body.get("pack_version"))
+            key = (pack_id, version)
+            require(key in self.packs, "pack_version_not_found", 404)
+            decoded = parse_json(self.packs[key])
+            pack = decoded["pack"]
+            require(body.get("pack_hash") == decoded["pack_hash"], "pack_hash_conflict", 409)
+            request_context = context(body.get("context"))
+            require(request_context == pack["context"] and body.get("class_id") == pack["class_id"],
+                    "dependency_scope_mismatch", 409)
+            require(pack.get("execution_policy") == "research_only" and pack.get("item_dependencies"),
+                    "dependency_data_unavailable", 404)
+            template_id = identifier(body.get("template_id"))
+            dependency = next((item for item in pack["item_dependencies"]
+                               if item["template_id"] == template_id), None)
+            require(dependency is not None, "dependency_template_not_found", 404)
+            evidence_by_id = {item["id"]: item for item in pack["evidence"]}
+            return {"contract_version": 1, "record_kind": "item_template_dependency",
+                    "scope": "reviewed_static_only", "mechanics_accepted": False,
+                    "pack_id": pack_id, "pack_version": version, "pack_hash": decoded["pack_hash"],
+                    "context": request_context, "class_id": pack["class_id"],
+                    "dependency": dependency,
+                    "evidence": [evidence_by_id[evidence_id] for evidence_id in dependency["evidence_ids"]]}
         parts = path.strip("/").split("/")
         if method == "GET" and len(parts) == 4 and parts[:2] == ["v1", "packs"]:
             key = (identifier(parts[2]), identifier(parts[3]))

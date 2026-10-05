@@ -110,6 +110,35 @@ def main():
                 "pack_hash": pack["pack_hash"], "intent": purpose,
             }
 
+            stage = "packaged_static_dependency_query"
+            dependency_pack = next(item for item in packs if item.get("version") == "0.7.0-research")
+            dependency_request = {
+                "pack_id": dependency_pack["pack_id"], "pack_version": dependency_pack["version"],
+                "pack_hash": dependency_pack["pack_hash"], "context": dependency_pack["context"],
+                "class_id": dependency_pack["class_id"], "template_id": "LegendaryStaff1",
+            }
+            catalog_before_query = app.call("GET", "/api/profile/profiles")
+            dependency = app.call("POST", "/api/knowledge/item-dependencies", dependency_request)
+            require(dependency.get("scope") == "reviewed_static_only"
+                    and dependency.get("mechanics_accepted") is False
+                    and dependency.get("pack_hash") == dependency_pack["pack_hash"]
+                    and dependency["dependency"]["template_object_id"] == "resources.assets:4972"
+                    and dependency["dependency"]["effect_object_id"] == "resources.assets:4793"
+                    and dependency["dependency"]["ability_object_id"] == "sharedassets0.assets:59839",
+                    "packaged_static_dependency_invalid")
+            wrong_scope_request = copy.deepcopy(dependency_request)
+            wrong_scope_request["context"]["game_build"] = "wrong-build"
+            try:
+                app.call("POST", "/api/knowledge/item-dependencies", wrong_scope_request)
+            except HTTPError as error:
+                require(error.code == 409 and app.last_error.get("code") == "dependency_scope_mismatch",
+                        "packaged_dependency_scope_rejection_invalid")
+            else:
+                require(False, "packaged_dependency_accepted_wrong_scope")
+            require(app.call("GET", "/api/profile/profiles") == catalog_before_query,
+                    "packaged_dependency_query_changed_profiles")
+            checks.append("packaged_static_dependencies_are_pinned_read_only_and_not_accepted_mechanics")
+
             stage = "feasible_projection_and_idempotency"
             base_request = {**base_body, "request_id": "preparation-budget-12"}
             feasible = app.call("POST", "/api/evaluation/evaluations", base_request)

@@ -109,8 +109,10 @@ Use the [component checks](docs/development.md#validate-a-change) for changes to
 | Game scope | Status |
 | --- | --- |
 | 🧪 `lootweave-fixture` | Fictional development data. The `synthetic-leveling` knowledge pack has executable rules. |
-| 🔬 Deskrawl build `25690430` | First research target: Sorcerer leveling. Research packs contain no executable rules. |
+| 🔬 Deskrawl build `25690430` | Sorcerer leveling research includes a static Frostwyrm staff dependency path. Research packs contain no executable rules; online mechanics remain unaccepted. |
 | 🗺️ Diablo II, III, and IV | Future research targets. No accepted adapters. |
+
+The workbench offers an explicit, read-only item-template dependency query for the pinned research pack. It shows source links and unresolved online conditions without changing saved facts. See the [implementation reference](docs/implementation.md#service-contracts).
 
 Rules stay separate by game, edition, build, mode, and season.
 Real-game DPS, final drop probabilities, and global optimal routes are not validated.

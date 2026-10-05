@@ -1,0 +1,134 @@
+{
+  "contract_version": 1,
+  "pack_id": "deskrawl-sorcerer-leveling",
+  "version": "0.7.0-research",
+  "context": {
+    "game_id": "deskrawl",
+    "edition": "1.0.0i",
+    "game_build": "25690430",
+    "mode": "online",
+    "season": "not_applicable",
+    "ruleset_id": "deskrawl-25690430",
+    "content_entitlements": []
+  },
+  "class_id": "sorcerer",
+  "scenario": "leveling",
+  "execution_policy": "research_only",
+  "rules": [],
+  "known_affixes": {},
+  "evidence": [
+    {
+      "id": "deskrawl-static-research",
+      "source_ref": "repo://research/extraction-validation.json",
+      "source_build": "25690430",
+      "method": "Historical local extraction and independent serialized-number checks; see research guide prerequisites.",
+      "scope": "1,593 selected static definitions; not owned items or a complete combat model.",
+      "results": "Historical reports record zero parse failures and checks for 3,080 Float, 67 Int and 196 Long fields.",
+      "unknowns": "Complete mechanics, trigger uptime, server overrides and redistribution rights of original assets remain unaccepted.",
+      "verification": "historical_research",
+      "conflicts": []
+    },
+    {
+      "id": "deskrawl-frostwyrm-native-review",
+      "source_ref": "repo://research/deskrawl-frostwyrm.json",
+      "source_build": "25690430",
+      "method": "Selected local serialized graph, generated field layouts and manual review of nine source-hashed native methods. Repeatable checker verifies source identity and graph, not online behavior.",
+      "scope": "Staff template resources.assets:4972, effect resources.assets:4793 and ability sharedassets0.assets:59839 for this build; Sorcerer leveling remains unaccepted.",
+      "results": "The candidate applies a +1 per-ability deflection count and Random targeting. Reviewed initialization, hit and redirect branches connect that count to conditional projectile continuation.",
+      "unknowns": "Equipment rebuild, ownership/override paths, stacking, complete target eligibility and online behavior are unresolved. No executable rule or DPS claim.",
+      "verification": "historical_research",
+      "conflicts": []
+    },
+    {
+      "id": "deskrawl-frostwyrm-lifecycle-review",
+      "source_ref": "repo://research/deskrawl-frostwyrm-lifecycle.json",
+      "source_build": "25690430",
+      "method": "Manual review of selected native reset/rebuild bodies, with five checked relative call/jump sites and one PE exception-bounded helper. Source identities and selected serialized facts remain version-pinned.",
+      "scope": "The same staff/ability dependency, selected Player entry/rebuild bodies and separate counter reset. Virtual callbacks and all live change routes remain outside acceptance.",
+      "results": "The selected entry reaches a body that clears the per-ability equipment count and targeting state before subsequent effect application; the other count pool has a separate reset path.",
+      "unknowns": "Every live equip/unequip route, virtual slot mapping, legal duplicates/stacking, ownership, server overrides and online observations remain unresolved. No executable game rule.",
+      "verification": "historical_research",
+      "conflicts": []
+    },
+    {
+      "id": "deskrawl-frostwyrm-method-slot-review",
+      "source_ref": "repo://research/deskrawl-frostwyrm-method-slots.json",
+      "source_build": "25690430",
+      "method": "Direct read-only validation of selected original metadata v39 type/method definitions and two concrete vtable method targets. Existing selected static/native evidence retains its source identities.",
+      "scope": "Base and concrete deflection-effect callbacks in slots 4 and 5. Native class layout, indirect dispatch and online equipment events remain unaccepted.",
+      "results": "Four method declarations retain owner, token, virtual flags, parameter count and slot; two concrete metadata vtable entries point to the corresponding methods of the selected concrete type.",
+      "unknowns": "Native vtable pointer materialization, all equip/unequip routes, legal duplicates, actor/context overrides and online outcomes still need independent review. No executable rule or DPS claim.",
+      "verification": "historical_research",
+      "conflicts": []
+    },
+    {
+      "id": "deskrawl-frostwyrm-module-pointer-review",
+      "source_ref": "repo://research/deskrawl-frostwyrm-module-pointers.json",
+      "source_build": "25690430",
+      "method": "Direct read-only original metadata-image and x64 native-module prefix/token-pointer validation against the prior source-hashed methods.",
+      "scope": "The selected Assembly-CSharp image, module prefix and two ordinary concrete callbacks; registration-root use and runtime dispatch are outside acceptance.",
+      "results": "Both selected types belong to the recorded image. Method tokens 0x06000493/0x06000494 select pointer entries 1170/1171 and match the previously hashed bxz/bya native bodies.",
+      "unknowns": "Runtime registration, class-vtable materialization, generic/adjustor paths, complete equip/unequip events, ownership, duplicates and online outcomes remain unaccepted. No executable rule or DPS claim.",
+      "verification": "historical_research",
+      "conflicts": []
+    },
+    {
+      "id": "deskrawl-frostwyrm-registration-review",
+      "source_ref": "repo://research/deskrawl-frostwyrm-code-registration.json",
+      "source_build": "25690430",
+      "method": "Read-only original x64 v39 code-registration structure hash, count/array/selected-module pointer and PE exception-bounded RIP-relative address-reference validation.",
+      "scope": "One registration tail and selected native module index 6, independent of metadata image index 3; no execution or runtime dispatch acceptance.",
+      "results": "The 95-entry module array selects the already checked Assembly-CSharp prefix. A selected instruction in a hashed native body computes the registration address.",
+      "unknowns": "Other registration fields/modules, executed startup/registration, class-vtable materialization, generic/adjustor paths, full equipment events and online outcomes remain unaccepted. No executable rule or DPS claim.",
+      "verification": "historical_research",
+      "conflicts": []
+    }
+  ],
+  "unknowns": [
+    "Executable Deskrawl mechanics have not passed the M1 evidence gate.",
+    "Static definitions cannot establish actual rolls, real DPS or final online drop probabilities.",
+    "Complete actor ownership and context override paths.",
+    "Legal source combinations, nrs ownership and stacking interactions.",
+    "Complete target eligibility, range, collision and damage behavior.",
+    "Online server overrides and agreement between client branches and observed behavior.",
+    "The remaining M1 Sorcerer leveling mechanisms, independently reviewed cases and replay acceptance.",
+    "Every live equip/unequip/reload route, virtual callback mapping, template cloning and duplicate-source eligibility.",
+    "Selected metadata method slots are verified; native dispatch binding and live event coverage are not.",
+    "Selected static module pointers, registration tail/entry and address reference are verified; execution of registration and class-vtable dispatch still need evidence."
+  ],
+  "item_dependencies": [
+    {
+      "ability_id": "SorcererBasicAttack2",
+      "object_links": [
+        {
+          "relation": "equipment_effect",
+          "source_id": "resources.assets:4972",
+          "target_id": "resources.assets:4793"
+        },
+        {
+          "relation": "affected_ability",
+          "source_id": "resources.assets:4793",
+          "target_id": "sharedassets0.assets:59839"
+        }
+      ],
+      "evidence_ids": [
+        "deskrawl-frostwyrm-native-review",
+        "deskrawl-frostwyrm-registration-review"
+      ],
+      "template_id": "LegendaryStaff1",
+      "template_object_id": "resources.assets:4972",
+      "effect_object_id": "resources.assets:4793",
+      "ability_object_id": "sharedassets0.assets:59839",
+      "unknowns": [
+        "runtime_equipment_events",
+        "actor_context_overrides",
+        "legal_stacking",
+        "target_collision_damage",
+        "online_overrides"
+      ],
+      "status": "reviewed_static_only",
+      "ability_name": "Ice Shards",
+      "template_name": "Staff of the Frostwyrm"
+    }
+  ]
+}
