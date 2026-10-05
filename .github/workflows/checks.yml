@@ -92,6 +92,8 @@ jobs:
           python -m pip install -r requirements-build.txt
           npm install --global pnpm@11.19.0 --ignore-scripts
           pnpm --dir frontend install --frozen-lockfile --ignore-scripts
+      - name: Test Windows-only service, WinRT and process-counter paths
+        run: python -m unittest tests.test_process_lifecycle tests.test_numeric_regions tests.test_runtime_benchmark -v
       - name: Build the frontend
         run: pnpm --dir frontend build
       - name: Build the frozen runtime, native host and offline NSIS installer

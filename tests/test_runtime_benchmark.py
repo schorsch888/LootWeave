@@ -145,6 +145,48 @@ class FakeHandle:
 
 
 class OwnershipTests(unittest.TestCase):
+    def test_precise_snapshot_admits_new_root_between_coarse_clock_ticks(self):
+        epoch = 1 << 32
+        def clock_api(ticks):
+            def write(pointer):
+                value = benchmark.ctypes.cast(
+                    pointer, benchmark.ctypes.POINTER(benchmark.wintypes.FILETIME)).contents
+                value.dwHighDateTime = ticks >> 32
+                value.dwLowDateTime = ticks & 0xffffffff
+            return write
+        kernel = SimpleNamespace(
+            GetSystemTimeAsFileTime=clock_api(epoch + 10),
+            GetSystemTimePreciseAsFileTime=clock_api(epoch + 30))
+        root = FakeHandle(100, epoch + 20)
+        tree = None
+        with patch.object(benchmark.ctypes, "WinDLL", return_value=kernel, create=True):
+            try:
+                tree = benchmark.OwnedTree(100, snapshot=lambda: {100: 1}, factory=lambda pid: root)
+                self.assertEqual({100: epoch + 20}, tree.created)
+                self.assertIs(root, tree.handles[100])
+            finally:
+                root.dead = True
+                if tree:
+                    self.assertTrue(tree.close(timeout=0))
+        self.assertTrue(root.closed)
+        self.assertFalse(root.terminated)
+
+    def test_root_identity_guard_closes_future_or_mismatched_handles(self):
+        for actual_pid, created in ((100, 51), (200, 20)):
+            with self.subTest(actual_pid=actual_pid, created=created):
+                root = FakeHandle(actual_pid, created)
+                tree = None
+                try:
+                    with self.assertRaisesRegex(benchmark.CheckFailed, "owned_process_identity_unavailable"):
+                        tree = benchmark.OwnedTree(100, snapshot=lambda: {100: 1},
+                                                   factory=lambda pid: root, clock=lambda: 50)
+                finally:
+                    if tree:
+                        root.dead = True
+                        tree.close(timeout=0)
+                self.assertTrue(root.closed)
+                self.assertFalse(root.terminated)
+
     @unittest.skipUnless(os.name == "nt", "Windows owned-process counters")
     def test_real_owned_test_process_counters_and_natural_exit(self):
         process = subprocess.Popen([sys.executable, "-c", "import sys; sys.stdin.buffer.read()"],
