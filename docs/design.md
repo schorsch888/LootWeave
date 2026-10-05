@@ -26,6 +26,29 @@ For real-time Deskrawl capture, confirm the process and explicitly select its wi
 
 Do not inject into the game, access process memory or DMA, modify game files or player saves, automate gameplay, or sell/dispose of items.
 
+Users can select manual input, screenshot OCR, or LootWeave's own local API.
+The protocol is `lootweave-live/1`. Profile owns sample validation, observation storage, and draft conversion.
+No external assistant connection remains. A producer supplies observations through the existing authenticated API or a local JSON file.
+
+An API does not collect game data by itself. An automatic game collector and official API integration remain unimplemented.
+
+Equipment, inventory, storage, and carriage records remain observations until confirmation. Imported ranks do not establish effect mechanics.
+The model accepts embedded items, Paragon, runes, companions, and temporary effects when the producer supplies them.
+Missing units, allocations, conditions, and game identity remain explicit unknowns. Import does not authorize game control.
+
+Ten views share one observation. Python computes descriptive run, damage, and lineage statistics from supplied records.
+Incomplete damage windows retain unknown DPS. Observed draw frequencies do not establish future probabilities or luck scores.
+
+Source combat estimates remain separate from observed build facts. Planned drops and unopened chest contents remain unheld previews.
+Valid material counts can enter a reviewed draft. Missing material counts remain unknown.
+
+Rust owns desktop operations, capture, and process lifetime. Python owns APIs, validation, statistics, and storage.
+React presents results and manages user review. These functions retain the existing single-EXE architecture.
+
+Optional monitoring waits two seconds after each completed read. Hidden pages pause requests, and candidate selection stops monitoring.
+Profile bounds temporary reads by time, entry count, and total bytes. Monitoring does not save every poll to SQLite.
+Loading a draft freezes and saves its selected observation. Later background reads preserve that draft and earlier confirmed revisions.
+
 ## Core data
 
 | Record | Required facts and invariant |

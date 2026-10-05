@@ -35,6 +35,19 @@ Start with one validated Deskrawl online Sorcerer leveling scenario. Deliver a v
 
 ## M2: Capture, confirmation and snapshots
 
+LootWeave's own local API accepts `lootweave-live/1` observations. No external assistant connection remains.
+Profile keeps samples, observations, and confirmation separate. Protocol fixtures and local HTTP tests cover this flow.
+Automatic game collection and official game API integration remain unimplemented. Real Windows game capture needs separate acceptance evidence.
+
+Producers declare game context and field units. Users must review those facts before confirmation.
+
+Ten views cover character, panel, resources, runs, previews, availability, damage, lineage, loadouts, and source status.
+Python computes descriptive statistics. Rust owns desktop operations and process lifetime. React presents results and supports review.
+
+Optional monitoring uses bounded temporary caches. Candidate selection stops monitoring, and draft conversion saves a frozen observation.
+Validate changed content, source binding, material counts, unknown damage windows, and unchanged confirmed history.
+Separate source estimates and observed frequencies from accepted mechanics, route recommendations, and future drop probabilities.
+
 Deliver text entry, Windows region capture, an independent OCR worker, original-text/region mapping, confirmation and separately stored Profile revisions. Cover equipment, skills, talents, paragon, runes, companions and observation time. Store observations separately from confirmed facts; unnamed icons cannot establish identity. Deskrawl capture must first detect the running process and bind an explicitly chosen window, then recheck identity, foreground, visibility and client geometry. Capture failure must leave the text path usable.
 
 **Acceptance targets:** at least 200 lawful, publishable synthetic or anonymized screenshot regions in a labeled holdout set excluded from tuning. Critical-field accuracy is at least 95% over **all** labeled critical fields; rejection, missing fields and nonrecognition count as incorrect. Numeric fields must match sign and unit as well as value. Report accuracy, rejection and unflagged-error rates by language, scaling and image quality. Every flagged ambiguity enters confirmation; all 10 cross-time snapshot cases trigger consistency checks. Manual ground truth must also expose errors that OCR failed to flag.

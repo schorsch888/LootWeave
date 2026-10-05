@@ -31,6 +31,7 @@ The workbench keeps those inputs together:
 | --- | --- |
 | 🧩 **Equipment and builds** | Record owned items, skills, effects, and resources. Keep actual equipment separate from future plans. |
 | 📷 **OCR review** | Examine captured text and images. Accept or ignore each line before you confirm facts. |
+| 🔌 **Live data input** | Load a JSON observation file or send samples to LootWeave's local API. Review data before you confirm a snapshot. |
 | 🔎 **Comparisons** | Examine field differences, supported mechanism changes, and missing evidence. Separate retention reasons from equip eligibility. |
 | 🧰 **Preparation plans** | Record confirmed options and budgets. Examine known costs, resource gaps, and unknown prerequisites. |
 | 🧭 **Measured trials** | Record actual XP and complete elapsed time. Compare trials with matching conditions. |
@@ -44,7 +45,7 @@ See the [preparation workflow](docs/implementation.md#core-workflow) for confirm
 
 ```mermaid
 flowchart LR
-    A["📝 Text or OCR observation"] --> B["👤 Human confirmation"]
+    A["📝 Text, OCR, or local API observation"] --> B["👤 Human confirmation"]
     B --> C["📌 Snapshot and rule versions"]
     C --> D["🔎 Comparison and replay"]
 ```
@@ -52,6 +53,8 @@ flowchart LR
 Observations, confirmed facts, and derived results stay separate.
 Missing or conflicting evidence prevents unsupported conclusions.
 See the [architecture contract](docs/architecture.md) for ownership and data flow.
+
+Local BMP screenshots can enter the same OCR review flow. Original observations remain unconfirmed, and unknown screenshot times remain unknown.
 
 ## Quickstart
 
@@ -62,6 +65,8 @@ See the [architecture contract](docs/architecture.md) for ownership and data flo
 3. For the portable ZIP, extract the complete archive to a writable folder. Open `LootWeave.exe`.
 
 The packages include the Python runtime. The portable ZIP also includes WebView2 and C++ runtimes.
+The Windows app keeps one Rust EXE entry point and bundles Python business services.
+
 Portable data stays in the adjacent `data/` folder. The installer uses `%LOCALAPPDATA%/LootWeave`.
 Before you move the folder, exit the app. When you replace application files, keep `data/`.
 
@@ -89,6 +94,41 @@ Do not share the browser session credential. For native capture, use the Windows
 On a new profile, record equipment and build facts. Confirm the facts before you save a snapshot.
 Use the fictional example to examine executable rules.
 See [source setup and troubleshooting](docs/development.md) for the complete workflow.
+
+### Choose a data source
+
+The workbench offers manual entry, screenshot OCR, and live data input.
+OCR reads visible demo fields only. Review each field before confirmation.
+
+Live data uses LootWeave's `lootweave-live/1` protocol.
+Load a JSON observation file in the workbench.
+For API input, POST the sample to `/api/profile/live/samples` through the local gateway.
+The ten views show received observations and Python statistics.
+They cover character, equipment, build, resource, run, combat, lineage, loadout, status, and static-definition data.
+
+Start LootWeave.
+Open the Live API panel.
+Wait until Profile reports ready before you send a sample.
+For a JSON file, select **载入观测文件** in the workbench.
+For a sender script, set `LOOTWEAVE_LIVE_SESSION` to the current local session credential.
+Run this command:
+
+```powershell
+python scripts/send_live_sample.py --gateway "<startup-address>" --file "<own-sample.json>"
+```
+
+Replace each placeholder with your startup address or JSON file path. Keep the session credential private.
+The API keeps received samples in memory. Polling and sample sending do not confirm facts.
+Review a frozen draft.
+Confirm it to create a snapshot revision.
+
+Python calculates descriptive statistics from received samples and events.
+Combat, lineage, and run views show “not collected” when input is missing.
+LootWeave has no automatic game collector or official game API integration.
+OCR reads only visible demo fields. The data model does not prove full game coverage.
+
+See [owned API input](docs/implementation.md#owned-live-api-input) for the protocol.
+See [live feature coverage](docs/live-feature-coverage.md) for evidence and limits.
 
 ### Check the repository
 

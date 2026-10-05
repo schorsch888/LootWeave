@@ -12,6 +12,67 @@ Players can record evidence-linked material and currency balances. Engine 0.1.8 
 
 ## Boundaries
 
+### Owned live API input
+
+The source selector offers manual input, screenshot OCR, or LootWeave's own local API.
+Profile accepts the independent `lootweave-live/1` protocol through the existing authenticated gateway.
+The [protocol guide](live-api.md) gives fields, routes, bounds, and input steps.
+No external assistant connection remains. Port, pairing-token, and former external connection fields are unsupported.
+
+An API does not collect game data by itself. An automatic game collector and official game API integration remain unimplemented.
+Users can load an owned observation JSON file. Developers can publish samples with [send_live_sample.py](../scripts/send_live_sample.py).
+
+The current input panel declares Deskrawl build `25690430`, edition, mode, and class.
+Source context and class must match that declaration. Capture time must be within the stated freshness limits.
+
+Rust owns desktop entry, native capture, and process lifetime. Python owns the API, validation, descriptive statistics, and storage.
+React presents data and manages explicit review. No additional listener, process supervisor, or runtime dependency is introduced.
+The Windows distribution retains its existing single-EXE entry.
+
+`POST /v1/live/samples` publishes an unconfirmed sample. `GET /v1/live/sources` lists available source IDs and capture times.
+`POST /v1/imports/live/read` binds the current sample and freezes a preview.
+`POST /v1/imports/live/draft` converts the selected held candidate without rereading its producer.
+Explicit confirmation uses the existing flow with `live_api_confirmation` evidence.
+
+The sample and frozen-preview caches each retain at most 16 entries and eight MiB of encoded content for 600 seconds.
+These limits do not bound total process memory. Publication and polling do not write SQLite.
+Draft conversion saves its immutable source observation. Only explicit confirmation appends a Profile revision.
+
+Later samples cannot change earlier drafts or confirmed history. Storage version 1 and historical evidence support remain unchanged.
+
+Only supplied held equipment enters candidate selection. Ground drops, forecasts, and unopened chest contents remain unheld previews.
+Duplicate instances, unread affixes, missing instance IDs, and unsettled online items cannot become candidates.
+
+A ring requires an explicit target slot. Known resource counts enter the draft, including zero.
+Missing quantities remain unknown. Missing coverage does not establish an empty inventory.
+
+The model accepts skills, talents, Paragon, runes, companions, temporary effects, and embedded items when supplied.
+Imported identifiers and ranks do not establish effect mechanics. Source panel estimates do not enter `observed_panel`.
+Descriptions, field units, special effects, and absent allocations require review.
+
+Ten views share one loaded observation. They show character, panel, resources, runs, previews, availability, damage, lineage, loadouts, and source status.
+Python computes descriptive run rates, damage windows, and observed draw frequencies.
+
+Run rates exclude partial records and divide totals by total duration. Partial damage windows retain unknown DPS.
+Observed frequencies do not predict future draws. Read-only loadout references do not change game equipment.
+
+Planning retains accepted trial analysis. Evaluation retains equipment reasoning and pinned replay.
+
+Item and report lists display at most 50 records per page. Search covers all loaded records.
+Tables provide bounded scrolling and keyboard focus. Switching views does not make additional API requests.
+
+Optional monitoring waits two seconds after each completed read. Requests do not overlap, and hidden pages pause requests.
+Candidate selection stops monitoring. A failed background read stops monitoring and preserves the earlier preview.
+
+An unchanged content hash returns metadata without repeating items, reports, and overview values.
+Source or scope changes discard pending results. Explicit refresh preserves edited draft fields but requires another source load before confirmation.
+
+The [coverage record](live-feature-coverage.md) describes current capabilities, independent models, and remaining limits.
+The repository includes no reference source, packaged resources, or runtime files.
+Synthetic HTTP and browser checks do not establish automatic game collection, Windows game acceptance, or complete mechanics.
+
+### Service ownership
+
 | Location | Ownership |
 | --- | --- |
 | frontend/src | React/TypeScript FSD: App assembles Pages, Pages compose Features and Entities, Shared provides transport and wire types |
@@ -90,6 +151,7 @@ The existing source-hash records verify selected static definitions only. They a
 | Capability | Main routes |
 | --- | --- |
 | Profile | POST /v1/observations; POST /v1/confirmations; GET /v1/profiles/{id}/revisions/{revision}; POST /v1/snapshots/validate |
+| Profile live input | POST /v1/live/samples; GET /v1/live/sources; POST /v1/imports/live/read; POST /v1/imports/live/draft |
 | Knowledge | GET /v1/packs; GET /v1/packs/{id}/{version}; POST /v1/item-dependencies |
 | Evaluation | POST /v1/evaluations; GET /v1/evaluations/{id}; POST /v1/evaluations/{id}/replay |
 | Planning | POST /v1/trials; POST /v1/routes/compare; POST /v1/sources/eligibility; POST /v1/drop-estimates |

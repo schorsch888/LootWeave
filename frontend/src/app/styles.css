@@ -19,3 +19,18 @@ a{color:inherit;text-decoration:none}button{border:1px solid #394139;border-radi
 
 .item-dependency { min-width: 0; }
 .item-dependency p, .item-dependency li { overflow-wrap: anywhere; }
+
+.source-options { display: flex; flex-wrap: wrap; gap: 1.5rem; border: 0; padding: 0; }
+.source-options legend { margin-bottom: .75rem; }
+.live-table { overflow: auto; max-height: 32rem; margin: 1rem 0; }
+.live-table table { width: 100%; border-collapse: collapse; text-align: left; }
+.live-table th, .live-table td { padding: .65rem; border-bottom: 1px solid var(--border, #dce3ea); vertical-align: top; }
+.live-table details { min-width: 12rem; }
+.live-table th { position: sticky; top: 0; background: #191f1b; z-index: 1; }
+.live-overview { border-block: 1px solid #303b32; margin: 1rem 0; padding: 1rem 0; min-width: 0; }
+.live-overview p, .live-overview li { overflow-wrap: anywhere; }
+.live-overview button[aria-pressed="true"] { border-color: #c7dd96; color: #dbe9bb; }
+.live-values { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: .75rem; }
+.live-values div { min-width: 0; padding: .65rem; border: 1px solid #303b32; border-radius: 6px; }
+.live-values dt { color: #9aa69c; font-size: 12px; }
+.live-values dd { margin: .3rem 0 0; overflow-wrap: anywhere; font-size: 13px; }

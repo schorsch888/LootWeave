@@ -31,6 +31,7 @@ LootWeave 是一个面向装备决策的开源 Windows 原型。
 | --- | --- |
 | 🧩 **装备与构筑** | 记录已拥有的物品、技能、效果和资源。将实际装备与未来计划分开。 |
 | 📷 **OCR 核对** | 查看截图和识别文本。逐行采用或忽略内容，再确认事实。 |
+| 🔌 **实时数据输入** | 载入 JSON 观测文件，或向 LootWeave 本机 API 发送样本。用户核对后再确认快照。 |
 | 🔎 **比较与解释** | 查看字段差异、已有规则支持的机制变化，以及缺失证据。区分保留理由与装备资格。 |
 | 🧰 **准备计划** | 记录已确认的方案和预算。查看已知成本、资源缺口与未知的前置条件。 |
 | 🧭 **实测试验** | 记录实际经验值和完整耗时。比较条件一致的试验。 |
@@ -44,7 +45,7 @@ LootWeave 是一个面向装备决策的开源 Windows 原型。
 
 ```mermaid
 flowchart LR
-    A["📝 文本或 OCR 观察"] --> B["👤 用户确认"]
+    A["📝 文本、OCR 或本地 API 观察"] --> B["👤 用户确认"]
     B --> C["📌 快照与规则版本"]
     C --> D["🔎 比较与回放"]
 ```
@@ -52,6 +53,8 @@ flowchart LR
 观察、已确认事实和推导结果分别保存。
 缺失或冲突的证据会阻止缺乏依据的结论。
 职责与数据流见[架构约束](docs/architecture.md)。
+
+本地 BMP 截图也可进入 OCR 核对流程。原始观测保持未确认，未知拍摄时间仍保留为未知。
 
 ## 快速开始
 
@@ -62,6 +65,7 @@ flowchart LR
 3. 使用绿色版 ZIP 时，将完整压缩包解压到可写文件夹。打开 `LootWeave.exe`。
 
 发布包包含 Python 运行时。绿色版 ZIP 还包含 WebView2 和 C++ 运行库。
+Windows 应用保留一个 Rust EXE 启动入口，并打包 Python 业务服务。
 绿色版数据保存在相邻的 `data/` 文件夹。安装版使用 `%LOCALAPPDATA%/LootWeave`。
 移动文件夹前，请退出程序。替换程序文件时，请保留 `data/`。
 
@@ -89,6 +93,42 @@ python runtime.py --data-dir .local/development
 新档案需要先录入装备与构筑事实。保存快照前，请确认这些事实。
 可使用虚构示例查看可执行规则。
 完整流程见[源码环境与故障排查](docs/development.md)。
+
+### 选择数据来源
+
+工作台提供手动录入、截图 OCR 和实时数据输入。
+OCR 只识别当前演示支持的可见字段。确认前请逐项核对。
+
+实时数据使用 LootWeave 自有的 `lootweave-live/1` 协议。
+用户可在工作台载入 JSON 观测文件。
+使用 API 时，向本机 Gateway 的 `/api/profile/live/samples` 发送样本。
+Gateway 将请求转发给 Profile。
+十个视图展示已收到的观测和 Python 统计。
+内容包括角色、装备、构筑、资源、跑图、伤害、血脉、配装、状态和静态定义。
+
+启动 LootWeave。
+打开实时 API 面板。
+等 Profile 显示就绪后，再发送样本。
+载入 JSON 文件时，在工作台选择“载入观测文件”。
+使用发送脚本时，将当前本机会话凭据设为 `LOOTWEAVE_LIVE_SESSION`。
+运行以下命令：
+
+```powershell
+python scripts/send_live_sample.py --gateway "<启动地址>" --file "<own-sample.json>"
+```
+
+请将占位符替换为启动地址和 JSON 文件路径。
+请保护会话凭据。
+API 只在内存中保留已收样本。轮询和发送样本不会确认事实。
+用户检查冻结草稿并明确确认后，才会创建快照版本。
+
+Python 根据实际收到的样本和事件计算描述统计。
+缺少输入时，伤害、血脉和跑图视图显示“未采集”。
+LootWeave 尚无自动游戏采集器或官方游戏 API 接入。
+OCR 只识别可见演示字段。数据模型不代表已覆盖完整游戏。
+
+协议说明见[自有实时 API 输入](docs/implementation.md#owned-live-api-input)。
+证据与限制见[实时数据功能覆盖](docs/live-feature-coverage.zh-CN.md)。
 
 ### 检查仓库
 

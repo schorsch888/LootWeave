@@ -479,7 +479,7 @@ try {
   await page.getByRole("button", { name: "加载合成示例", exact: true }).click();
   await check("当前使用合成示例");
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.locator("summary").filter({ hasText: "从截图识别装备字段" }).click();
+  await page.getByRole("radio", { name: "截图 OCR", exact: true }).check();
   await page.locator("summary").filter({ hasText: "从屏幕区域读取" }).click();
   const genericCapture = page.getByRole("button", { name: "捕获所选区域并读取", exact: true });
   assert.equal(await genericCapture.count(), 1, "generic_capture_mode_missing_for_other_scopes");

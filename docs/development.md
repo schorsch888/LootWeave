@@ -39,11 +39,39 @@ python runtime.py --data-dir .local/development
 
 The launcher starts local services, prints `Local UI ready at …`, and opens an authenticated browser session. It uses an ephemeral loopback port. Keep that terminal open, then use **Ctrl+C** to stop the launcher and its workers; closing the browser alone does not stop them.
 
+Rust owns native capture, the desktop entry, and process lifecycle.
+Python owns business APIs, statistics, and storage. The Windows package keeps one Rust EXE entry point with bundled Python services.
+
 This example stores development data in the ignored `.local/development` directory. Without `--data-dir`, the default is `.local`. Retain the same directory to reopen saved profiles. The browser URL's session fragment is a credential and must not be shared.
 
 On a fresh data directory, the workbench starts with a blank profile. Record item/build facts, review observations, confirm a snapshot, and save/reopen it. Adding an item to inventory does not equip it automatically. Use the fictional example to explore executable mechanisms; Deskrawl rules remain research-only, so unknown mechanics must remain blocked or pending confirmation. Record reviewed resource balances and preparation quotes to explore future-plan cost and budget gaps. These projections do not change actual equipment. Raw item-field differences do not establish DPS or an upgrade.
 
-The browser workflow does not provide the Tauri host's native capture commands. Windows capture needs the desktop host. OCR uses installed `en-US` and `zh-Hans-CN` language capabilities; missing models or failed recognition leave manual entry and confirmation available. The current adapter recognizes three generic demonstration labels: level, vitality, and armor.
+The browser workflow does not provide the Tauri host's native capture commands. Windows capture needs the desktop host. OCR uses installed `en-US` and `zh-Hans-CN` language capabilities; missing models or failed recognition leave manual entry and confirmation available. The current OCR adapter recognizes three generic demonstration labels: level, vitality, and armor.
+
+### Send a live observation
+
+LootWeave accepts observations with its `lootweave-live/1` protocol.
+The workbench can load a JSON observation file.
+The local sender posts a file through the existing Gateway to `/api/profile/live/samples`.
+
+Start LootWeave.
+Open the Live API panel.
+Wait until Profile is ready.
+Use the startup address printed by the launcher.
+Set `LOOTWEAVE_LIVE_SESSION` to the current local session credential in your shell.
+Then send a JSON file:
+
+```powershell
+python scripts/send_live_sample.py --gateway "<startup-address>" --file "<own-sample.json>"
+```
+
+Replace each placeholder with your startup address or JSON file path.
+Do not share the session credential.
+Sample publication and refresh do not confirm facts or create revisions.
+The API stores source samples in memory. A draft freezes a preview.
+Explicit confirmation creates a snapshot revision.
+
+See the [owned API input](implementation.md#owned-live-api-input), [API protocol](live-api.md), and [feature coverage](live-feature-coverage.md).
 
 Captured observations are saved before review. Accept or ignore each raw-text line and unmatched parsed field, map accepted rows to known/custom affixes, and review values and units. Confirm required level separately, then apply all reviewed rows to the candidate before confirming and saving the snapshot. A new capture requires a new review; duplicate targets block application. See the [OCR contract](implementation.md#ocr-behavior) for provenance and persistence guarantees.
 
@@ -149,9 +177,14 @@ For browser interaction checks, also install the pinned browser runtime:
 ```powershell
 pnpm --dir frontend exec playwright install chromium
 pnpm --dir frontend check:ui
+pnpm --dir frontend check:live
 ```
 
 Linux CI additionally installs browser system dependencies; see the [workflow](../.github/workflows/checks.yml). Direct component checks, browser interaction, and native desktop behavior have different scopes.
+
+The live input check starts LootWeave's own runtime and uses fictional observations.
+It tests sender and file input, ten views, refresh, frozen drafts, and explicit confirmation.
+It does not start a game.
 
 ### Native Windows
 
