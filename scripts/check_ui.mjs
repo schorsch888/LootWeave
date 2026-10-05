@@ -37,7 +37,7 @@ const seedCode = [
 const seeded = spawnSync(python, ["-c", seedCode, path.join(output, "state/evaluation")],
                          { cwd: root, windowsHide: true, timeout: 10000, encoding: "utf8" });
 assert.equal(seeded.status, 0, "historical_fixture_seed_failed");
-const child = spawn(python, ["runtime.py", "--stdio-control", "--no-browser", "--data-dir", path.join(output, "state")],
+const child = spawn(python, ["runtime.py", "--stdio-control", "--no-browser", "--startup-policy", "on-demand", "--data-dir", path.join(output, "state")],
                     { cwd: root, stdio: ["pipe", "pipe", "pipe"], windowsHide: true });
 let credential = "";
 let browser;
@@ -88,6 +88,7 @@ async function confirm(waitForSaved = true) {
 }
 async function evaluate() {
   const button = page.getByRole("button", { name: "解释保留价值与换装变化 →", exact: true });
+  await button.and(page.locator(":enabled")).waitFor({ state: "visible" });
   await button.focus();
   await page.keyboard.press("Enter");
   await page.locator(".result").waitFor({ state: "visible" });
@@ -106,15 +107,51 @@ try {
   page = await context.newPage();
   page.setDefaultTimeout(15000);
   page.on("pageerror", error => errors.push(error.name));
+  let holdCoreStatus = true;
+  let catalogRequests = 0;
+  page.on("request", request => { if (new URL(request.url()).pathname === "/api/knowledge/packs") catalogRequests++; });
+  const delayedCoreStatus = async route => {
+    if (!holdCoreStatus) { await route.continue(); return; }
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({
+      services: { profile: { state: "starting", generation: 1 }, knowledge: { state: "starting", generation: 1 },
+        evaluation: { state: "starting", generation: 1 }, ocr: { state: "dormant", generation: 0 }, planning: { state: "dormant", generation: 0 } },
+      core_ready: false, startup_policy: "on-demand", degraded: false,
+    }) });
+  };
+  await page.route("**/api/status", delayedCoreStatus);
   await page.goto(ready.url + "/#session=" + credential);
   await check("每次换装，都有依据");
+  stage = "delayed_core_shell";
+  await page.getByLabel("原始文本", { exact: true }).waitFor({ state: "visible" });
+  await check("手动草稿可继续填写");
+  const earlyText = page.getByLabel("原始文本", { exact: true });
+  const initialText = await earlyText.inputValue();
+  await earlyText.fill("人工草稿：核心服务就绪前也可以填写。");
+  assert.equal(await page.getByRole("checkbox", { name: "我已核对原文、实例词条和完整构筑，确认这些输入。" }).isDisabled(), true,
+    "confirmation_enabled_before_profile_ready");
+  assert.equal(catalogRequests, 0, "catalog_requested_before_knowledge_ready");
+  holdCoreStatus = false;
+  await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+  await page.locator("label").filter({ hasText: "知识包版本" }).locator("select:enabled").waitFor({ state: "visible" });
+  assert.equal(await earlyText.inputValue(), "人工草稿：核心服务就绪前也可以填写。",
+    "core_readiness_replaced_manual_draft");
+  await earlyText.fill(initialText);
+  await page.unroute("**/api/status", delayedCoreStatus);
+  results.push("simulated_delayed_core_status_keeps_shell_and_manual_draft_available_and_gates_catalog_confirmation");
   assert.equal(new URL(page.url()).hash, "");
   assert.equal(new URL(page.url()).search, "");
+  const initialStatus = await page.request.get(runtimeUrl + "/api/status", { headers: { Authorization: "Bearer " + credential } });
+  const initialServices = (await initialStatus.json()).services;
+  assert.equal(initialServices.ocr.state, "dormant", "initial_render_started_ocr");
+  assert.equal(initialServices.planning.state, "dormant", "initial_render_started_planning");
+  assert.equal(await page.getByRole("heading", { name: "用实际试验比较练级路线", exact: true }).count(), 0,
+    "unopened_trial_panel_was_mounted");
+  results.push("initial_manual_workflow_keeps_optional_services_dormant_and_secondary_panels_unmounted");
   // Real input is the default; this regression deliberately selects fictional data.
   await page.getByRole("button", { name: "加载合成示例", exact: true }).click();
   await check("当前使用合成示例");
-  await page.locator("summary").filter({ hasText: "路线试验与获取记录" }).click();
   stage = "confirmation";
+  await page.getByLabel("游戏范围", { exact: true }).waitFor({ state: "visible" });
   assert.equal(await page.getByRole("button", { name: "解释保留价值与换装变化 →" }).isEnabled(), false);
   await page.locator("summary").filter({ hasText: "查看或编辑完整构筑数据" }).click();
   let releaseConfirmation;
@@ -148,6 +185,9 @@ try {
 
   stage = "replacement";
   const initialEvaluationRequest = page.waitForRequest("**/api/evaluation/evaluations");
+  // Retain the rejection for the awaited assertion below while preventing a
+  // concurrent UI timeout from escaping the harness cleanup.
+  void initialEvaluationRequest.catch(() => {});
   await evaluate();
   const evaluationBody = (await initialEvaluationRequest).postDataJSON();
   await check("换装会丢失机制");
@@ -194,6 +234,7 @@ try {
   results.push("frozen_replay_matches");
 
   stage = "eligibility";
+  await page.getByRole("button", { name: "打开获取来源与观察样本", exact: true }).click();
   await page.getByRole("button", { name: "核对当前条件", exact: true }).click();
   await check("条件未知");
   results.push("unknown_source_access_is_preserved");
@@ -203,6 +244,12 @@ try {
   await page.getByLabel("目标事件", { exact: true }).fill("fictional-item-observed");
   await page.getByLabel("一次尝试的单位", { exact: true }).fill("one fictional chest");
   await page.getByLabel("观察到成功次数", { exact: true }).fill("4");
+  await page.getByRole("button", { name: "收起获取来源与观察样本", exact: true }).click();
+  await page.getByRole("button", { name: "打开获取来源与观察样本", exact: true }).click();
+  assert.equal(await page.getByLabel("目标事件", { exact: true }).inputValue(), "fictional-item-observed",
+    "sample_draft_lost_on_panel_toggle");
+  assert.equal(await page.getByLabel("观察到成功次数", { exact: true }).inputValue(), "4",
+    "sample_count_lost_on_panel_toggle");
   assert.equal(await page.getByRole("button", { name: "提交完整观察样本", exact: true }).isEnabled(), false);
   await page.getByRole("checkbox", { name: "每次尝试及其结果都已完整记录" }).check();
   await page.getByRole("checkbox", { name: "观察期间版本及设置保持不变" }).check();
@@ -212,6 +259,7 @@ try {
   results.push("observed_samples_require_complete_coverage_and_show_uncertainty");
 
   stage = "trials";
+  await page.getByRole("button", { name: "打开练级试验", exact: true }).click();
   await page.getByRole("checkbox", { name: "本次构筑和加成保持一致，没有跨越角色/巅峰经验转换。" }).check();
   await page.getByRole("button", { name: "记录试验并比较", exact: true }).click();
   await check("已测候选中最高");
@@ -241,6 +289,10 @@ try {
   await routePanel.getByLabel("实际累计经验", { exact: true }).fill("300");
   await routePanel.getByLabel("完整耗时（秒）", { exact: true }).fill("120");
   await trialConsent.check();
+  await page.getByRole("button", { name: "收起练级试验", exact: true }).click();
+  await page.getByRole("button", { name: "打开练级试验", exact: true }).click();
+  assert.equal(await levelEnd.inputValue(), "16", "trial_draft_lost_on_panel_toggle");
+  assert.equal(await trialConsent.isChecked(), true, "trial_confirmation_lost_on_panel_toggle");
   await trialButton.click();
   await routePanel.getByText("比较范围：角色等级 15 → 16", { exact: true }).waitFor();
   assert.equal(await trialRow("示例地图").getByRole("cell").nth(1).innerText(), "1",
@@ -370,6 +422,7 @@ try {
   stage = "history";
   await page.reload();
   await check("每次换装，都有依据");
+  await page.getByRole("button", { name: "打开历史评估", exact: true }).click();
   await page.locator("summary").filter({ hasText: "查看历史冻结评估" }).click();
   await page.locator("article.reason").filter({ hasText: "评估器版本：0.1.6" })
     .getByRole("button", { name: "查看这份冻结结果", exact: true }).last().click();
@@ -708,6 +761,55 @@ try {
   assert.equal(await backgroundOption.count(), 1, "late_detection_lost_current_window_binding");
   assert.equal(await windowSelector.inputValue(), "", "new_detection_silently_selected_window");
   simulatedNativeChecks.push("late_detection_from_previous_context_cannot_replace_new_window_list");
+
+  stage = "source_fault_frozen_history";
+  const serviceStatus = async () => {
+    const response = await page.request.get(runtimeUrl + "/api/status", { headers: { Authorization: "Bearer " + credential } });
+    assert.equal(response.status(), 200, "source_fault_status_failed");
+    return (await response.json()).services;
+  };
+  const beforeFault = await serviceStatus();
+  assert.equal(beforeFault.profile.state, "ready");
+  assert.equal(beforeFault.evaluation.state, "ready");
+  assert(Number.isSafeInteger(beforeFault.profile.pid) && beforeFault.profile.pid > 0, "owned_profile_pid_missing");
+  const retainedDraft = await earlyText.inputValue();
+  let historyEnsures = 0;
+  const countHistoryEnsure = request => { if (new URL(request.url()).pathname === "/api/runtime/ensure") historyEnsures++; };
+  page.on("request", countHistoryEnsure);
+  process.kill(beforeFault.profile.pid);
+  let failedServices;
+  const failureDeadline = Date.now() + 5000;
+  do {
+    failedServices = await serviceStatus();
+    if (failedServices.profile.state === "failed" && failedServices.evaluation.historical_only === true) break;
+    await new Promise(resolve => setTimeout(resolve, 50));
+  } while (Date.now() < failureDeadline);
+  assert.equal(failedServices.profile.state, "failed", "profile_fault_was_not_observed");
+  assert.equal(failedServices.evaluation.state, "failed", "dependent_evaluator_was_not_invalidated");
+  assert.equal(failedServices.evaluation.historical_only, true, "frozen_evaluator_was_not_retained");
+  await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+  const historySummary = page.locator("summary").filter({ hasText: "查看历史冻结评估" });
+  if (await historySummary.evaluate(element => element.parentElement.open)) await historySummary.click();
+  const frozenList = page.waitForResponse(response => new URL(response.url()).pathname === "/api/evaluation/evaluations" && response.request().method() === "GET");
+  await historySummary.click();
+  assert.equal((await frozenList).status(), 200, "source_fault_frozen_list_failed");
+  const frozenDetail = page.waitForResponse(response => new URL(response.url()).pathname === "/api/evaluation/evaluations/" + legacyEvaluationId);
+  await legacyArticle.getByRole("button", { name: "查看这份冻结结果", exact: true }).click();
+  assert.equal((await frozenDetail).status(), 200, "source_fault_frozen_detail_failed");
+  await check("评估器 0.1.1");
+  const frozenReplay = page.waitForResponse(response => new URL(response.url()).pathname === "/api/evaluation/evaluations/" + legacyEvaluationId + "/replay");
+  await page.getByRole("button", { name: "回放验证", exact: true }).click();
+  assert.equal((await frozenReplay).status(), 200, "source_fault_frozen_replay_failed");
+  await check("回放一致");
+  assert.equal(await earlyText.inputValue(), retainedDraft, "source_fault_history_replaced_manual_draft");
+  assert.equal(historyEnsures, 0, "frozen_history_started_live_dependencies");
+  const afterHistory = await serviceStatus();
+  assert.equal(afterHistory.profile.state, "failed", "frozen_history_restarted_profile");
+  for (const name of ["profile", "knowledge", "evaluation"]) {
+    assert.equal(afterHistory[name].generation, beforeFault[name].generation, "frozen_history_changed_" + name + "_generation");
+  }
+  page.off("request", countHistoryEnsure);
+  results.push("real_profile_child_failure_preserves_frozen_history_detail_replay_and_draft_without_dependency_startup");
 } catch (error) {
   process.exitCode = 1;
   let detail = String(error.message);
@@ -744,6 +846,7 @@ try {
     stage, passed, browser_errors: errors, failure, failure_screenshot: failureScreenshot,
     runtime_exit_code: code, duration_seconds: (Date.now() - started) / 1000,
     limitations: [
+      "The initial core-starting status was simulated to check shell/dependency gating; subsequent application requests and service lifecycle checks used real local services.",
       "Deskrawl process/window detection and capture IPC were simulated in-browser; no real native capture or game process was exercised.",
       "The mocked successful capture used a synthetic BMP; OCR, profile and other application HTTP services remained real local services.",
       "Historical 0.1.1 replay used a frozen fictional fixture seeded before startup, not customer data or current game acceptance.",
@@ -751,7 +854,7 @@ try {
     ]
   }, null, 2) + "\n");
   if (code !== 0) console.error("Runtime cleanup failed.");
-  else if (passed) console.log("UI checks passed: " + results.length + " real-service flows + " +
+  else if (passed) console.log("UI checks passed: " + results.length + " application flows + " +
     simulatedNativeChecks.length + " simulated Deskrawl native flows.");
   console.log("Evidence: " + path.relative(root, output).replaceAll(path.sep, "/"));
 }

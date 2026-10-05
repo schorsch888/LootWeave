@@ -57,6 +57,10 @@ Two-environment acceptance remains unpassed: no second clean machine or VM is cu
 
 Dependency/model rights and integrity, migration backup/rollback, local API authorization, redacted logs and a keyboard-accessible main flow must pass review; status cannot rely on color alone. **Go:** trial only accepted game/class/scenario scopes. **No-go:** developer-machine-only success, missing dependencies or services left running after exit. Roll back to a compatible release and rule pack; old services must not access incompatible new storage.
 
+### Runtime performance work
+
+The [runtime performance plan](performance-plan.md) covers P0 timing/resource tools, experimental P1 on-demand OCR/Planning, experimental P2 shell/core readiness and P4 mount-once panels/serialized polling. In the [predeclared comparison](performance-results.md), twenty on-demand workflows/cleanup checks passed and idle private commit fell, but the primary startup P95 failed the comparison rule; default promotion is deferred and `eager` remains the default. P3 stays deferred because seven-pack initialization did not dominate; P5 lacks separately attributable helper savings. Frontend splitting is deferred after an actual failed-import retry and small entry-byte savings. Matching package checks are separate from quantitative improvement; unchanged M4 budgets still require cold-GUI and clean-machine evidence.
+
 ## M5: Acquisition, leveling and other games
 
 First expose verified sources, eligibility and access requirements, distinguishing rarity, usefulness and replacement difficulty. Define the target event, attempt unit and sampling coverage before reporting estimates; raw weights are not final item-drop probabilities, and average waiting time is not a guaranteed drop.

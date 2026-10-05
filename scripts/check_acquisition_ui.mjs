@@ -62,6 +62,7 @@ try {
     };
     globalThis.fetch = async (url, options) => {
       const body = options.body ? JSON.parse(options.body) : undefined;
+      if (url === "/api/runtime/ensure") return { ok: true, json: async () => ({ service: body.service, state: "ready", generation: 1 }) };
       calls.push({ url, body });
       if (seed.wait) await seed.wait;
       return { ok: !seed.error, json: async () => seed.error ? { error: seed.error } :
@@ -204,6 +205,7 @@ try {
       assert.equal(harness.state[3], undefined);
       assert.ok([...nodes(harness.render())].some(n => n.type === "fieldset" && n.props.disabled));
       await button(harness.render()).props.onClick();
+      await new Promise(resolve => setImmediate(resolve));
       assert.equal(harness.calls.length, 1);
     } finally { release(); await request; }
     assert.equal(harness.state[1], false);

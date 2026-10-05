@@ -2,7 +2,9 @@
 
 Recorded on 2026-10-04 UTC. This is developer-machine evidence, not release acceptance. The source tree and generated binaries are separate validation scopes.
 
-## Current source
+## Source snapshot before runtime optimization
+
+This section records the earlier source/artifact checks; runtime performance verification is reported separately below.
 
 | Check | Observed result | Scope |
 | --- | --- | --- |
@@ -153,7 +155,6 @@ Initial development failures remain recorded locally: binary/set values were mis
 Real loopback HTTP verifies that the new research pack still blocks executable mechanics, preserves its version pin and replays ten times after Profile and Knowledge stop. All five research versions remain explicit, and mutation of returned API copies cannot replace cached history. The frontend, OCR, evaluator, storage and Rust modules are unchanged; preceding frontend/27-component/32-card checks retain their original source scope, without a new browser/native run. Current architecture and publication preflight results are recorded in the source table.
 
 The final read-only signature snapshot found no matching controlled service/helper/component-check processes, with 4,952 MiB available memory and 84% committed bytes. This is a single host reading, not a leak or release benchmark. Native runtime registration-root use, class-vtable materialization, indirect dispatch, complete event/ownership coverage and online effects still require evidence. M1 remains unaccepted; the full Tauri/NSIS rebuild and two-clean-machine distribution gate remain deferred/unpassed. Selecting an older explicit research pack preserves its original scope; an older checker cannot validate the new image/module sections.
-
 
 ## Frostwyrm code-registration tail and selected module entry
 
@@ -377,3 +378,67 @@ A separate, examined v1 tuning experiment paired 40 regions: native original siz
 M1 real Deskrawl mechanics remain research-only. M2 remains unaccepted: v7's overall synthetic numerical targets passed, while Chinese/poorer-quality strata, actual game/layout coverage and independent truth review remain unresolved. M4 remains **No-go**: two clean standard-user Windows environments are unavailable, and offline install/uninstall coverage remains unpassed. Visible GUI/keyboard and successful real-window capture validation, the initial descendant-timeout investigation, path privacy acceptance, signing, independent rights/release review and future schema migration/rollback also remain open. Backup/restore for existing storage v1 is covered by Python regressions; no migration has shipped.
 
 Private player captures, machine reports and development screenshots remain ignored under `.local`. Complete original synthetic v6/v7 records described above are public; they contain no game/player material. Reproduction commands and boundaries are in [implementation](implementation.md), with acceptance requirements in the [roadmap](roadmap.md).
+
+## Runtime performance experiment (2026-10-05)
+
+The [results](performance-results.md) and [selected sanitized cohorts](../fixtures/runtime-performance/README.md) preserve the predeclared comparison, all failed attempts, identities and unknowns. Control A/B used `eade0dc`; explicit on-demand source `7afdd6e` completed 20 workflows/cleanup checks but failed the primary latency comparison. Initial idle private commit was 76.609375 MiB versus 104.98828125–105.89453125 MiB; manual-complete P95 was 4.9235146 s against a required <3.6976023 s. Default promotion was deferred, and both launchers retain eager. These developer measurements exclude WebView and warm caches do not establish cold-start acceptance.
+
+At historical source snapshot `fb67195`, before the `923bca` health-deadline fix and later mainline integration, the full Windows Python suite ran 400 tests in 46.321 s: 399 passed and one Windows symlink-privilege test skipped. Architecture and publication checks reported zero findings across 169 text files; Python compileall passed. Frozen v6/v7 integrity and 200 parser replays each passed, with no image reconstruction or independent human truth review performed in this run. Original observations, scores and source snapshots remain unchanged; these counts are not the final current-source totals.
+
+The same historical source run's standalone native checks passed 22 tests with two intentionally ignored child-fixture entry points exercised by parent tests; formatting/compilation passed. Frontend runtime checks passed 16 cases, TypeScript/production build passed, and that explicit on-demand browser run passed 21 application flows plus six simulated native flows with cleanup exit zero. The source-fault flow retained drafts and frozen collection/detail/replay without dependency starts; simulations are not successful real-game capture.
+
+### Matching development package
+
+#### Historical package (2034deed)
+
+A matching EXE, Python directory bundle and offline NSIS installer were built from product source `2034deed5e735d31e39bbd8ddb6710b66ed15e92`, using Python 3.12.14 and Rust 1.94.1. Verifier-only repairs at that stage did not change the product inputs in these artifacts. The later `923bca` health-deadline fix and mainline product integration postdate this package and require the separate matching build recorded below. These local historical artifacts are not uploaded by the PR and do not replace the historically delivered installer above.
+
+| Artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `desktop/target/release/lootweave-desktop.exe` | 11241472 | `f6d166fbff9155e7226730e933de10617241393872f01257159139626c7c31e2` |
+| `dist/sidecar/bundle-manifest.json` | 62038 | `684e844d824cfe1cb0fded1c2bf65b9726fdddeab233c869041963635ce4274c` |
+| `desktop/target/release/bundle/nsis/LootWeave_0.1.0_x64-setup.exe` | 225999835 | `57b2be1f487b9bc0d2d3def5e49f73d683d18309ff9a93a163dc5c511ccd1b26` |
+
+Full locked Rust package tests ran 32 cases: 30 passed and two child-fixture entry points were intentionally ignored by discovery and invoked by parent tests. Default eager verification passed 20 start/exit cycles, persisted frozen replay, authorization/instance ownership, offline backup/restore, each of six worker faults, forced host exit and restart recovery.
+
+The first packaged on-demand verification passed 20 start/exit/replay cycles, then failed the verifier's legacy assertion requiring at least three backup files. Production backup succeeded with the two existing core databases; unused Planning had no database. Its original failed report remains local. The repaired verifier requires the exact supported source file set, validates backup integrity and identical restored manifests, and rejects omission of any existing database/capture. Ten regressions passed. A new full on-demand run passed all 20 start/exit cycles plus authorization/ownership, backup/restore, frozen replay, each worker fault, forced host exit and recovery, against the same host and bundle hashes. This verifier-only repair did not change product source or the original benchmark cohorts.
+
+Hidden passive WebView verification passed 20 fresh-profile start/close cycles against the host and manifest identities above, on installed WebView2 154.0.4258.53 with warm OS caches. Readiness P95 was 7.5628 s; maximum summed idle working set was 632.12 MiB and private commit was 380.89 MiB. CDP client startup contributes to readiness; shared pages may be counted repeatedly. Checks retained hidden/nonforeground window, bounded invalid-capture rejection without reading desktop pixels, passive IPC and exact owned-child cleanup. No input automation, visible painting or successful real-game capture was performed.
+
+The hosted frontend checker initially observed a Vite optimizer's 1000 ms status timer inside its simulated global clock. Modules are now loaded and Vite is closed before the application clock assertions; polling and request-deadline assertions remain unchanged. Node 24.19.0 passed all 16 checks and ten normal/forced-cold optimizer runs with deliberate overlap. This is verifier isolation, not a product timing improvement.
+
+Historical identities and results remain separate. M4 still needs visible cold-GUI, two-clean-machine offline installation/removal, signing and independent privacy/rights review; these matching development checks do not accept the release.
+
+#### Integrated package (ddbfa853)
+
+This historical matching development EXE, frozen Python services and offline NSIS installer were rebuilt from product source `ddbfa8539e0dc91d39ff57d40c7f247f6b929545` after integration of mainline real-equipment/profile workflows and the absolute health-read deadline repair. Python 3.12.14 and Rust 1.94.1 were used. Documentation and verifier updates at that stage did not change these product inputs; the tested host and bundle hashes were checked again after all gates. The later complete-equipment frontend is recorded in its separate matching build below. These local artifacts are not uploaded or substituted for the delivered installer.
+
+| Artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `desktop/target/release/lootweave-desktop.exe` | 11213824 | `f30db13d61a26004ae7148eb4c57de3b6a346c9f7ab73bf5592349f7f295692f` |
+| `dist/sidecar/bundle-manifest.json` | 62038 | `dd182d0400c3405465c991f7a4377b047ad3cdd566fee1d4f477802cc5ad633e` |
+| `desktop/target/release/bundle/nsis/LootWeave_0.1.0_x64-setup.exe` | 226010098 | `c924f768a1da599b79a842b485b6bf06cf3f41c2d91bfda4be2a7a5cf0be46de` |
+
+At this historical integration, the source suite ran 438 Python tests in 52.215 s: 437 passed and one Windows symlink-privilege test skipped. Full locked native Rust tests passed 31 cases; three explicitly ignored child-fixture entry points are exercised by parent tests. Publication checked 179 text files with zero findings; architecture and Python compileall passed. Frontend TypeScript/build, 16 runtime cases, 18 core cases, 19 confirmation cases (including actual Profile/SQLite writes), 27 acquisition/Planning cases, 32 evaluation renders, and 21 application plus six simulated native browser flows passed. That build's single JavaScript entry is 296818 bytes, SHA-256 `628514755ce46ab140b0d7513c4fa5ca39bdacf8801b18afe6ea2769f2bce571`; CSS is 7954 bytes, SHA-256 `a3913dbf448b65788a083e866ec3228fa550b5434ac40c3b759ddc5fb877b5e3`.
+
+Default eager and explicit on-demand each passed 20 start/exit cycles and all 13 lifecycle gates, including six worker faults, forced host exit, authorization, instance ownership, backup/restore, frozen replay and restart recovery. On-demand manual work left OCR/Planning dormant until requested. Hidden passive WebView passed 20 fresh-profile start/close cycles on installed WebView2 154.0.4258.53, with readiness P95 10.6237 s, maximum summed idle working set 636.69 MiB and private commit 378.03 MiB. These observe warm developer-machine startup, include CDP client cost and may double-count working-set pages; they are separate from the pre-integration comparative cohorts and do not accept M4.
+
+The subsequent benchmark identity verifier at `744df0a` added five deterministic regressions for stale/reused PIDs and rejected-handle closure, reusing the native metadata helpers. Its 20 tests passed; the complete updated source suite ran 443 tests in 50.255 s (442 passed, one existing skip). Publication remained 179 text files with zero findings, and compileall passed. Eight recorded product-entry/host/bundle hashes were unchanged. That was a tooling revision, outside this historical frozen product build; the earlier measured cohorts and summaries were not rewritten or rerun.
+
+The verifier preserves upstream exact host/descendant handles and ordered creation-time/snapshot bounds, emits allowlisted checkpoints before cleanup, retains both primary and cleanup errors, and continues all owned-handle cleanup after a termination race. Cold PowerShell test fixtures were replaced with env-gated native children without relaxing their deadlines. The earlier hosted abrupt exit has no established cause; passing matching local checks does not prove that cause or hosted CI success. Original failures remain local, no failed comparison attempt was replaced, and visible GUI, two clean Windows environments, offline installation/removal and independent human/release review remain open. No game source checks or image reconstruction were performed in this work.
+
+#### Complete equipment integration (96c6374)
+
+After main advanced through PR #4, the matching development EXE, frozen services and offline NSIS installer were rebuilt from immutable product source `96c637405d60684950207faa75334f66c4ba4aff`, preserving shoulder/back and embedded-source entry together with the runtime work. Python 3.12.14, Node 24.19.0 and Rust 1.94.1 were used. Subsequent documentation updates do not change these product inputs. These local artifacts are not uploaded or substituted for the delivered installer; historical package identities and observations above are preserved.
+
+| Artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `desktop/target/release/lootweave-desktop.exe` | 11213824 | `0fe68286c137162fbbe5c1ad3f5bb48f53481fe06a8844ebd526e52e01883fda` |
+| `dist/sidecar/bundle-manifest.json` | 62038 | `819004602046fc3cfc59e554401547bdf8bf4c0cac7d55bb59f10bb2f87cfb30` |
+| `desktop/target/release/bundle/nsis/LootWeave_0.1.0_x64-setup.exe` | 226010150 | `8cf98741183a0b4b49df813956775ded629d6b72fa13df931580417012db1bcf` |
+
+The fresh Python suite ran 443 cases in 51.713 s: 442 passed and one Windows symlink-privilege case skipped. Full locked Rust tests passed 31 cases, with three child-fixture entry points ignored by discovery and exercised by parent tests. Publication checked 180 text files with zero findings; architecture and compileall passed. TypeScript/production build, 16 runtime, 19 core, 19 confirmation, 27 acquisition/Planning, 32 evaluation-render and 21 application plus six simulated native browser checks passed. All 16 upstream core assertion bodies were preserved. The single JavaScript entry is 297135 bytes, SHA-256 `b986c7ac84af6e1322dfa8ccde176d6c8ce7c346dde39418d508de6d7f7905fe`; CSS is 7954 bytes, SHA-256 `a3913dbf448b65788a083e866ec3228fa550b5434ac40c3b759ddc5fb877b5e3`.
+
+Default eager and explicit on-demand each passed 20 fresh-state start/exit cycles and all 13 lifecycle/fault/history/authentication/backup/recovery gates. Hidden passive WebView passed 20 cycles on installed WebView2 154.0.4258.53, with a minimum reported idle count of 19 owned processes (the unchanged required minimum is eight), readiness P95 7.4588 s, maximum summed idle working set 629.84 MiB and private commit 371.58 MiB. All five host/manifest/installer/JavaScript/CSS identities matched before and after the gates.
+
+These are warm developer-machine functional checks, include CDP-client cost and may double-count shared working-set pages. They are not the predeclared headless comparison or visible cold-start acceptance. Original cohort bytes and failures remain unchanged, no new comparative attempt was substituted, and no game source checks or image reconstruction were performed. M4 still requires visible cold-GUI, two clean Windows environments, offline installation/removal and independent release review. Hosted CI must pass at the final PR head before merge.

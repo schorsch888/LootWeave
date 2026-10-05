@@ -22,11 +22,13 @@ const server = await createServer({ root: resolve(root, "frontend"), configFile:
     return code.replace(hook, "const useState = (...args) => globalThis.equipmentFixture.useState(...args);");
   }
   if (path !== workbenchPath) return;
-  const hooks = 'import { useEffect, useState } from "react";';
-  const api = 'import { api, newId } from "../../shared/api";';
-  assert.ok(code.includes(hooks) && code.includes(api));
-  return code.replace(hooks, "const useEffect = (...args) => globalThis.coreFixture.useEffect(...args); const useState = (...args) => globalThis.coreFixture.useState(...args);")
-    .replace(api, "const api = (...args) => globalThis.coreFixture.api(...args); const newId = prefix => prefix + '-' + crypto.randomUUID();");
+  const hooks = 'import { useEffect, useRef, useState } from "react";';
+  const api = 'import { api, ensureService, newId } from "../../shared/api";';
+  const runtime = 'import { pollRuntime } from "../../shared/runtime";';
+  assert.ok(code.includes(hooks) && code.includes(api) && code.includes(runtime));
+  return code.replace(hooks, "const useEffect = (...args) => globalThis.coreFixture.useEffect(...args); const useRef = (...args) => globalThis.coreFixture.useRef(...args); const useState = (...args) => globalThis.coreFixture.useState(...args);")
+    .replace(api, "const api = (...args) => globalThis.coreFixture.api(...args); const ensureService = (...args) => globalThis.coreFixture.ensureService(...args); const newId = prefix => prefix + '-' + crypto.randomUUID();")
+    .replace(runtime, "const pollRuntime = (...args) => globalThis.coreFixture.pollRuntime(...args);");
 } }] });
 function* nodes(value) {
   if (Array.isArray(value)) for (const child of value) yield* nodes(child);
@@ -147,12 +149,25 @@ try {
     assert.deepEqual(changed.future_builds[0].equipment_items, []); assert.equal(changed.revision, purpose.revision + 1);
     assert.deepEqual(fresh.inventory_items, []); assert.equal(fresh.inventory_coverage, "unknown");
   });
-  const states = [], effects = [], calls = []; let cursor = 0;
-  globalThis.coreFixture = { useState(initial) { const i = cursor++; if (!(i in states)) states[i] = typeof initial === "function" ? initial() : initial; return [states[i], value => { states[i] = typeof value === "function" ? value(states[i]) : value; }]; }, useEffect(run) { effects.push(run); }, async api(path) { calls.push(path); if (path === "knowledge/packs") return { packs: [{ pack_id: "deskrawl-sorcerer-leveling", version: "0.6.0-research", pack_hash: "fixture", context: fresh.context, class_id: "sorcerer", scenario: "leveling", execution_policy: "research_only" }] }; if (path === "demo") return demo; throw new Error("Unexpected fixture API: " + path); } };
-  const render = () => { cursor = 0; effects.length = 0; return Workbench(); };
-  render(); effects[0](); await new Promise(resolve => setImmediate(resolve)); render(); effects[1]();
+  const states = [], effects = [], dependencies = [], cleanups = [], calls = []; let cursor = 0, effectCursor = 0, publishStatus;
+  const starting = { core_ready: false, degraded: false, startup_policy: "on-demand", services: { profile: { state: "starting", generation: 1 }, knowledge: { state: "starting", generation: 1 }, evaluation: { state: "starting", generation: 1 } } };
+  const ready = { ...starting, core_ready: true, services: Object.fromEntries(["profile", "knowledge", "evaluation"].map(name => [name, { state: "ready", generation: 1 }])) };
+  globalThis.coreFixture = {
+    useState(initial) { const i = cursor++; if (!(i in states)) states[i] = typeof initial === "function" ? initial() : initial; return [states[i], value => { states[i] = typeof value === "function" ? value(states[i]) : value; }]; },
+    useRef(initial) { const i = cursor++; if (!(i in states)) states[i] = { current: initial }; return states[i]; },
+    useEffect(run, next) { const i = effectCursor++; if (!dependencies[i] || next.some((value, index) => !Object.is(value, dependencies[i][index]))) { dependencies[i] = next; effects.push(() => { cleanups[i]?.(); cleanups[i] = run(); }); } },
+    pollRuntime(onStatus) { publishStatus = onStatus; onStatus(starting); return { refresh() {}, stop() {} }; },
+    async ensureService() { assert.fail("Unexpected startup retry"); },
+    async api(path) { calls.push(path); if (path === "knowledge/packs") return { packs: [{ pack_id: "deskrawl-sorcerer-leveling", version: "0.6.0-research", pack_hash: "fixture", context: fresh.context, class_id: "sorcerer", scenario: "leveling", execution_policy: "research_only" }] }; if (path === "demo") return demo; throw new Error("Unexpected fixture API: " + path); },
+  };
+  const render = () => { cursor = 0; effectCursor = 0; return Workbench(); };
+  const settle = async () => { for (let i = 0; i < 3; i++) { render(); for (const run of effects.splice(0)) run(); await new Promise(resolve => setImmediate(resolve)); } };
+  await settle();
+  await check("real manual draft stays available while core startup gates catalog and confirmation", () => { const tree = render(); assert.deepEqual(calls, []); assert.equal(component(tree, "EquipmentEditor").props.facts.context.game_id, "deskrawl"); assert.equal(component(tree, "ConfirmSnapshot").props.draftApplied, false); assert.equal(button(tree, "新建真实录入").props.disabled, false); assert.equal(button(tree, "解释保留价值与换装变化 →").props.disabled, true); });
+  publishStatus(ready); await settle();
   await check("workbench defaults to real fields and only loads demo on request", () => { const tree = render(); assert.equal(component(tree, "EquipmentEditor").props.facts.context.game_id, "deskrawl"); assert.deepEqual(calls, ["knowledge/packs"]); assert.ok(button(tree, "加载合成示例")); });
   await check("saved profile reopens the exact SQLite revision and editing requires reconfirmation", () => { const facts = { ...fresh, candidate_item: { ...fresh.candidate_item, name: "Personal fixture" } }; component(render(), "ProfileLibrary").props.onOpen({ profile_id: "saved-fixture", revision: 7, facts, build_hash: "hash", facts_hash: "facts", observation_time_status: "not_recorded" }); assert.equal(component(render(), "ConfirmSnapshot").props.revision, 7); assert.equal(component(render(), "EquipmentEditor").props.facts, facts); assert.equal(button(render(), "解释保留价值与换装变化 →").props.disabled, false); component(render(), "EquipmentEditor").props.onChange({ ...facts, character_level: 25 }); assert.equal(button(render(), "解释保留价值与换装变化 →").props.disabled, true); });
+  await check("optional readiness updates preserve the edited profile identity and draft", () => { const before = component(render(), "ConfirmSnapshot").props; publishStatus({ ...ready, services: { ...ready.services, ocr: { state: "ready", generation: 2 } } }); const after = component(render(), "ConfirmSnapshot").props; assert.equal(after.facts, before.facts); assert.equal(after.profileId, before.profileId); assert.equal(after.revision, before.revision); assert.equal(after.draftApplied, before.draftApplied); });
   await check("pending operations disable profile and history switches", () => { component(render(), "ConfirmSnapshot").props.onBusyChange(true); assert.equal(component(render(), "ProfileLibrary").props.busy, true); assert.equal(component(render(), "EvaluationHistory").props.disabled, true); assert.equal(button(render(), "新建真实录入").props.disabled, true); component(render(), "ConfirmSnapshot").props.onBusyChange(false); });
   await check("source-clock conflicts remain unconfirmed after reopening", () => { component(render(), "ProfileLibrary").props.onOpen({ profile_id: "clock-fixture", revision: 2, facts: fresh, build_hash: "hash", facts_hash: "facts", observation_time_status: "conflict" }); assert.equal(button(render(), "解释保留价值与换装变化 →").props.disabled, true); });
   await check("capture import retains its clock and leaves fields pending", () => { const capture = { observation_id: "fixture-capture", fields: [{ field: "vitality", value: 65, unit: "points", ambiguous: false }], raw_text: "Vitality +65", capture_context: { game_id: "deskrawl", captured_at_ms: 1767225600123 } }; component(render(), "CaptureObservationForm").props.onCaptured(capture); const facts = component(render(), "EquipmentEditor").props.facts; const evidence = facts.evidence.find(e => e.source_ref === "observation://fixture-capture"); assert.equal(evidence.captured_at, "2026-01-01T00:00:00.123Z"); assert.deepEqual(facts.candidate_item.affixes, []); assert.ok(facts.unknowns.includes("ocr_fields_not_mapped")); });
@@ -162,6 +177,8 @@ try {
     const html = renderToStaticMarkup(createElement(EvaluationCard, { result, onReplay: () => {}, replaying: false, replayed: false }));
     assert.ok(html.includes("未来构筑 1") && html.includes("可行性声明：已拥有") && html.includes("胸部 · Synthetic robe"));
   });
+  await check("explicit demo activation replaces only the requested draft and resets profile revision", async () => { await button(render(), "加载合成示例").props.onClick(); const tree = render(); assert.equal(component(tree, "EquipmentEditor").props.facts, demo.facts); assert.equal(component(tree, "ConfirmSnapshot").props.revision, 0); assert.ok(calls.includes("demo")); });
+  for (const cleanup of cleanups) cleanup?.();
   console.log("Core UI fixture checks: " + checks.length + " passed; no browser or desktop input.");
 } catch (error) { checks.push({ passed: false, error: error.message }); process.exitCode = 1; console.error(error); }
 finally { await server.close(); if (reportPath) writeFileSync(reportPath, JSON.stringify({ scope: "Direct React handlers and static rendering; not GUI, scheduling, OCR or real-game acceptance.", passed: !process.exitCode, checks }, null, 2) + "\n", { flag: "wx" }); }

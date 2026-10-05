@@ -61,6 +61,7 @@ class OCR:
         self.script = ROOT / "scripts/windows_ocr.ps1"
         self.enabled = os.name == "nt" and Path(self.command).is_file() and self.script.is_file()
         self.languages = []
+        discovery_started = time.perf_counter()
         if self.enabled:
             try:
                 completed = subprocess.run([self.command, "-NoProfile", "-NonInteractive", "-File",
@@ -71,6 +72,7 @@ class OCR:
                 self.enabled = completed.returncode == 0 and bool(self.languages)
             except (DomainError, OSError, UnicodeError, subprocess.TimeoutExpired):
                 self.enabled = False
+        self.startup_timings = {"capability_discovery_ms": (time.perf_counter() - discovery_started) * 1000}
         self.slot = threading.BoundedSemaphore(1)
 
     def handle(self, method, path, body):
