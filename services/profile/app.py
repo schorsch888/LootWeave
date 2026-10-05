@@ -142,6 +142,10 @@ class Profile:
         require(row is not None, "revision_not_found", 404)
         result = json.loads(row[0])
         require(digest(result["facts"]) == result["facts_hash"], "profile_integrity_error", 409)
+        # A legacy payload may contain previously untyped inventory extensions.
+        # Validate the current wire shape before serving them as confirmed facts.
+        if "inventory_items" in result["facts"]:
+            snapshot(result["facts"])
         # Additive wire metadata for older v1 records; stored facts remain immutable.
         expected_build = build_fingerprint(result["facts"])
         require(result.get("build_hash", expected_build) == expected_build, "profile_integrity_error", 409)

@@ -2,10 +2,10 @@ export type Evidence = { id: string; kind: string; source_ref: string; captured_
 export type Source = { id: string; effects: string[]; evidence_ids: string[]; rank?: number; set_id?: string; actor?: string };
 export type Item = { record_kind: string; instance_id: string; name?: string; class_id?: string; slot: string; required_level: number | null; effects: string[]; affixes: { id: string; name?: string; value: number; unit: string; evidence_ids: string[] }[]; unrevealed_properties: string[]; embedded_items: Source[]; unknowns: string[]; upgrade_state: { known: boolean; level?: number }; socket_state: { known: boolean; count?: number }; evidence_ids: string[]; set_id?: string };
 export type GameContext = { game_id: string; edition: string; game_build: string; mode: string; season: string; ruleset_id: string; content_entitlements: string[] };
-export type Snapshot = { context: GameContext; class_id: string; character_level: number; captured_at: string; evidence: Evidence[]; evidence_ids: string[]; skills: Source[]; talents: Source[]; paragon: Source[]; account_unlocks: Record<string, unknown>; runes: Source[]; companions: Source[]; temporary_effects: Source[]; observed_panel: { stat: string; value: number; unit: string; source_ids: string[]; evidence_ids: string[] }[]; conditions: Record<string, string>; inventory_coverage: string; unknowns: string[]; equipped_items: Record<string, Item>; candidate_item: Item };
-export type Intent = { revision: number; scenario: string; required_capabilities: string[]; allowed_build_changes: string[]; future_builds: { skills: string[]; conditions: Record<string, string>; feasibility: string }[]; budget: Record<string, unknown> };
+export type Snapshot = { context: GameContext; class_id: string; character_level: number; captured_at: string; evidence: Evidence[]; evidence_ids: string[]; skills: Source[]; talents: Source[]; paragon: Source[]; account_unlocks: Record<string, unknown>; runes: Source[]; companions: Source[]; temporary_effects: Source[]; observed_panel: { stat: string; value: number; unit: string; source_ids: string[]; evidence_ids: string[] }[]; conditions: Record<string, string>; inventory_coverage: string; unknowns: string[]; equipped_items: Record<string, Item>; inventory_items?: Item[]; candidate_item: Item };
+export type Intent = { revision: number; scenario: string; required_capabilities: string[]; allowed_build_changes: string[]; future_builds: { skills: string[]; conditions: Record<string, string>; feasibility: string; equipment_items?: string[] }[]; budget: Record<string, unknown> };
 export type Pack = { pack_id: string; version: string; pack_hash: string; context: GameContext; class_id: string; scenario: string; execution_policy: string };
-export type Reason = { kind?: string; rule_id?: string; capability?: string; explanation: string; evidence_ids: string[]; input_evidence_ids: string[]; source_ids?: string[]; state?: string; actor?: string; feasibility?: string };
+export type Reason = { kind?: string; rule_id?: string; capability?: string; explanation: string; evidence_ids: string[]; input_evidence_ids: string[]; source_ids?: string[]; state?: string; actor?: string; feasibility?: string; future_build_index?: number; future_equipment?: Pick<Item, "instance_id" | "slot" | "name">[] };
 export type Mechanism = { actor: "hero" | "companion"; capability: string };
 export type MechanismState = "active" | "inactive" | "unknown";
 export type UncertainMechanism = Mechanism & { before: MechanismState; after: MechanismState };
@@ -23,6 +23,10 @@ if (token) {
 }
 
 const messages: Record<string, string> = {
+  inventory_items_required: "库存必须是物品列表；尚未核对时请保留未知覆盖状态。",
+  duplicate_item_instance: "同一件物品重复录入，请核对候选、已装备和库存记录。",
+  future_equipment_required: "请选择已记录的配套装备。",
+  duplicate_future_equipment: "未来组合中同一件物品重复，请核对。",
   trial_measurement_out_of_range: "累计经验或完整耗时超出可靠计算范围，请核对实际试验记录。",
   invalid_sample_counts: "请填写有效的精确整数次数，成功次数不能超过尝试次数。",
   sample_version_required: "样本版本尚未确认，请先核对游戏版本与规则范围。",

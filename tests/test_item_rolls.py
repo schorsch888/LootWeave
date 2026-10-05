@@ -151,11 +151,11 @@ class ItemRollTests(unittest.TestCase):
         self.assertEqual(expected, compare_item_rolls(facts))
 
     def test_previous_versions_keep_their_original_output_shape_and_scope_notice(self):
-        self.assertEqual("0.1.5", EVALUATOR_VERSION)
-        self.assertEqual(("0.1.0", "0.1.1", "0.1.2", "0.1.3", "0.1.4", "0.1.5"), EVALUATOR_VERSIONS)
+        self.assertEqual("0.1.6", EVALUATOR_VERSION)
+        self.assertEqual(("0.1.0", "0.1.1", "0.1.2", "0.1.3", "0.1.4", "0.1.5", "0.1.6"), EVALUATOR_VERSIONS)
         facts = facts_for([affix("mana", 20)], [affix("mana", 35)])
         facts["context"] = deepcopy(RESEARCH["context"])
-        for version in EVALUATOR_VERSIONS[:-1]:
+        for version in EVALUATOR_VERSIONS[:EVALUATOR_VERSIONS.index("0.1.5")]:
             with self.subTest(version=version):
                 result = result_for(facts, RESEARCH, version)
                 self.assertNotIn("item_rolls", result["comparison"])
@@ -166,8 +166,13 @@ class ItemRollTests(unittest.TestCase):
         for case in archive["cases"]:
             inputs = case["inputs"]
             with self.subTest(case=case["evaluation_id"]):
-                old = evaluate(inputs["profile"], inputs["knowledge"], inputs["intent"], evaluator_version="0.1.4")
-                current = evaluate(inputs["profile"], inputs["knowledge"], inputs["intent"])
+                # Compare the same explicitly reconfirmed synthetic facts under both engines.
+                # Archived fixtures retain their original missing inventory and hashes.
+                profile = deepcopy(inputs["profile"])
+                profile["facts"]["inventory_items"] = []
+                profile["facts_hash"] = digest(profile["facts"])
+                old = evaluate(profile, inputs["knowledge"], inputs["intent"], evaluator_version="0.1.4")
+                current = evaluate(profile, inputs["knowledge"], inputs["intent"])
                 del current["comparison"]["item_rolls"]
                 current["pin"]["evaluator_version"] = "0.1.4"
                 self.assertEqual(old, current)
@@ -227,7 +232,7 @@ class ItemRollHistoryTests(unittest.TestCase):
             self.assertEqual(1, frozen["profile"]["revision"])
             self.assertEqual(35, frozen["profile"]["facts"]["candidate_item"]["affixes"][0]["value"])
             self.assertEqual(["candidate-roll"], frozen["profile"]["facts"]["candidate_item"]["affixes"][0]["evidence_ids"])
-            self.assertEqual("0.1.5", frozen["evaluator_version"])
+            self.assertEqual("0.1.6", frozen["evaluator_version"])
 
 
 if __name__ == "__main__":

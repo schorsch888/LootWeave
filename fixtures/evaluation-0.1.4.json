@@ -1,0 +1,3689 @@
+{
+  "scope": "Entirely synthetic historical replay fixtures recorded before owned-equipment support; no game or player data.",
+  "cases": [
+    {
+      "evaluation_id": "historical-0-1-4-base",
+      "inputs": {
+        "profile": {
+          "contract_version": 1,
+          "profile_id": "historical-fixture",
+          "revision": 1,
+          "facts": {
+            "context": {
+              "game_id": "lootweave-fixture",
+              "edition": "fixture-1",
+              "game_build": "1",
+              "mode": "offline",
+              "season": "not_applicable",
+              "ruleset_id": "synthetic-1",
+              "content_entitlements": []
+            },
+            "class_id": "sorcerer",
+            "character_level": 15,
+            "captured_at": "2026-01-01T00:00:00Z",
+            "evidence": [
+              {
+                "id": "demo-input",
+                "kind": "synthetic",
+                "source_ref": "observation://demo-text",
+                "captured_at": "2026-01-01T00:00:00Z",
+                "verification": "confirmed",
+                "conflicts": []
+              }
+            ],
+            "evidence_ids": [
+              "demo-input"
+            ],
+            "skills": [
+              {
+                "id": "fixture-cold-bolt",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "talents": [
+              {
+                "id": "fixture-resource-talent",
+                "effects": [
+                  "fixture-resource-efficiency"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "paragon": [
+              {
+                "id": "fixture-survival-point",
+                "effects": [
+                  "fixture-survival"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "account_unlocks": {
+              "paragon": "confirmed"
+            },
+            "runes": [
+              {
+                "id": "fixture-rune-a",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "set_id": "fixture-frost"
+              },
+              {
+                "id": "fixture-rune-b",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "set_id": "fixture-frost"
+              }
+            ],
+            "companions": [
+              {
+                "id": "fixture-companion",
+                "effects": [
+                  "fixture-companion-support"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "actor": "companion"
+              }
+            ],
+            "temporary_effects": [],
+            "observed_panel": [
+              {
+                "stat": "fixture-cold-bonus",
+                "value": 25,
+                "unit": "percent_points",
+                "source_ids": [
+                  "core-staff"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ]
+              }
+            ],
+            "conditions": {
+              "hero_cast": "active",
+              "mana_starved": "active",
+              "survival_required": "active",
+              "companion_present": "active",
+              "target_frozen": "unknown",
+              "buff_active": "inactive"
+            },
+            "inventory_coverage": "complete",
+            "unknowns": [],
+            "equipped_items": {
+              "weapon": {
+                "record_kind": "item_instance",
+                "instance_id": "core-staff",
+                "name": "示例：循环法杖",
+                "slot": "weapon",
+                "required_level": 1,
+                "effects": [
+                  "fixture-cold-focus",
+                  "fixture-mana-loop"
+                ],
+                "affixes": [
+                  {
+                    "id": "fixture-cold-bonus",
+                    "value": 25,
+                    "unit": "percent_points",
+                    "evidence_ids": [
+                      "demo-input"
+                    ]
+                  }
+                ],
+                "unrevealed_properties": [],
+                "embedded_items": [],
+                "unknowns": [],
+                "upgrade_state": {
+                  "known": true,
+                  "level": 0
+                },
+                "socket_state": {
+                  "known": true,
+                  "count": 0
+                },
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "set_id": "fixture-archive"
+              },
+              "head": {
+                "record_kind": "item_instance",
+                "instance_id": "archive-hood",
+                "name": "示例：档案兜帽",
+                "slot": "head",
+                "required_level": 1,
+                "effects": [],
+                "affixes": [],
+                "unrevealed_properties": [],
+                "embedded_items": [],
+                "unknowns": [],
+                "upgrade_state": {
+                  "known": true,
+                  "level": 0
+                },
+                "socket_state": {
+                  "known": true,
+                  "count": 0
+                },
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "set_id": "fixture-archive"
+              }
+            },
+            "candidate_item": {
+              "record_kind": "item_instance",
+              "instance_id": "vitality-staff",
+              "name": "示例：活力法杖",
+              "slot": "weapon",
+              "required_level": 1,
+              "effects": [
+                "fixture-vitality-support"
+              ],
+              "affixes": [
+                {
+                  "id": "fixture-vitality",
+                  "value": 65,
+                  "unit": "points",
+                  "evidence_ids": [
+                    "demo-input"
+                  ]
+                }
+              ],
+              "unrevealed_properties": [],
+              "embedded_items": [],
+              "unknowns": [],
+              "upgrade_state": {
+                "known": true,
+                "level": 0
+              },
+              "socket_state": {
+                "known": true,
+                "count": 0
+              },
+              "evidence_ids": [
+                "demo-input"
+              ]
+            }
+          },
+          "facts_hash": "09684d8ce18457226b100900c1afeb202c9dde587f3a11d010a2c41898355194"
+        },
+        "knowledge": {
+          "pack": {
+            "contract_version": 1,
+            "pack_id": "synthetic-leveling",
+            "version": "1.0.0",
+            "context": {
+              "game_id": "lootweave-fixture",
+              "edition": "fixture-1",
+              "game_build": "1",
+              "mode": "offline",
+              "season": "not_applicable",
+              "ruleset_id": "synthetic-1",
+              "content_entitlements": []
+            },
+            "class_id": "sorcerer",
+            "scenario": "leveling",
+            "execution_policy": "synthetic_only",
+            "evidence": [
+              {
+                "id": "fixture-spec",
+                "source_ref": "repo://knowledge-packs/synthetic-leveling-1.0.0.json",
+                "source_build": "fixture-1",
+                "method": "Hand-authored synthetic specification; no game assets or player data.",
+                "scope": "Local workflow and domain regressions only.",
+                "results": "Defines conditional capabilities, provenance and set thresholds for the synthetic game.",
+                "unknowns": "These invented capabilities do not validate any game mechanic.",
+                "verification": "synthetic",
+                "conflicts": []
+              }
+            ],
+            "known_affixes": {
+              "fixture-vitality": "points",
+              "fixture-cold-bonus": "percent_points",
+              "fixture-armor": "points"
+            },
+            "unknowns": [
+              "Synthetic data does not establish game rules, combat DPS, online behavior, or final drop probabilities."
+            ],
+            "rules": [
+              {
+                "id": "cold-focus",
+                "source_id": "fixture-cold-focus",
+                "capability": "cold_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic cold_focus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "mana-loop",
+                "source_id": "fixture-mana-loop",
+                "capability": "mana_loop",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "hero_cast"
+                ],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic mana_loop capability; its presence does not quantify performance."
+              },
+              {
+                "id": "vitality-support",
+                "source_id": "fixture-vitality-support",
+                "capability": "vitality_support",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic vitality_support capability; its presence does not quantify performance."
+              },
+              {
+                "id": "archive-two",
+                "source_id": "fixture-archive",
+                "capability": "archive_shield",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "equipment_set",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic archive_shield capability; its presence does not quantify performance.",
+                "min_count": 2
+              },
+              {
+                "id": "frost-two",
+                "source_id": "fixture-frost",
+                "capability": "frost_cycle",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "rune_set",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic frost_cycle capability; its presence does not quantify performance.",
+                "min_count": 2
+              },
+              {
+                "id": "resource-efficiency",
+                "source_id": "fixture-resource-efficiency",
+                "capability": "resource_efficiency",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "mana_starved"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic resource_efficiency capability; its presence does not quantify performance."
+              },
+              {
+                "id": "survival",
+                "source_id": "fixture-survival",
+                "capability": "survival",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "survival_required"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic survival capability; its presence does not quantify performance."
+              },
+              {
+                "id": "temporary-focus",
+                "source_id": "fixture-temporary-focus",
+                "capability": "temporary_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "buff_active"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic temporary_focus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "companion-support",
+                "source_id": "fixture-companion-support",
+                "capability": "companion_support",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "companion",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "companion_present"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic companion_support capability; its presence does not quantify performance."
+              },
+              {
+                "id": "frozen-bonus",
+                "source_id": "fixture-frozen-bonus",
+                "capability": "frozen_bonus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "target_frozen"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic frozen_bonus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "fire-focus",
+                "source_id": "fixture-fire-focus",
+                "capability": "fire_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-fire-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic fire_focus capability; its presence does not quantify performance."
+              }
+            ],
+            "acquisition_sources": [
+              {
+                "source_id": "fixture-chest",
+                "target_event": "fixture-core-item",
+                "min_level": 10,
+                "entitlements": [],
+                "conditions": [
+                  "entry_unlocked"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ]
+              },
+              {
+                "source_id": "fixture-elite",
+                "target_event": "fixture-core-item",
+                "min_level": 20,
+                "entitlements": [
+                  "fixture-expansion"
+                ],
+                "conditions": [
+                  "elite_access"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ]
+              }
+            ]
+          },
+          "pack_hash": "60c1d4a208213bf850ce19fd6edb997766787ae0f4dab6be09f5b97ea8a2abd6"
+        },
+        "intent": {
+          "revision": 1,
+          "scenario": "leveling",
+          "required_capabilities": [
+            "mana_loop",
+            "archive_shield"
+          ],
+          "allowed_build_changes": [
+            "skills"
+          ],
+          "future_builds": [],
+          "budget": {}
+        },
+        "evaluator_version": "0.1.4"
+      },
+      "result_hash": "0335e28c98a6c9d1ea6412c7df7b0bf736ef56809add0a9522329fc8c2af24a0"
+    },
+    {
+      "evaluation_id": "historical-0-1-4-unknown-inventory",
+      "inputs": {
+        "profile": {
+          "contract_version": 1,
+          "profile_id": "historical-fixture",
+          "revision": 1,
+          "facts": {
+            "context": {
+              "game_id": "lootweave-fixture",
+              "edition": "fixture-1",
+              "game_build": "1",
+              "mode": "offline",
+              "season": "not_applicable",
+              "ruleset_id": "synthetic-1",
+              "content_entitlements": []
+            },
+            "class_id": "sorcerer",
+            "character_level": 15,
+            "captured_at": "2026-01-01T00:00:00Z",
+            "evidence": [
+              {
+                "id": "demo-input",
+                "kind": "synthetic",
+                "source_ref": "observation://demo-text",
+                "captured_at": "2026-01-01T00:00:00Z",
+                "verification": "confirmed",
+                "conflicts": []
+              }
+            ],
+            "evidence_ids": [
+              "demo-input"
+            ],
+            "skills": [
+              {
+                "id": "fixture-cold-bolt",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "talents": [
+              {
+                "id": "fixture-resource-talent",
+                "effects": [
+                  "fixture-resource-efficiency"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "paragon": [
+              {
+                "id": "fixture-survival-point",
+                "effects": [
+                  "fixture-survival"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "account_unlocks": {
+              "paragon": "confirmed"
+            },
+            "runes": [
+              {
+                "id": "fixture-rune-a",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "set_id": "fixture-frost"
+              },
+              {
+                "id": "fixture-rune-b",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "set_id": "fixture-frost"
+              }
+            ],
+            "companions": [
+              {
+                "id": "fixture-companion",
+                "effects": [
+                  "fixture-companion-support"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "actor": "companion"
+              }
+            ],
+            "temporary_effects": [],
+            "observed_panel": [
+              {
+                "stat": "fixture-cold-bonus",
+                "value": 25,
+                "unit": "percent_points",
+                "source_ids": [
+                  "core-staff"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ]
+              }
+            ],
+            "conditions": {
+              "hero_cast": "active",
+              "mana_starved": "active",
+              "survival_required": "active",
+              "companion_present": "active",
+              "target_frozen": "unknown",
+              "buff_active": "inactive"
+            },
+            "inventory_coverage": "unknown",
+            "unknowns": [],
+            "equipped_items": {
+              "weapon": {
+                "record_kind": "item_instance",
+                "instance_id": "core-staff",
+                "name": "示例：循环法杖",
+                "slot": "weapon",
+                "required_level": 1,
+                "effects": [
+                  "fixture-cold-focus",
+                  "fixture-mana-loop"
+                ],
+                "affixes": [
+                  {
+                    "id": "fixture-cold-bonus",
+                    "value": 25,
+                    "unit": "percent_points",
+                    "evidence_ids": [
+                      "demo-input"
+                    ]
+                  }
+                ],
+                "unrevealed_properties": [],
+                "embedded_items": [],
+                "unknowns": [],
+                "upgrade_state": {
+                  "known": true,
+                  "level": 0
+                },
+                "socket_state": {
+                  "known": true,
+                  "count": 0
+                },
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "set_id": "fixture-archive"
+              },
+              "head": {
+                "record_kind": "item_instance",
+                "instance_id": "archive-hood",
+                "name": "示例：档案兜帽",
+                "slot": "head",
+                "required_level": 1,
+                "effects": [],
+                "affixes": [],
+                "unrevealed_properties": [],
+                "embedded_items": [],
+                "unknowns": [],
+                "upgrade_state": {
+                  "known": true,
+                  "level": 0
+                },
+                "socket_state": {
+                  "known": true,
+                  "count": 0
+                },
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "set_id": "fixture-archive"
+              }
+            },
+            "candidate_item": {
+              "record_kind": "item_instance",
+              "instance_id": "vitality-staff",
+              "name": "示例：活力法杖",
+              "slot": "weapon",
+              "required_level": 1,
+              "effects": [
+                "fixture-vitality-support"
+              ],
+              "affixes": [
+                {
+                  "id": "fixture-vitality",
+                  "value": 65,
+                  "unit": "points",
+                  "evidence_ids": [
+                    "demo-input"
+                  ]
+                }
+              ],
+              "unrevealed_properties": [],
+              "embedded_items": [],
+              "unknowns": [],
+              "upgrade_state": {
+                "known": true,
+                "level": 0
+              },
+              "socket_state": {
+                "known": true,
+                "count": 0
+              },
+              "evidence_ids": [
+                "demo-input"
+              ]
+            }
+          },
+          "facts_hash": "c50517de2324f861ad5a20cb8d59f41ea0be6d5186037200a01dbba29c8ec0a7"
+        },
+        "knowledge": {
+          "pack": {
+            "contract_version": 1,
+            "pack_id": "synthetic-leveling",
+            "version": "1.0.0",
+            "context": {
+              "game_id": "lootweave-fixture",
+              "edition": "fixture-1",
+              "game_build": "1",
+              "mode": "offline",
+              "season": "not_applicable",
+              "ruleset_id": "synthetic-1",
+              "content_entitlements": []
+            },
+            "class_id": "sorcerer",
+            "scenario": "leveling",
+            "execution_policy": "synthetic_only",
+            "evidence": [
+              {
+                "id": "fixture-spec",
+                "source_ref": "repo://knowledge-packs/synthetic-leveling-1.0.0.json",
+                "source_build": "fixture-1",
+                "method": "Hand-authored synthetic specification; no game assets or player data.",
+                "scope": "Local workflow and domain regressions only.",
+                "results": "Defines conditional capabilities, provenance and set thresholds for the synthetic game.",
+                "unknowns": "These invented capabilities do not validate any game mechanic.",
+                "verification": "synthetic",
+                "conflicts": []
+              }
+            ],
+            "known_affixes": {
+              "fixture-vitality": "points",
+              "fixture-cold-bonus": "percent_points",
+              "fixture-armor": "points"
+            },
+            "unknowns": [
+              "Synthetic data does not establish game rules, combat DPS, online behavior, or final drop probabilities."
+            ],
+            "rules": [
+              {
+                "id": "cold-focus",
+                "source_id": "fixture-cold-focus",
+                "capability": "cold_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic cold_focus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "mana-loop",
+                "source_id": "fixture-mana-loop",
+                "capability": "mana_loop",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "hero_cast"
+                ],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic mana_loop capability; its presence does not quantify performance."
+              },
+              {
+                "id": "vitality-support",
+                "source_id": "fixture-vitality-support",
+                "capability": "vitality_support",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic vitality_support capability; its presence does not quantify performance."
+              },
+              {
+                "id": "archive-two",
+                "source_id": "fixture-archive",
+                "capability": "archive_shield",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "equipment_set",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic archive_shield capability; its presence does not quantify performance.",
+                "min_count": 2
+              },
+              {
+                "id": "frost-two",
+                "source_id": "fixture-frost",
+                "capability": "frost_cycle",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "rune_set",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic frost_cycle capability; its presence does not quantify performance.",
+                "min_count": 2
+              },
+              {
+                "id": "resource-efficiency",
+                "source_id": "fixture-resource-efficiency",
+                "capability": "resource_efficiency",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "mana_starved"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic resource_efficiency capability; its presence does not quantify performance."
+              },
+              {
+                "id": "survival",
+                "source_id": "fixture-survival",
+                "capability": "survival",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "survival_required"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic survival capability; its presence does not quantify performance."
+              },
+              {
+                "id": "temporary-focus",
+                "source_id": "fixture-temporary-focus",
+                "capability": "temporary_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "buff_active"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic temporary_focus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "companion-support",
+                "source_id": "fixture-companion-support",
+                "capability": "companion_support",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "companion",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "companion_present"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic companion_support capability; its presence does not quantify performance."
+              },
+              {
+                "id": "frozen-bonus",
+                "source_id": "fixture-frozen-bonus",
+                "capability": "frozen_bonus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "target_frozen"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic frozen_bonus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "fire-focus",
+                "source_id": "fixture-fire-focus",
+                "capability": "fire_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-fire-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic fire_focus capability; its presence does not quantify performance."
+              }
+            ],
+            "acquisition_sources": [
+              {
+                "source_id": "fixture-chest",
+                "target_event": "fixture-core-item",
+                "min_level": 10,
+                "entitlements": [],
+                "conditions": [
+                  "entry_unlocked"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ]
+              },
+              {
+                "source_id": "fixture-elite",
+                "target_event": "fixture-core-item",
+                "min_level": 20,
+                "entitlements": [
+                  "fixture-expansion"
+                ],
+                "conditions": [
+                  "elite_access"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ]
+              }
+            ]
+          },
+          "pack_hash": "60c1d4a208213bf850ce19fd6edb997766787ae0f4dab6be09f5b97ea8a2abd6"
+        },
+        "intent": {
+          "revision": 1,
+          "scenario": "leveling",
+          "required_capabilities": [
+            "mana_loop",
+            "archive_shield"
+          ],
+          "allowed_build_changes": [
+            "skills"
+          ],
+          "future_builds": [],
+          "budget": {}
+        },
+        "evaluator_version": "0.1.4"
+      },
+      "result_hash": "a806034f7f23f4bd3d2e6a01ccdc428b92b508602c53fd2c407dacf1c82e9741"
+    },
+    {
+      "evaluation_id": "historical-0-1-4-future-fire",
+      "inputs": {
+        "profile": {
+          "contract_version": 1,
+          "profile_id": "historical-fixture",
+          "revision": 1,
+          "facts": {
+            "context": {
+              "game_id": "lootweave-fixture",
+              "edition": "fixture-1",
+              "game_build": "1",
+              "mode": "offline",
+              "season": "not_applicable",
+              "ruleset_id": "synthetic-1",
+              "content_entitlements": []
+            },
+            "class_id": "sorcerer",
+            "character_level": 15,
+            "captured_at": "2026-01-01T00:00:00Z",
+            "evidence": [
+              {
+                "id": "demo-input",
+                "kind": "synthetic",
+                "source_ref": "observation://demo-text",
+                "captured_at": "2026-01-01T00:00:00Z",
+                "verification": "confirmed",
+                "conflicts": []
+              }
+            ],
+            "evidence_ids": [
+              "demo-input"
+            ],
+            "skills": [
+              {
+                "id": "fixture-cold-bolt",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "talents": [
+              {
+                "id": "fixture-resource-talent",
+                "effects": [
+                  "fixture-resource-efficiency"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "paragon": [
+              {
+                "id": "fixture-survival-point",
+                "effects": [
+                  "fixture-survival"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "account_unlocks": {
+              "paragon": "confirmed"
+            },
+            "runes": [
+              {
+                "id": "fixture-rune-a",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "set_id": "fixture-frost"
+              },
+              {
+                "id": "fixture-rune-b",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "set_id": "fixture-frost"
+              }
+            ],
+            "companions": [
+              {
+                "id": "fixture-companion",
+                "effects": [
+                  "fixture-companion-support"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "actor": "companion"
+              }
+            ],
+            "temporary_effects": [],
+            "observed_panel": [
+              {
+                "stat": "fixture-cold-bonus",
+                "value": 25,
+                "unit": "percent_points",
+                "source_ids": [
+                  "core-staff"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ]
+              }
+            ],
+            "conditions": {
+              "hero_cast": "active",
+              "mana_starved": "active",
+              "survival_required": "active",
+              "companion_present": "active",
+              "target_frozen": "unknown",
+              "buff_active": "inactive"
+            },
+            "inventory_coverage": "complete",
+            "unknowns": [],
+            "equipped_items": {
+              "weapon": {
+                "record_kind": "item_instance",
+                "instance_id": "core-staff",
+                "name": "示例：循环法杖",
+                "slot": "weapon",
+                "required_level": 1,
+                "effects": [
+                  "fixture-cold-focus",
+                  "fixture-mana-loop"
+                ],
+                "affixes": [
+                  {
+                    "id": "fixture-cold-bonus",
+                    "value": 25,
+                    "unit": "percent_points",
+                    "evidence_ids": [
+                      "demo-input"
+                    ]
+                  }
+                ],
+                "unrevealed_properties": [],
+                "embedded_items": [],
+                "unknowns": [],
+                "upgrade_state": {
+                  "known": true,
+                  "level": 0
+                },
+                "socket_state": {
+                  "known": true,
+                  "count": 0
+                },
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "set_id": "fixture-archive"
+              },
+              "head": {
+                "record_kind": "item_instance",
+                "instance_id": "archive-hood",
+                "name": "示例：档案兜帽",
+                "slot": "head",
+                "required_level": 1,
+                "effects": [],
+                "affixes": [],
+                "unrevealed_properties": [],
+                "embedded_items": [],
+                "unknowns": [],
+                "upgrade_state": {
+                  "known": true,
+                  "level": 0
+                },
+                "socket_state": {
+                  "known": true,
+                  "count": 0
+                },
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "set_id": "fixture-archive"
+              }
+            },
+            "candidate_item": {
+              "record_kind": "item_instance",
+              "instance_id": "vitality-staff",
+              "name": "示例：活力法杖",
+              "slot": "weapon",
+              "required_level": 1,
+              "effects": [
+                "fixture-fire-focus"
+              ],
+              "affixes": [
+                {
+                  "id": "fixture-vitality",
+                  "value": 65,
+                  "unit": "points",
+                  "evidence_ids": [
+                    "demo-input"
+                  ]
+                }
+              ],
+              "unrevealed_properties": [],
+              "embedded_items": [],
+              "unknowns": [],
+              "upgrade_state": {
+                "known": true,
+                "level": 0
+              },
+              "socket_state": {
+                "known": true,
+                "count": 0
+              },
+              "evidence_ids": [
+                "demo-input"
+              ]
+            }
+          },
+          "facts_hash": "010f0208c61d68cdf2807d6de195a3c9952e8ff8c535567f6677de2a7b4e3925"
+        },
+        "knowledge": {
+          "pack": {
+            "contract_version": 1,
+            "pack_id": "synthetic-leveling",
+            "version": "1.0.0",
+            "context": {
+              "game_id": "lootweave-fixture",
+              "edition": "fixture-1",
+              "game_build": "1",
+              "mode": "offline",
+              "season": "not_applicable",
+              "ruleset_id": "synthetic-1",
+              "content_entitlements": []
+            },
+            "class_id": "sorcerer",
+            "scenario": "leveling",
+            "execution_policy": "synthetic_only",
+            "evidence": [
+              {
+                "id": "fixture-spec",
+                "source_ref": "repo://knowledge-packs/synthetic-leveling-1.0.0.json",
+                "source_build": "fixture-1",
+                "method": "Hand-authored synthetic specification; no game assets or player data.",
+                "scope": "Local workflow and domain regressions only.",
+                "results": "Defines conditional capabilities, provenance and set thresholds for the synthetic game.",
+                "unknowns": "These invented capabilities do not validate any game mechanic.",
+                "verification": "synthetic",
+                "conflicts": []
+              }
+            ],
+            "known_affixes": {
+              "fixture-vitality": "points",
+              "fixture-cold-bonus": "percent_points",
+              "fixture-armor": "points"
+            },
+            "unknowns": [
+              "Synthetic data does not establish game rules, combat DPS, online behavior, or final drop probabilities."
+            ],
+            "rules": [
+              {
+                "id": "cold-focus",
+                "source_id": "fixture-cold-focus",
+                "capability": "cold_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic cold_focus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "mana-loop",
+                "source_id": "fixture-mana-loop",
+                "capability": "mana_loop",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "hero_cast"
+                ],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic mana_loop capability; its presence does not quantify performance."
+              },
+              {
+                "id": "vitality-support",
+                "source_id": "fixture-vitality-support",
+                "capability": "vitality_support",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic vitality_support capability; its presence does not quantify performance."
+              },
+              {
+                "id": "archive-two",
+                "source_id": "fixture-archive",
+                "capability": "archive_shield",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "equipment_set",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic archive_shield capability; its presence does not quantify performance.",
+                "min_count": 2
+              },
+              {
+                "id": "frost-two",
+                "source_id": "fixture-frost",
+                "capability": "frost_cycle",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "rune_set",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic frost_cycle capability; its presence does not quantify performance.",
+                "min_count": 2
+              },
+              {
+                "id": "resource-efficiency",
+                "source_id": "fixture-resource-efficiency",
+                "capability": "resource_efficiency",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "mana_starved"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic resource_efficiency capability; its presence does not quantify performance."
+              },
+              {
+                "id": "survival",
+                "source_id": "fixture-survival",
+                "capability": "survival",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "survival_required"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic survival capability; its presence does not quantify performance."
+              },
+              {
+                "id": "temporary-focus",
+                "source_id": "fixture-temporary-focus",
+                "capability": "temporary_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "buff_active"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic temporary_focus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "companion-support",
+                "source_id": "fixture-companion-support",
+                "capability": "companion_support",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "companion",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "companion_present"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic companion_support capability; its presence does not quantify performance."
+              },
+              {
+                "id": "frozen-bonus",
+                "source_id": "fixture-frozen-bonus",
+                "capability": "frozen_bonus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "target_frozen"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic frozen_bonus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "fire-focus",
+                "source_id": "fixture-fire-focus",
+                "capability": "fire_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-fire-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic fire_focus capability; its presence does not quantify performance."
+              }
+            ],
+            "acquisition_sources": [
+              {
+                "source_id": "fixture-chest",
+                "target_event": "fixture-core-item",
+                "min_level": 10,
+                "entitlements": [],
+                "conditions": [
+                  "entry_unlocked"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ]
+              },
+              {
+                "source_id": "fixture-elite",
+                "target_event": "fixture-core-item",
+                "min_level": 20,
+                "entitlements": [
+                  "fixture-expansion"
+                ],
+                "conditions": [
+                  "elite_access"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ]
+              }
+            ]
+          },
+          "pack_hash": "60c1d4a208213bf850ce19fd6edb997766787ae0f4dab6be09f5b97ea8a2abd6"
+        },
+        "intent": {
+          "revision": 1,
+          "scenario": "leveling",
+          "required_capabilities": [
+            "mana_loop",
+            "archive_shield"
+          ],
+          "allowed_build_changes": [
+            "skills"
+          ],
+          "future_builds": [
+            {
+              "skills": [
+                "fixture-fire-bolt"
+              ],
+              "conditions": {},
+              "feasibility": "owned"
+            }
+          ],
+          "budget": {}
+        },
+        "evaluator_version": "0.1.4"
+      },
+      "result_hash": "5c647417094f745e192e33d8ba61e76d1ae3072b65d1643a17be75c5f8ddb63b"
+    },
+    {
+      "evaluation_id": "historical-0-1-4-legacy-equipment-reference",
+      "inputs": {
+        "profile": {
+          "contract_version": 1,
+          "profile_id": "historical-fixture",
+          "revision": 1,
+          "facts": {
+            "context": {
+              "game_id": "lootweave-fixture",
+              "edition": "fixture-1",
+              "game_build": "1",
+              "mode": "offline",
+              "season": "not_applicable",
+              "ruleset_id": "synthetic-1",
+              "content_entitlements": []
+            },
+            "class_id": "sorcerer",
+            "character_level": 15,
+            "captured_at": "2026-01-01T00:00:00Z",
+            "evidence": [
+              {
+                "id": "demo-input",
+                "kind": "synthetic",
+                "source_ref": "observation://demo-text",
+                "captured_at": "2026-01-01T00:00:00Z",
+                "verification": "confirmed",
+                "conflicts": []
+              }
+            ],
+            "evidence_ids": [
+              "demo-input"
+            ],
+            "skills": [
+              {
+                "id": "fixture-cold-bolt",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "talents": [
+              {
+                "id": "fixture-resource-talent",
+                "effects": [
+                  "fixture-resource-efficiency"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "paragon": [
+              {
+                "id": "fixture-survival-point",
+                "effects": [
+                  "fixture-survival"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "account_unlocks": {
+              "paragon": "confirmed"
+            },
+            "runes": [
+              {
+                "id": "fixture-rune-a",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "set_id": "fixture-frost"
+              },
+              {
+                "id": "fixture-rune-b",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "set_id": "fixture-frost"
+              }
+            ],
+            "companions": [
+              {
+                "id": "fixture-companion",
+                "effects": [
+                  "fixture-companion-support"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "actor": "companion"
+              }
+            ],
+            "temporary_effects": [],
+            "observed_panel": [
+              {
+                "stat": "fixture-cold-bonus",
+                "value": 25,
+                "unit": "percent_points",
+                "source_ids": [
+                  "core-staff"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ]
+              }
+            ],
+            "conditions": {
+              "hero_cast": "active",
+              "mana_starved": "active",
+              "survival_required": "active",
+              "companion_present": "active",
+              "target_frozen": "unknown",
+              "buff_active": "inactive"
+            },
+            "inventory_coverage": "complete",
+            "unknowns": [],
+            "equipped_items": {
+              "weapon": {
+                "record_kind": "item_instance",
+                "instance_id": "core-staff",
+                "name": "示例：循环法杖",
+                "slot": "weapon",
+                "required_level": 1,
+                "effects": [
+                  "fixture-cold-focus",
+                  "fixture-mana-loop"
+                ],
+                "affixes": [
+                  {
+                    "id": "fixture-cold-bonus",
+                    "value": 25,
+                    "unit": "percent_points",
+                    "evidence_ids": [
+                      "demo-input"
+                    ]
+                  }
+                ],
+                "unrevealed_properties": [],
+                "embedded_items": [],
+                "unknowns": [],
+                "upgrade_state": {
+                  "known": true,
+                  "level": 0
+                },
+                "socket_state": {
+                  "known": true,
+                  "count": 0
+                },
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "set_id": "fixture-archive"
+              },
+              "head": {
+                "record_kind": "item_instance",
+                "instance_id": "archive-hood",
+                "name": "示例：档案兜帽",
+                "slot": "head",
+                "required_level": 1,
+                "effects": [],
+                "affixes": [],
+                "unrevealed_properties": [],
+                "embedded_items": [],
+                "unknowns": [],
+                "upgrade_state": {
+                  "known": true,
+                  "level": 0
+                },
+                "socket_state": {
+                  "known": true,
+                  "count": 0
+                },
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "set_id": "fixture-archive"
+              }
+            },
+            "candidate_item": {
+              "record_kind": "item_instance",
+              "instance_id": "vitality-staff",
+              "name": "示例：活力法杖",
+              "slot": "weapon",
+              "required_level": 1,
+              "effects": [
+                "fixture-fire-focus"
+              ],
+              "affixes": [
+                {
+                  "id": "fixture-vitality",
+                  "value": 65,
+                  "unit": "points",
+                  "evidence_ids": [
+                    "demo-input"
+                  ]
+                }
+              ],
+              "unrevealed_properties": [],
+              "embedded_items": [],
+              "unknowns": [],
+              "upgrade_state": {
+                "known": true,
+                "level": 0
+              },
+              "socket_state": {
+                "known": true,
+                "count": 0
+              },
+              "evidence_ids": [
+                "demo-input"
+              ]
+            }
+          },
+          "facts_hash": "010f0208c61d68cdf2807d6de195a3c9952e8ff8c535567f6677de2a7b4e3925"
+        },
+        "knowledge": {
+          "pack": {
+            "contract_version": 1,
+            "pack_id": "synthetic-leveling",
+            "version": "1.0.0",
+            "context": {
+              "game_id": "lootweave-fixture",
+              "edition": "fixture-1",
+              "game_build": "1",
+              "mode": "offline",
+              "season": "not_applicable",
+              "ruleset_id": "synthetic-1",
+              "content_entitlements": []
+            },
+            "class_id": "sorcerer",
+            "scenario": "leveling",
+            "execution_policy": "synthetic_only",
+            "evidence": [
+              {
+                "id": "fixture-spec",
+                "source_ref": "repo://knowledge-packs/synthetic-leveling-1.0.0.json",
+                "source_build": "fixture-1",
+                "method": "Hand-authored synthetic specification; no game assets or player data.",
+                "scope": "Local workflow and domain regressions only.",
+                "results": "Defines conditional capabilities, provenance and set thresholds for the synthetic game.",
+                "unknowns": "These invented capabilities do not validate any game mechanic.",
+                "verification": "synthetic",
+                "conflicts": []
+              }
+            ],
+            "known_affixes": {
+              "fixture-vitality": "points",
+              "fixture-cold-bonus": "percent_points",
+              "fixture-armor": "points"
+            },
+            "unknowns": [
+              "Synthetic data does not establish game rules, combat DPS, online behavior, or final drop probabilities."
+            ],
+            "rules": [
+              {
+                "id": "cold-focus",
+                "source_id": "fixture-cold-focus",
+                "capability": "cold_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic cold_focus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "mana-loop",
+                "source_id": "fixture-mana-loop",
+                "capability": "mana_loop",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "hero_cast"
+                ],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic mana_loop capability; its presence does not quantify performance."
+              },
+              {
+                "id": "vitality-support",
+                "source_id": "fixture-vitality-support",
+                "capability": "vitality_support",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic vitality_support capability; its presence does not quantify performance."
+              },
+              {
+                "id": "archive-two",
+                "source_id": "fixture-archive",
+                "capability": "archive_shield",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "equipment_set",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic archive_shield capability; its presence does not quantify performance.",
+                "min_count": 2
+              },
+              {
+                "id": "frost-two",
+                "source_id": "fixture-frost",
+                "capability": "frost_cycle",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "rune_set",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic frost_cycle capability; its presence does not quantify performance.",
+                "min_count": 2
+              },
+              {
+                "id": "resource-efficiency",
+                "source_id": "fixture-resource-efficiency",
+                "capability": "resource_efficiency",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "mana_starved"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic resource_efficiency capability; its presence does not quantify performance."
+              },
+              {
+                "id": "survival",
+                "source_id": "fixture-survival",
+                "capability": "survival",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "survival_required"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic survival capability; its presence does not quantify performance."
+              },
+              {
+                "id": "temporary-focus",
+                "source_id": "fixture-temporary-focus",
+                "capability": "temporary_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "buff_active"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic temporary_focus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "companion-support",
+                "source_id": "fixture-companion-support",
+                "capability": "companion_support",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "companion",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "companion_present"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic companion_support capability; its presence does not quantify performance."
+              },
+              {
+                "id": "frozen-bonus",
+                "source_id": "fixture-frozen-bonus",
+                "capability": "frozen_bonus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "target_frozen"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic frozen_bonus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "fire-focus",
+                "source_id": "fixture-fire-focus",
+                "capability": "fire_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-fire-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic fire_focus capability; its presence does not quantify performance."
+              }
+            ],
+            "acquisition_sources": [
+              {
+                "source_id": "fixture-chest",
+                "target_event": "fixture-core-item",
+                "min_level": 10,
+                "entitlements": [],
+                "conditions": [
+                  "entry_unlocked"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ]
+              },
+              {
+                "source_id": "fixture-elite",
+                "target_event": "fixture-core-item",
+                "min_level": 20,
+                "entitlements": [
+                  "fixture-expansion"
+                ],
+                "conditions": [
+                  "elite_access"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ]
+              }
+            ]
+          },
+          "pack_hash": "60c1d4a208213bf850ce19fd6edb997766787ae0f4dab6be09f5b97ea8a2abd6"
+        },
+        "intent": {
+          "revision": 1,
+          "scenario": "leveling",
+          "required_capabilities": [
+            "mana_loop",
+            "archive_shield"
+          ],
+          "allowed_build_changes": [
+            "skills"
+          ],
+          "future_builds": [
+            {
+              "skills": [
+                "fixture-fire-bolt"
+              ],
+              "conditions": {},
+              "feasibility": "owned",
+              "equipment_items": [
+                "unrecorded-support"
+              ]
+            }
+          ],
+          "budget": {}
+        },
+        "evaluator_version": "0.1.4"
+      },
+      "result_hash": "739dade547f2db9b52f50b86bc304a86854d3bfee3e9c107b0290e35cd521237"
+    },
+    {
+      "evaluation_id": "historical-0-1-4-unknown-requirement",
+      "inputs": {
+        "profile": {
+          "contract_version": 1,
+          "profile_id": "historical-fixture",
+          "revision": 1,
+          "facts": {
+            "context": {
+              "game_id": "lootweave-fixture",
+              "edition": "fixture-1",
+              "game_build": "1",
+              "mode": "offline",
+              "season": "not_applicable",
+              "ruleset_id": "synthetic-1",
+              "content_entitlements": []
+            },
+            "class_id": "sorcerer",
+            "character_level": 15,
+            "captured_at": "2026-01-01T00:00:00Z",
+            "evidence": [
+              {
+                "id": "demo-input",
+                "kind": "synthetic",
+                "source_ref": "observation://demo-text",
+                "captured_at": "2026-01-01T00:00:00Z",
+                "verification": "confirmed",
+                "conflicts": []
+              }
+            ],
+            "evidence_ids": [
+              "demo-input"
+            ],
+            "skills": [
+              {
+                "id": "fixture-cold-bolt",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "talents": [
+              {
+                "id": "fixture-resource-talent",
+                "effects": [
+                  "fixture-resource-efficiency"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "paragon": [
+              {
+                "id": "fixture-survival-point",
+                "effects": [
+                  "fixture-survival"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "account_unlocks": {
+              "paragon": "confirmed"
+            },
+            "runes": [
+              {
+                "id": "fixture-rune-a",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "set_id": "fixture-frost"
+              },
+              {
+                "id": "fixture-rune-b",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "set_id": "fixture-frost"
+              }
+            ],
+            "companions": [
+              {
+                "id": "fixture-companion",
+                "effects": [
+                  "fixture-companion-support"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "actor": "companion"
+              }
+            ],
+            "temporary_effects": [],
+            "observed_panel": [
+              {
+                "stat": "fixture-cold-bonus",
+                "value": 25,
+                "unit": "percent_points",
+                "source_ids": [
+                  "core-staff"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ]
+              }
+            ],
+            "conditions": {
+              "hero_cast": "active",
+              "mana_starved": "active",
+              "survival_required": "active",
+              "companion_present": "active",
+              "target_frozen": "unknown",
+              "buff_active": "inactive"
+            },
+            "inventory_coverage": "complete",
+            "unknowns": [],
+            "equipped_items": {
+              "weapon": {
+                "record_kind": "item_instance",
+                "instance_id": "core-staff",
+                "name": "示例：循环法杖",
+                "slot": "weapon",
+                "required_level": 1,
+                "effects": [
+                  "fixture-cold-focus",
+                  "fixture-mana-loop"
+                ],
+                "affixes": [
+                  {
+                    "id": "fixture-cold-bonus",
+                    "value": 25,
+                    "unit": "percent_points",
+                    "evidence_ids": [
+                      "demo-input"
+                    ]
+                  }
+                ],
+                "unrevealed_properties": [],
+                "embedded_items": [],
+                "unknowns": [],
+                "upgrade_state": {
+                  "known": true,
+                  "level": 0
+                },
+                "socket_state": {
+                  "known": true,
+                  "count": 0
+                },
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "set_id": "fixture-archive"
+              },
+              "head": {
+                "record_kind": "item_instance",
+                "instance_id": "archive-hood",
+                "name": "示例：档案兜帽",
+                "slot": "head",
+                "required_level": 1,
+                "effects": [],
+                "affixes": [],
+                "unrevealed_properties": [],
+                "embedded_items": [],
+                "unknowns": [],
+                "upgrade_state": {
+                  "known": true,
+                  "level": 0
+                },
+                "socket_state": {
+                  "known": true,
+                  "count": 0
+                },
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "set_id": "fixture-archive"
+              }
+            },
+            "candidate_item": {
+              "record_kind": "item_instance",
+              "instance_id": "vitality-staff",
+              "name": "示例：活力法杖",
+              "slot": "weapon",
+              "required_level": 1,
+              "effects": [
+                "fixture-vitality-support"
+              ],
+              "affixes": [
+                {
+                  "id": "fixture-vitality",
+                  "value": 65,
+                  "unit": "points",
+                  "evidence_ids": [
+                    "demo-input"
+                  ]
+                }
+              ],
+              "unrevealed_properties": [],
+              "embedded_items": [],
+              "unknowns": [],
+              "upgrade_state": {
+                "known": true,
+                "level": 0
+              },
+              "socket_state": {
+                "known": true,
+                "count": 0
+              },
+              "evidence_ids": [
+                "demo-input"
+              ]
+            }
+          },
+          "facts_hash": "09684d8ce18457226b100900c1afeb202c9dde587f3a11d010a2c41898355194"
+        },
+        "knowledge": {
+          "pack": {
+            "contract_version": 1,
+            "pack_id": "synthetic-leveling",
+            "version": "1.0.0",
+            "context": {
+              "game_id": "lootweave-fixture",
+              "edition": "fixture-1",
+              "game_build": "1",
+              "mode": "offline",
+              "season": "not_applicable",
+              "ruleset_id": "synthetic-1",
+              "content_entitlements": []
+            },
+            "class_id": "sorcerer",
+            "scenario": "leveling",
+            "execution_policy": "synthetic_only",
+            "evidence": [
+              {
+                "id": "fixture-spec",
+                "source_ref": "repo://knowledge-packs/synthetic-leveling-1.0.0.json",
+                "source_build": "fixture-1",
+                "method": "Hand-authored synthetic specification; no game assets or player data.",
+                "scope": "Local workflow and domain regressions only.",
+                "results": "Defines conditional capabilities, provenance and set thresholds for the synthetic game.",
+                "unknowns": "These invented capabilities do not validate any game mechanic.",
+                "verification": "synthetic",
+                "conflicts": []
+              }
+            ],
+            "known_affixes": {
+              "fixture-vitality": "points",
+              "fixture-cold-bonus": "percent_points",
+              "fixture-armor": "points"
+            },
+            "unknowns": [
+              "Synthetic data does not establish game rules, combat DPS, online behavior, or final drop probabilities."
+            ],
+            "rules": [
+              {
+                "id": "cold-focus",
+                "source_id": "fixture-cold-focus",
+                "capability": "cold_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic cold_focus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "mana-loop",
+                "source_id": "fixture-mana-loop",
+                "capability": "mana_loop",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "hero_cast"
+                ],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic mana_loop capability; its presence does not quantify performance."
+              },
+              {
+                "id": "vitality-support",
+                "source_id": "fixture-vitality-support",
+                "capability": "vitality_support",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic vitality_support capability; its presence does not quantify performance."
+              },
+              {
+                "id": "archive-two",
+                "source_id": "fixture-archive",
+                "capability": "archive_shield",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "equipment_set",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic archive_shield capability; its presence does not quantify performance.",
+                "min_count": 2
+              },
+              {
+                "id": "frost-two",
+                "source_id": "fixture-frost",
+                "capability": "frost_cycle",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "rune_set",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic frost_cycle capability; its presence does not quantify performance.",
+                "min_count": 2
+              },
+              {
+                "id": "resource-efficiency",
+                "source_id": "fixture-resource-efficiency",
+                "capability": "resource_efficiency",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "mana_starved"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic resource_efficiency capability; its presence does not quantify performance."
+              },
+              {
+                "id": "survival",
+                "source_id": "fixture-survival",
+                "capability": "survival",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "survival_required"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic survival capability; its presence does not quantify performance."
+              },
+              {
+                "id": "temporary-focus",
+                "source_id": "fixture-temporary-focus",
+                "capability": "temporary_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "buff_active"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic temporary_focus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "companion-support",
+                "source_id": "fixture-companion-support",
+                "capability": "companion_support",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "companion",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "companion_present"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic companion_support capability; its presence does not quantify performance."
+              },
+              {
+                "id": "frozen-bonus",
+                "source_id": "fixture-frozen-bonus",
+                "capability": "frozen_bonus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "target_frozen"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic frozen_bonus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "fire-focus",
+                "source_id": "fixture-fire-focus",
+                "capability": "fire_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-fire-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic fire_focus capability; its presence does not quantify performance."
+              }
+            ],
+            "acquisition_sources": [
+              {
+                "source_id": "fixture-chest",
+                "target_event": "fixture-core-item",
+                "min_level": 10,
+                "entitlements": [],
+                "conditions": [
+                  "entry_unlocked"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ]
+              },
+              {
+                "source_id": "fixture-elite",
+                "target_event": "fixture-core-item",
+                "min_level": 20,
+                "entitlements": [
+                  "fixture-expansion"
+                ],
+                "conditions": [
+                  "elite_access"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ]
+              }
+            ]
+          },
+          "pack_hash": "60c1d4a208213bf850ce19fd6edb997766787ae0f4dab6be09f5b97ea8a2abd6"
+        },
+        "intent": {
+          "revision": 1,
+          "scenario": "leveling",
+          "required_capabilities": [
+            "not-in-this-fixture"
+          ],
+          "allowed_build_changes": [
+            "skills"
+          ],
+          "future_builds": [],
+          "budget": {}
+        },
+        "evaluator_version": "0.1.4"
+      },
+      "result_hash": "f7a7505ffb9bc863ae71d47301c0e37b982465698b0137bdf5857a258cbe25f3"
+    },
+    {
+      "evaluation_id": "historical-0-1-4-wrong-game",
+      "inputs": {
+        "profile": {
+          "contract_version": 1,
+          "profile_id": "historical-fixture",
+          "revision": 1,
+          "facts": {
+            "context": {
+              "game_id": "deskrawl",
+              "edition": "fixture-1",
+              "game_build": "1",
+              "mode": "offline",
+              "season": "not_applicable",
+              "ruleset_id": "synthetic-1",
+              "content_entitlements": []
+            },
+            "class_id": "sorcerer",
+            "character_level": 15,
+            "captured_at": "2026-01-01T00:00:00Z",
+            "evidence": [
+              {
+                "id": "demo-input",
+                "kind": "synthetic",
+                "source_ref": "observation://demo-text",
+                "captured_at": "2026-01-01T00:00:00Z",
+                "verification": "confirmed",
+                "conflicts": []
+              }
+            ],
+            "evidence_ids": [
+              "demo-input"
+            ],
+            "skills": [
+              {
+                "id": "fixture-cold-bolt",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "talents": [
+              {
+                "id": "fixture-resource-talent",
+                "effects": [
+                  "fixture-resource-efficiency"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "paragon": [
+              {
+                "id": "fixture-survival-point",
+                "effects": [
+                  "fixture-survival"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1
+              }
+            ],
+            "account_unlocks": {
+              "paragon": "confirmed"
+            },
+            "runes": [
+              {
+                "id": "fixture-rune-a",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "set_id": "fixture-frost"
+              },
+              {
+                "id": "fixture-rune-b",
+                "effects": [],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "set_id": "fixture-frost"
+              }
+            ],
+            "companions": [
+              {
+                "id": "fixture-companion",
+                "effects": [
+                  "fixture-companion-support"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "rank": 1,
+                "actor": "companion"
+              }
+            ],
+            "temporary_effects": [],
+            "observed_panel": [
+              {
+                "stat": "fixture-cold-bonus",
+                "value": 25,
+                "unit": "percent_points",
+                "source_ids": [
+                  "core-staff"
+                ],
+                "evidence_ids": [
+                  "demo-input"
+                ]
+              }
+            ],
+            "conditions": {
+              "hero_cast": "active",
+              "mana_starved": "active",
+              "survival_required": "active",
+              "companion_present": "active",
+              "target_frozen": "unknown",
+              "buff_active": "inactive"
+            },
+            "inventory_coverage": "complete",
+            "unknowns": [],
+            "equipped_items": {
+              "weapon": {
+                "record_kind": "item_instance",
+                "instance_id": "core-staff",
+                "name": "示例：循环法杖",
+                "slot": "weapon",
+                "required_level": 1,
+                "effects": [
+                  "fixture-cold-focus",
+                  "fixture-mana-loop"
+                ],
+                "affixes": [
+                  {
+                    "id": "fixture-cold-bonus",
+                    "value": 25,
+                    "unit": "percent_points",
+                    "evidence_ids": [
+                      "demo-input"
+                    ]
+                  }
+                ],
+                "unrevealed_properties": [],
+                "embedded_items": [],
+                "unknowns": [],
+                "upgrade_state": {
+                  "known": true,
+                  "level": 0
+                },
+                "socket_state": {
+                  "known": true,
+                  "count": 0
+                },
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "set_id": "fixture-archive"
+              },
+              "head": {
+                "record_kind": "item_instance",
+                "instance_id": "archive-hood",
+                "name": "示例：档案兜帽",
+                "slot": "head",
+                "required_level": 1,
+                "effects": [],
+                "affixes": [],
+                "unrevealed_properties": [],
+                "embedded_items": [],
+                "unknowns": [],
+                "upgrade_state": {
+                  "known": true,
+                  "level": 0
+                },
+                "socket_state": {
+                  "known": true,
+                  "count": 0
+                },
+                "evidence_ids": [
+                  "demo-input"
+                ],
+                "set_id": "fixture-archive"
+              }
+            },
+            "candidate_item": {
+              "record_kind": "item_instance",
+              "instance_id": "vitality-staff",
+              "name": "示例：活力法杖",
+              "slot": "weapon",
+              "required_level": 1,
+              "effects": [
+                "fixture-vitality-support"
+              ],
+              "affixes": [
+                {
+                  "id": "fixture-vitality",
+                  "value": 65,
+                  "unit": "points",
+                  "evidence_ids": [
+                    "demo-input"
+                  ]
+                }
+              ],
+              "unrevealed_properties": [],
+              "embedded_items": [],
+              "unknowns": [],
+              "upgrade_state": {
+                "known": true,
+                "level": 0
+              },
+              "socket_state": {
+                "known": true,
+                "count": 0
+              },
+              "evidence_ids": [
+                "demo-input"
+              ]
+            }
+          },
+          "facts_hash": "020215732735f2e62860b50bf3d06ece242233a22801e31761e62239576be5a6"
+        },
+        "knowledge": {
+          "pack": {
+            "contract_version": 1,
+            "pack_id": "synthetic-leveling",
+            "version": "1.0.0",
+            "context": {
+              "game_id": "lootweave-fixture",
+              "edition": "fixture-1",
+              "game_build": "1",
+              "mode": "offline",
+              "season": "not_applicable",
+              "ruleset_id": "synthetic-1",
+              "content_entitlements": []
+            },
+            "class_id": "sorcerer",
+            "scenario": "leveling",
+            "execution_policy": "synthetic_only",
+            "evidence": [
+              {
+                "id": "fixture-spec",
+                "source_ref": "repo://knowledge-packs/synthetic-leveling-1.0.0.json",
+                "source_build": "fixture-1",
+                "method": "Hand-authored synthetic specification; no game assets or player data.",
+                "scope": "Local workflow and domain regressions only.",
+                "results": "Defines conditional capabilities, provenance and set thresholds for the synthetic game.",
+                "unknowns": "These invented capabilities do not validate any game mechanic.",
+                "verification": "synthetic",
+                "conflicts": []
+              }
+            ],
+            "known_affixes": {
+              "fixture-vitality": "points",
+              "fixture-cold-bonus": "percent_points",
+              "fixture-armor": "points"
+            },
+            "unknowns": [
+              "Synthetic data does not establish game rules, combat DPS, online behavior, or final drop probabilities."
+            ],
+            "rules": [
+              {
+                "id": "cold-focus",
+                "source_id": "fixture-cold-focus",
+                "capability": "cold_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic cold_focus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "mana-loop",
+                "source_id": "fixture-mana-loop",
+                "capability": "mana_loop",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "hero_cast"
+                ],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic mana_loop capability; its presence does not quantify performance."
+              },
+              {
+                "id": "vitality-support",
+                "source_id": "fixture-vitality-support",
+                "capability": "vitality_support",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic vitality_support capability; its presence does not quantify performance."
+              },
+              {
+                "id": "archive-two",
+                "source_id": "fixture-archive",
+                "capability": "archive_shield",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "equipment_set",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic archive_shield capability; its presence does not quantify performance.",
+                "min_count": 2
+              },
+              {
+                "id": "frost-two",
+                "source_id": "fixture-frost",
+                "capability": "frost_cycle",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "rune_set",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-cold-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic frost_cycle capability; its presence does not quantify performance.",
+                "min_count": 2
+              },
+              {
+                "id": "resource-efficiency",
+                "source_id": "fixture-resource-efficiency",
+                "capability": "resource_efficiency",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "mana_starved"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic resource_efficiency capability; its presence does not quantify performance."
+              },
+              {
+                "id": "survival",
+                "source_id": "fixture-survival",
+                "capability": "survival",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "survival_required"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic survival capability; its presence does not quantify performance."
+              },
+              {
+                "id": "temporary-focus",
+                "source_id": "fixture-temporary-focus",
+                "capability": "temporary_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "buff_active"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic temporary_focus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "companion-support",
+                "source_id": "fixture-companion-support",
+                "capability": "companion_support",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "companion",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "companion_present"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic companion_support capability; its presence does not quantify performance."
+              },
+              {
+                "id": "frozen-bonus",
+                "source_id": "fixture-frozen-bonus",
+                "capability": "frozen_bonus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [
+                  "target_frozen"
+                ],
+                "requires_skills": [],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic frozen_bonus capability; its presence does not quantify performance."
+              },
+              {
+                "id": "fire-focus",
+                "source_id": "fixture-fire-focus",
+                "capability": "fire_focus",
+                "context": {
+                  "game_id": "lootweave-fixture",
+                  "edition": "fixture-1",
+                  "game_build": "1",
+                  "mode": "offline",
+                  "season": "not_applicable",
+                  "ruleset_id": "synthetic-1",
+                  "content_entitlements": []
+                },
+                "operation": "capability",
+                "source_kind": "effect",
+                "actor": "hero",
+                "stacking": "unique",
+                "unit": "capability",
+                "conditions": [],
+                "requires_skills": [
+                  "fixture-fire-bolt"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ],
+                "explanation": "Synthetic fire_focus capability; its presence does not quantify performance."
+              }
+            ],
+            "acquisition_sources": [
+              {
+                "source_id": "fixture-chest",
+                "target_event": "fixture-core-item",
+                "min_level": 10,
+                "entitlements": [],
+                "conditions": [
+                  "entry_unlocked"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ]
+              },
+              {
+                "source_id": "fixture-elite",
+                "target_event": "fixture-core-item",
+                "min_level": 20,
+                "entitlements": [
+                  "fixture-expansion"
+                ],
+                "conditions": [
+                  "elite_access"
+                ],
+                "evidence_ids": [
+                  "fixture-spec"
+                ]
+              }
+            ]
+          },
+          "pack_hash": "60c1d4a208213bf850ce19fd6edb997766787ae0f4dab6be09f5b97ea8a2abd6"
+        },
+        "intent": {
+          "revision": 1,
+          "scenario": "leveling",
+          "required_capabilities": [
+            "mana_loop",
+            "archive_shield"
+          ],
+          "allowed_build_changes": [
+            "skills"
+          ],
+          "future_builds": [],
+          "budget": {}
+        },
+        "evaluator_version": "0.1.4"
+      },
+      "result_hash": "b5f1b00d172936d71dd7377be1264e216eb4aabb86dfe05364be52a0691752fd"
+    }
+  ]
+}
