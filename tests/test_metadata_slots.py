@@ -153,10 +153,11 @@ class MetadataSlotTests(unittest.TestCase):
     def test_all_research_versions_remain_explicit_and_quarantined(self):
         knowledge = Knowledge(ROOT / "knowledge-packs")
         rows = knowledge.handle("GET", "/v1/packs", None)["packs"]
-        self.assertEqual(["0.1.0-research", "0.2.0-research", "0.3.0-research", "0.4.0-research", "0.5.0-research", "0.6.0-research"],
+        versions = [f"0.{minor}.0-research" for minor in range(1, 8)]
+        self.assertEqual(versions,
                          sorted(row["version"] for row in rows if row["pack_id"] == "deskrawl-sorcerer-leveling"))
-        for version in ("0.1.0", "0.2.0", "0.3.0", "0.4.0"):
-            result = knowledge.handle("GET", f"/v1/packs/deskrawl-sorcerer-leveling/{version}-research", None)
+        for version in versions:
+            result = knowledge.handle("GET", f"/v1/packs/deskrawl-sorcerer-leveling/{version}", None)
             self.assertEqual(digest(result["pack"]), result["pack_hash"])
             self.assertEqual([], result["pack"]["rules"])
             self.assertEqual("research_only", result["pack"]["execution_policy"])

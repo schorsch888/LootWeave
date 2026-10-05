@@ -419,7 +419,7 @@ class ValidationTests(unittest.TestCase):
 
     def test_bundled_pack_files_and_index_are_verified(self):
         knowledge = Knowledge(ROOT / "knowledge-packs")
-        self.assertEqual(7, len(knowledge.handle("GET", "/v1/packs", None)["packs"]))
+        self.assertEqual(8, len(knowledge.handle("GET", "/v1/packs", None)["packs"]))
 
     def test_research_pack_executes_no_game_rule(self):
         pack = json.loads((ROOT / "knowledge-packs/deskrawl-sorcerer-leveling-0.1.0-research.json").read_text())
