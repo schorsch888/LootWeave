@@ -101,19 +101,21 @@ def frozen_environment():
 
 
 class Desktop:
-    def __init__(self, executable, resources, data, startup_policy=None):
+    def __init__(self, executable, resources, data, startup_policy=None, *, default_paths=False, cwd=None):
         self.workers = []
         self.worker_handles = {}
         self.handles_by_pid = {}
         self.host_handle = None
         self.started = time.perf_counter()
-        command = [str(executable), "--headless", "--resource-dir", str(resources), "--data-dir", str(data)]
+        command = [str(executable), "--headless"]
+        if not default_paths:
+            command += ["--resource-dir", str(resources), "--data-dir", str(data)]
         if startup_policy is not None:
             command += ["--startup-policy", startup_policy]
         self.process = subprocess.Popen(
             command,
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            cwd=executable.parent, env=frozen_environment(), creationflags=0x08000000,
+            cwd=cwd or executable.parent, env=frozen_environment(), creationflags=0x08000000,
         )
         messages = queue.Queue(maxsize=1)
         threading.Thread(target=lambda: messages.put(self.process.stdout.readline(8193)), daemon=True).start()

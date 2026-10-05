@@ -2,6 +2,7 @@ name: Repository checks
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -9,8 +10,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: checks-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: checks-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'pull_request' && 'pr' || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   contracts-and-browser:
@@ -50,6 +51,8 @@ jobs:
         run: pnpm --dir frontend check:acquisition
       - name: Check snapshot confirmation rendering and handlers without a browser
         run: pnpm --dir frontend check:confirmation
+      - name: Check captured-observation persistence without a browser or desktop input
+        run: pnpm --dir frontend check:capture
       - name: Verify three-state and historical evaluation rendering
         run: node scripts/check_evaluation_render.mjs
       - name: Install the pinned browser runtime
@@ -127,3 +130,146 @@ jobs:
           $nativeCheckExit = $LASTEXITCODE
           Write-Host "Native WebView checker exit code: $nativeCheckExit"
           exit $nativeCheckExit
+
+      - name: Build and verify the portable ZIP with the pinned Fixed Version runtime
+        shell: pwsh
+        run: |
+          $webviewPin = Get-Content -LiteralPath scripts/webview-runtime.json -Raw | ConvertFrom-Json
+          $portableWork = Join-Path (Get-Location).Path '.local/portable-ci'
+          New-Item -ItemType Directory -Path $portableWork -ErrorAction Stop | Out-Null
+          $webviewCab = Join-Path $portableWork 'webview2-fixed.cab'
+          Invoke-WebRequest -Uri $webviewPin.url -OutFile $webviewCab
+          if ((Get-FileHash -LiteralPath $webviewCab -Algorithm SHA256).Hash.ToLowerInvariant() -ne $webviewPin.sha256) {
+            throw 'fixed_webview_download_hash_mismatch'
+          }
+          $expandedRuntime = Join-Path $portableWork 'expanded'
+          New-Item -ItemType Directory -Path $expandedRuntime -ErrorAction Stop | Out-Null
+          & "$env:SystemRoot/System32/expand.exe" $webviewCab '-F:*' $expandedRuntime | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'fixed_webview_expand_failed' }
+          $runtimeFolder = Join-Path $expandedRuntime ('Microsoft.WebView2.FixedVersionRuntime.' + $webviewPin.version + '.x64')
+          $runtimeSignature = Get-AuthenticodeSignature -LiteralPath (Join-Path $runtimeFolder 'msedgewebview2.exe')
+          if ($runtimeSignature.Status -ne 'Valid' -or $runtimeSignature.SignerCertificate.Subject -notmatch 'O=Microsoft Corporation') {
+            throw 'fixed_webview_signature_invalid'
+          }
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $visualStudioPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $crtVersions = Get-ChildItem -LiteralPath (Join-Path $visualStudioPath 'VC/Redist/MSVC') -Directory | Where-Object Name -Match '^\d+\.\d+\.\d+$' | Sort-Object { [version]$_.Name } -Descending
+          $vcRuntime = $null
+          foreach ($crtVersion in $crtVersions) {
+            $crtFolders = @(Get-ChildItem -LiteralPath (Join-Path $crtVersion.FullName 'x64') -Directory -Filter 'Microsoft.VC*.CRT' -ErrorAction SilentlyContinue)
+            if ($crtFolders.Count -eq 1 -and (Test-Path -LiteralPath (Join-Path $crtFolders[0].FullName 'vcruntime140_1.dll'))) {
+              $vcRuntime = $crtFolders[0].FullName
+              break
+            }
+          }
+          if (-not $vcRuntime) { throw 'visual_studio_redistributable_crt_missing' }
+          foreach ($crtName in @('vcruntime140.dll', 'vcruntime140_1.dll')) {
+            if ((Get-AuthenticodeSignature -LiteralPath (Join-Path $vcRuntime $crtName)).Status -ne 'Valid') { throw 'vc_runtime_signature_invalid' }
+          }
+          $portableSourceCommit = git rev-parse HEAD
+          python scripts/build_portable.py --executable desktop/target/release/lootweave-desktop.exe --webview-runtime $runtimeFolder --vc-runtime-dir $vcRuntime --output dist/LootWeave-portable-windows-x64.zip --source-commit $portableSourceCommit
+          if ($LASTEXITCODE -ne 0) { throw 'portable_package_failed' }
+          python scripts/check_portable_desktop.py --archive dist/LootWeave-portable-windows-x64.zip --report .local/portable-ci/report.json
+          if ($LASTEXITCODE -ne 0) { throw 'portable_headless_check_failed' }
+          $portableGui = Join-Path $portableWork 'passive-ui'
+          Expand-Archive -LiteralPath dist/LootWeave-portable-windows-x64.zip -DestinationPath $portableGui
+          python scripts/check_native_ui.py --cycles 2 --executable (Join-Path $portableGui 'LootWeave.exe') --resources (Join-Path $portableGui 'sidecar')
+          $portableNativeExit = $LASTEXITCODE
+          Write-Host "Portable passive WebView checker exit code: $portableNativeExit"
+          exit $portableNativeExit
+
+      - name: Stage verified Windows release assets
+        run: python scripts/release_assets.py --source-commit $env:GITHUB_SHA
+      - name: Upload installer, portable ZIP and their verification manifests
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lootweave-windows-x64-${{ github.sha }}
+          path: |
+            dist/release/LootWeave-*-windows-x64-setup.exe
+            dist/release/LootWeave-*-portable-windows-x64.zip
+            dist/release/build-manifest.json
+            dist/release/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+
+  publish-preview:
+    needs: [contracts-and-browser, windows-package]
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.13.16'
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: lootweave-windows-x64-${{ github.sha }}
+          path: dist/release
+      - name: Verify the source and downloads and name this main preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          python scripts/release_assets.py --verify --source-commit "$GITHUB_SHA"
+          python - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          version = json.loads(Path('desktop/tauri.conf.json').read_text())['version']
+          run_number = os.environ['GITHUB_RUN_NUMBER']
+          if not re.fullmatch(r'[1-9][0-9]*', run_number):
+              raise SystemExit('release_run_number_invalid')
+          tag = 'v' + version + '-mvp.' + run_number
+          with Path(os.environ['GITHUB_ENV']).open('a', encoding='utf-8') as environment:
+              environment.write('RELEASE_TAG=' + tag + '\n')
+          notes = (
+              'Windows x64 MVP built and verified entirely on GitHub Actions.\n\n'
+              'Extract the portable ZIP and run LootWeave.exe. Python, WebView2 and C++ runtimes are bundled. '
+              'Keep the whole folder together; personal data lives in its data folder. '
+              'An offline installer is also available.\n\n'
+              'Source commit: ' + os.environ['GITHUB_SHA'] + '\n\n'
+              'Use SHA256SUMS.txt and build-manifest.json to verify the downloads. '
+              'All repository and packaged-runtime checks passed in this release workflow. '
+              'Real-game and two-clean-Windows-machine acceptance remain open; this is an MVP prerelease.\n'
+          )
+          notes_path = Path(os.environ['RUNNER_TEMP']) / 'lootweave-release-notes.md'
+          notes_path.write_text(notes, encoding='utf-8')
+          PY
+      - name: Publish the verified MVP prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git show-ref --verify --quiet "refs/tags/$RELEASE_TAG"; then
+            tag_source=$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")
+            if [ "$tag_source" != "$GITHUB_SHA" ]; then
+              echo 'release_tag_points_to_another_source_commit' >&2
+              exit 1
+            fi
+          fi
+          release_info="$RUNNER_TEMP/lootweave-existing-release.json"
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft,targetCommitish > "$release_info" 2>/dev/null; then
+            python - "$release_info" <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          release = json.loads(Path(sys.argv[1]).read_text())
+          if release.get('isDraft') is not True or release.get('targetCommitish') != os.environ['GITHUB_SHA']:
+              raise SystemExit('refusing_to_replace_a_published_release_or_another_source_commit')
+          PY
+            gh release upload "$RELEASE_TAG" dist/release/* --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$RELEASE_TAG" dist/release/* \
+              --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --draft --prerelease --title "LootWeave $RELEASE_TAG (MVP)" \
+              --notes-file "$RUNNER_TEMP/lootweave-release-notes.md"
+          fi
+          gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false --prerelease
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json url,tagName,isPrerelease

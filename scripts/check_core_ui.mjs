@@ -162,7 +162,7 @@ try {
   globalThis.equipmentFixture = { useState(value) {
     const index = equipmentCursor++;
     if (!(index in equipmentStates)) equipmentStates[index] = value;
-    return [equipmentStates[index], next => { equipmentStates[index] = next; }];
+    return [equipmentStates[index], next => { equipmentStates[index] = typeof next === "function" ? next(equipmentStates[index]) : next; }];
   } };
   const equipmentTree = (facts, onChange) => { equipmentCursor = 0; return equipment.EquipmentEditor({ facts, onChange }); };
   await check("actual draft starts empty with explicit unreviewed build and slot", () => { assert.equal(fresh.context.game_id, "deskrawl"); assert.equal(fresh.context.game_build, "unknown"); assert.deepEqual(fresh.equipped_items, {}); assert.deepEqual(fresh.skills, []); assert.equal(fresh.inventory_coverage, "unknown"); assert.ok(fresh.unknowns.includes("build_not_reviewed") && fresh.unknowns.includes("current_slot_not_reviewed")); assert.ok(fresh.candidate_item.required_level === null); });
@@ -170,6 +170,123 @@ try {
   await check("OCR only fills a field after explicit mapping with its source", () => { const item = structuredClone(demo.facts.candidate_item); const frozen = JSON.stringify(item); const next = equipment.mapItemField(item, { field: "vitality", value: -12.5, unit: "percent", ambiguous: false }, "capture-input"); assert.equal(next.affixes.at(-1).value, -12.5); assert.equal(next.affixes.at(-1).unit, "percent"); assert.deepEqual(next.affixes.at(-1).evidence_ids, ["capture-input"]); assert.equal(JSON.stringify(item), frozen); assert.deepEqual(next.effects, item.effects); });
   await check("ambiguous missing and unsupported OCR fields cannot be auto-applied", () => { for (const field of [{ field: "vitality", value: 65, unit: "points", ambiguous: true }, { field: "armor", value: null, unit: "points", ambiguous: false }, { field: "armor", value: 12, unit: null, ambiguous: false }, { field: "level", value: 2.5, unit: "level", ambiguous: false }, { field: "skill", value: 1, unit: "rank", ambiguous: false }]) assert.throws(() => equipment.mapItemField(fresh.candidate_item, field, "e1")); });
   await check("OCR level is an explicitly selected item requirement not character level", () => { const field = { field: "level", value: 20, unit: "level", ambiguous: false }; assert.throws(() => equipment.mapItemField(fresh.candidate_item, field, "e1")); const next = equipment.mapItemField(fresh.candidate_item, field, "e1", true); assert.equal(next.required_level, 20); assert.equal(fresh.character_level, 1); });
+  await check("OCR review keeps every raw line and unmatched proposal visible", () => {
+    const fields = [{ field: "armor", value: 8, unit: "points", ambiguous: false, raw_text: "Armor 8 points" },
+      { field: "vitality", value: 12, unit: null, ambiguous: true, raw_text: "Vitality 12" }];
+    const rows = model.observationRows("  Item name  \r\nArmor 8 points\nStrength +18 Vitality 12\n\n", fields);
+    assert.deepEqual(rows.map(row => row.rawText), ["  Item name  ", "Armor 8 points", "Strength +18 Vitality 12", "Vitality 12"]);
+    assert.equal(rows[1].proposal, fields[0]); assert.equal(rows[3].proposal, fields[1]);
+    assert.equal(model.observationRows("", [])[0].key, "empty");
+  });
+  await check("reviewed custom signed and zero rolls carry capture evidence without mutating other item facts", () => {
+    const item = structuredClone(demo.facts.candidate_item), before = JSON.stringify(item);
+    const next = model.mapReviewedItemFields(item, [{ kind: "affix", id: "strength", value: -18.25, unit: "points" },
+      { kind: "affix", id: "custom-resist", value: 0, unit: "percent_points" }, { kind: "required_level", value: 12 }], "capture-only");
+    assert.equal(next.required_level, 12);
+    assert.deepEqual(next.affixes.slice(-2).map(row => [row.id, row.value, row.unit, row.evidence_ids]),
+      [["strength", -18.25, "points", ["capture-only"]], ["custom-resist", 0, "percent_points", ["capture-only"]]]);
+    assert.ok(next.evidence_ids.includes("capture-only"));
+    assert.deepEqual(next.effects, item.effects); assert.deepEqual(next.embedded_items, item.embedded_items);
+    assert.equal(JSON.stringify(item), before);
+    assert.deepEqual(model.mapReviewedItemFields(item, [], "capture-only"), item);
+  });
+  await check("invalid or duplicate reviewed targets fail atomically and preserve prior candidate", () => {
+    const before = JSON.stringify(fresh.candidate_item);
+    const valid = { kind: "affix", id: "strength", value: 18, unit: "points" };
+    for (const fields of [[valid, valid], [valid, { ...valid, id: "bad id" }], [{ ...valid, value: NaN }],
+      [{ ...valid, unit: " " }], [{ ...valid, unit: "x".repeat(41) }], [{ kind: "required_level", value: 2.5 }],
+      [{ kind: "required_level", value: 2 ** 53 }]]) assert.throws(() => model.mapReviewedItemFields(fresh.candidate_item, fields, "capture-only"));
+    assert.equal(JSON.stringify(fresh.candidate_item), before);
+  });
+  const reviewHarness = (rawText, fields = [], onReviewed = () => true) => {
+    equipmentStates.length = 0;
+    return () => { equipmentCursor = 0; return equipment.ObservationFields({ rawText, fields, onReviewed }); };
+  };
+  const reviewControl = (render, name) => find(render(), n => n.props["aria-label"] === name);
+  await check("all lines require an explicit decision and staged mapping applies only once", () => {
+    const applied = [];
+    const renderReview = reviewHarness("Strength +18\nFlavor text", [], rows => { applied.push(rows); return true; });
+    const finish = () => button(renderReview(), "应用核对结果并完成");
+    assert.equal(finish().props.disabled, true); finish().props.onClick(); assert.deepEqual(applied, []);
+    reviewControl(renderReview, "第 1 行字段").props.onChange({ target: { value: "strength" } });
+    reviewControl(renderReview, "第 1 行数值").props.onChange({ target: { value: "-18.25" } });
+    reviewControl(renderReview, "第 1 行单位").props.onChange({ target: { value: "percent_points" } });
+    const first = () => find(renderReview(), n => n.props["data-review-key"] === "line-0");
+    button(first(), "核对后采用这一行").props.onClick();
+    assert.equal(finish().props.disabled, true); assert.deepEqual(applied, []);
+    const second = find(renderReview(), n => n.props["data-review-key"] === "line-1");
+    button(second, "忽略这一行").props.onClick();
+    assert.equal(finish().props.disabled, false); finish().props.onClick();
+    assert.deepEqual(applied, [[{ kind: "affix", id: "strength", value: -18.25, unit: "percent_points" }]]);
+    assert.equal(finish().props.disabled, true); finish().props.onClick(); assert.equal(applied.length, 1);
+    assert.ok([...nodes(renderReview())].filter(n => n.type === "fieldset").every(n => n.props.disabled));
+  });
+  await check("edit after row acceptance returns it to pending and empty values never become zero", () => {
+    const renderReview = reviewHarness("Armor 8 points", [{ field: "armor", value: 8, unit: "points", ambiguous: false, raw_text: "Armor 8 points" }]);
+    button(renderReview(), "核对后采用这一行").props.onClick();
+    assert.equal(button(renderReview(), "应用核对结果并完成").props.disabled, false);
+    reviewControl(renderReview, "第 1 行数值").props.onChange({ target: { value: "" } });
+    assert.equal(button(renderReview(), "核对后采用这一行").props.disabled, true);
+    assert.equal(button(renderReview(), "应用核对结果并完成").props.disabled, true);
+    button(renderReview(), "核对后采用这一行").props.onClick();
+    assert.equal(button(renderReview(), "应用核对结果并完成").props.disabled, true);
+  });
+  await check("custom stat and unit require explicit values while duplicate targets stay blocked", () => {
+    let accepted;
+    const renderReview = reviewHarness("Cold resist\nDuplicate", [], rows => { accepted = rows; return true; });
+    for (let i = 1; i <= 2; i++) {
+      reviewControl(renderReview, "第 " + i + " 行字段").props.onChange({ target: { value: "custom" } });
+      reviewControl(renderReview, "第 " + i + " 行自定义词条标识").props.onChange({ target: { value: "cold-resist" } });
+      reviewControl(renderReview, "第 " + i + " 行数值").props.onChange({ target: { value: "0" } });
+      reviewControl(renderReview, "第 " + i + " 行单位").props.onChange({ target: { value: "custom" } });
+      reviewControl(renderReview, "第 " + i + " 行自定义单位").props.onChange({ target: { value: "resist-points" } });
+      button(find(renderReview(), n => n.props["data-review-key"] === "line-" + (i - 1)), "核对后采用这一行").props.onClick();
+    }
+    assert.equal(button(renderReview(), "应用核对结果并完成").props.disabled, true);
+    assert.ok([...nodes(renderReview())].some(n => n.type === "p" && n.props.children === "同一字段有多行，请合并或忽略重复行后再应用。"));
+    button(find(renderReview(), n => n.props["data-review-key"] === "line-1"), "忽略这一行").props.onClick();
+    button(renderReview(), "应用核对结果并完成").props.onClick();
+    assert.deepEqual(accepted, [{ kind: "affix", id: "cold-resist", value: 0, unit: "resist-points" }]);
+  });
+  await check("ambiguous level needs explicit correction and all-ignored input never creates item facts", () => {
+    let accepted;
+    const renderReview = reviewHarness("Level 2.5", [{ field: "level", value: 2.5, unit: "level", ambiguous: true, raw_text: "Level 2.5" }], rows => { accepted = rows; return true; });
+    assert.equal(button(renderReview(), "核对后采用这一行").props.disabled, true);
+    assert.equal(reviewControl(renderReview, "第 1 行字段").props.value, "");
+    reviewControl(renderReview, "第 1 行数值").props.onChange({ target: { value: "12" } });
+    assert.equal(button(renderReview(), "核对后采用这一行").props.disabled, true);
+    reviewControl(renderReview, "第 1 行字段").props.onChange({ target: { value: "required_level" } });
+    button(renderReview(), "确认是穿戴要求，采用这一行").props.onClick(); button(renderReview(), "应用核对结果并完成").props.onClick();
+    assert.deepEqual(accepted, [{ kind: "required_level", value: 12 }]);
+    const empty = reviewHarness("", [], rows => { accepted = rows; return true; });
+    assert.equal(button(empty(), "应用核对结果并完成").props.disabled, true);
+    button(empty(), "忽略这一行").props.onClick(); button(empty(), "应用核对结果并完成").props.onClick();
+    assert.deepEqual(accepted, []);
+  });
+  await check("batched changes keep the latest target value and unit before review", () => {
+    let accepted;
+    const renderReview = reviewHarness("Strength 18", [], rows => { accepted = rows; return true; });
+    const tree = renderReview();
+    find(tree, n => n.props["aria-label"] === "第 1 行字段").props.onChange({ target: { value: "strength" } });
+    find(tree, n => n.props["aria-label"] === "第 1 行数值").props.onChange({ target: { value: "18" } });
+    find(tree, n => n.props["aria-label"] === "第 1 行单位").props.onChange({ target: { value: "points" } });
+    button(renderReview(), "核对后采用这一行").props.onClick(); button(renderReview(), "应用核对结果并完成").props.onClick();
+    assert.deepEqual(accepted, [{ kind: "affix", id: "strength", value: 18, unit: "points" }]);
+  });
+  await check("reviewing an existing OCR percent unit preserves its stored spelling", () => {
+    let accepted;
+    const renderReview = reviewHarness("Vitality 12%", [{ field: "vitality", value: 12, unit: "%", ambiguous: false, raw_text: "Vitality 12%" }], rows => { accepted = rows; return true; });
+    assert.equal(reviewControl(renderReview, "第 1 行单位").props.value, "custom");
+    assert.equal(reviewControl(renderReview, "第 1 行自定义单位").props.value, "%");
+    button(renderReview(), "核对后采用这一行").props.onClick(); button(renderReview(), "应用核对结果并完成").props.onClick();
+    assert.deepEqual(accepted, [{ kind: "affix", id: "vitality", value: 12, unit: "%" }]);
+  });
+  await check("failed batch application preserves unlocked review for retry", () => {
+    const renderReview = reviewHarness("Item name", [], () => false);
+    button(renderReview(), "忽略这一行").props.onClick(); button(renderReview(), "应用核对结果并完成").props.onClick();
+    assert.equal(button(renderReview(), "应用核对结果并完成").props.disabled, false);
+  });
+  equipmentStates.length = 0;
   await check("clearing an actual roll leaves it missing instead of recording zero", () => { let changed; const tree = equipment.ItemEditor({ item: demo.facts.candidate_item, onChange: x => { changed = x; } }); find(tree, n => n.type === "input" && n.props["aria-label"] === "词条实际数值").props.onChange({ target: { value: "" } }); assert.ok(Number.isNaN(changed.affixes[0].value)); assert.equal(demo.facts.candidate_item.affixes[0].value, 65); });
   await check("adding an affix requires an actual value and a matching identifier", () => { let changed; const tree = equipment.ItemEditor({ item: fresh.candidate_item, onChange: x => { changed = x; } }); button(tree, "添加词条").props.onClick(); assert.ok(Number.isNaN(changed.affixes[0].value)); assert.equal(changed.affixes[0].unit, "points"); });
   await check("embedded source editing preserves provenance and invalidates prior effect review", () => {
@@ -279,6 +396,29 @@ try {
   await check("pending operations disable profile and history switches", () => { component(render(), "ConfirmSnapshot").props.onBusyChange(true); assert.equal(component(render(), "ProfileLibrary").props.busy, true); assert.equal(component(render(), "EvaluationHistory").props.disabled, true); assert.equal(button(render(), "新建真实录入").props.disabled, true); component(render(), "ConfirmSnapshot").props.onBusyChange(false); });
   await check("source-clock conflicts remain unconfirmed after reopening", () => { component(render(), "ProfileLibrary").props.onOpen({ profile_id: "clock-fixture", revision: 2, facts: fresh, build_hash: "hash", facts_hash: "facts", observation_time_status: "conflict" }); assert.equal(button(render(), "解释保留价值与换装变化 →").props.disabled, true); });
   await check("capture import retains its clock and leaves fields pending", () => { const capture = { observation_id: "fixture-capture", fields: [{ field: "vitality", value: 65, unit: "points", ambiguous: false }], raw_text: "Vitality +65", capture_context: { game_id: "deskrawl", captured_at_ms: 1767225600123 } }; component(render(), "CaptureObservationForm").props.onCaptured(capture); const facts = component(render(), "EquipmentEditor").props.facts; const evidence = facts.evidence.find(e => e.source_ref === "observation://fixture-capture"); assert.equal(evidence.captured_at, "2026-01-01T00:00:00.123Z"); assert.deepEqual(facts.candidate_item.affixes, []); assert.ok(facts.unknowns.includes("ocr_fields_not_mapped")); });
+  await check("editing unknown markers cannot bypass capture review and successful mapping binds only the candidate", () => {
+    const original = component(render(), "EquipmentEditor").props.facts;
+    assert.equal(component(render(), "ConfirmSnapshot").props.captureReviewed, false);
+    const withoutMarker = { ...original, unknowns: original.unknowns.filter(value => value !== "ocr_fields_not_mapped") };
+    component(render(), "EquipmentEditor").props.onChange(withoutMarker);
+    assert.equal(component(render(), "ConfirmSnapshot").props.captureReviewed, false);
+    const review = component(render(), "ObservationFields");
+    assert.equal(review.key, "fixture-capture"); assert.equal(review.props.rawText, "Vitality +65");
+    const rows = [{ kind: "affix", id: "strength", value: -18, unit: "points" }, { kind: "affix", id: "custom-resist", value: 0, unit: "percent_points" }];
+    assert.equal(review.props.onReviewed(rows), true);
+    const saved = component(render(), "EquipmentEditor").props.facts;
+    const id = saved.evidence.find(row => row.source_ref === "observation://fixture-capture").id;
+    assert.deepEqual(saved.candidate_item.affixes.map(row => row.evidence_ids), [[id], [id]]);
+    assert.ok(saved.candidate_item.evidence_ids.includes(id));
+    assert.deepEqual(saved.equipped_items, original.equipped_items); assert.deepEqual(saved.skills, original.skills);
+    assert.equal(saved.captured_at, original.captured_at); assert.deepEqual(saved.context, original.context);
+    assert.equal(component(render(), "ConfirmSnapshot").props.captureReviewed, true);
+    const nextCapture = { ...component(render(), "ConfirmSnapshot").props.capture, observation_id: "fixture-capture-next" };
+    component(render(), "CaptureObservationForm").props.onCaptured(nextCapture);
+    assert.equal(component(render(), "ObservationFields").key, "fixture-capture-next");
+    assert.equal(component(render(), "ConfirmSnapshot").props.captureReviewed, false);
+    assert.ok(component(render(), "EquipmentEditor").props.facts.unknowns.includes("ocr_fields_not_mapped"));
+  });
   await check("real comparison shows raw signed differences and unit conflicts without a DPS verdict", () => { const result = { evaluation_id: "render-fixture", retention: "needs_confirmation", comparison: { status: "blocked", scope_compatible: false, lost_capabilities: [], gained_capabilities: [], missing_requirements: [], equip_blockers: [], before: [], after: [], item_rolls: { current_item: { name: "Current", instance_id: "one" }, candidate_item: { name: "Candidate", instance_id: "two" }, rows: [{ affix_id: "vitality", current_value: 40, candidate_value: 65, current_unit: "points", candidate_unit: "points", delta: 25, status: "comparable", input_evidence_ids: ["e1"] }, { affix_id: "armor", current_value: 10, candidate_value: 5, current_unit: "points", candidate_unit: "percent", delta: null, status: "unit_mismatch", input_evidence_ids: ["e1"] }] } }, blockers: ["game_mechanics_not_accepted"], reasons: [], pin: { context: fresh.context, profile_revision: 7, pack_version: "research", evaluator_version: "0.1.5", intent_revision: 1 } }; const html = renderToStaticMarkup(createElement(EvaluationCard, { result, onReplay: () => {}, replaying: false, replayed: false })); assert.ok(html.includes("+25 点") && html.includes("单位不同，未相减") && html.includes("实际词条对比") && html.includes("需要补充确认")); assert.ok(!html.includes("当前使用合成示例")); });
   await check("frozen future explanation shows named supporting equipment and declared feasibility", () => {
     const result = { evaluation_id: "future-render", retention: "candidate", comparison: { status: "no_known_change", scope_compatible: true, lost_capabilities: [], gained_capabilities: [], missing_requirements: [], equip_blockers: [], before: [], after: [] }, blockers: [], reasons: [{ kind: "future_use", capability: "archive_shield", actor: "hero", feasibility: "owned", future_build_index: 0, future_equipment: [{ instance_id: "saved-robe", slot: "body", name: "Synthetic robe" }], explanation: "Synthetic future combination", evidence_ids: ["fixture-spec"], input_evidence_ids: ["held-input"] }], pin: { context: demo.facts.context, profile_revision: 1, pack_version: "1.0.0", evaluator_version: "0.1.6", intent_revision: 2 } };

@@ -4,6 +4,8 @@
 mod capture;
 #[cfg(windows)]
 mod game_window;
+#[cfg(windows)]
+mod portable_webview;
 mod supervisor;
 
 use std::path::PathBuf;
@@ -111,6 +113,51 @@ fn capture_deskrawl_region(
         .map_err(str::to_string)
 }
 
+fn configure_portable_webview(
+    directory: &std::path::Path,
+    data: &std::path::Path,
+) -> Result<(), &'static str> {
+    let runtime = directory.join("webview2");
+    if !runtime.join("msedgewebview2.exe").is_file() {
+        return Err("portable_webview_runtime_missing");
+    }
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        // Fixed WebView2 v120+ needs AppContainer read/execute access on Windows 10.
+        // Limit the grants to this package's browser files; no installation is needed.
+        let system = std::env::var_os("SystemRoot")
+            .map(PathBuf::from)
+            .ok_or("system_directory_unavailable")?;
+        let result = std::process::Command::new(system.join("System32/icacls.exe"))
+            .arg(&runtime)
+            .args([
+                "/grant",
+                "*S-1-15-2-2:(OI)(CI)(RX)",
+                "/grant",
+                "*S-1-15-2-1:(OI)(CI)(RX)",
+                "/q",
+            ])
+            .creation_flags(0x08000000)
+            .output()
+            .map_err(|_| "portable_webview_permissions_failed")?;
+        if !result.status.success() {
+            return Err("portable_webview_permissions_failed");
+        }
+    }
+    // Set before Tauri creates any threads or WebView environments.
+    std::env::set_var("WEBVIEW2_BROWSER_EXECUTABLE_FOLDER", runtime);
+    std::env::set_var("WEBVIEW2_USER_DATA_FOLDER", data.join("webview"));
+    for variable in [
+        "WEBVIEW2_WAIT_FOR_SCRIPT_DEBUGGER",
+        "WEBVIEW2_PIPE_FOR_SCRIPT_DEBUGGER",
+        "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
+    ] {
+        std::env::remove_var(variable);
+    }
+    Ok(())
+}
+
 fn main() {
     let policy = option("--startup-policy")
         .map(|value| supervisor::StartupPolicy::parse(&value.to_string_lossy()))
@@ -120,7 +167,18 @@ fn main() {
             std::process::exit(1);
         })
         .unwrap_or_default();
+    let executable_directory = std::env::current_exe()
+        .expect("executable_path_unavailable")
+        .parent()
+        .expect("executable_directory_unavailable")
+        .to_path_buf();
+    let portable = executable_directory.join("portable.json").is_file();
+    let resources =
+        option("--resource-dir").unwrap_or_else(|| executable_directory.join("sidecar"));
     let data = option("--data-dir").unwrap_or_else(|| {
+        if portable {
+            return executable_directory.join("data");
+        }
         let base = std::env::var_os("LOCALAPPDATA")
             .map(PathBuf::from)
             .unwrap_or_else(std::env::temp_dir);
@@ -133,13 +191,6 @@ fn main() {
             eprintln!("choose_one_maintenance_operation");
             std::process::exit(1);
         }
-        let resources = option("--resource-dir").unwrap_or_else(|| {
-            std::env::current_exe()
-                .unwrap()
-                .parent()
-                .unwrap()
-                .join("sidecar")
-        });
         let (operation, other) = if let Some(destination) = backup {
             ("backup", destination)
         } else {
@@ -151,11 +202,13 @@ fn main() {
         }
         return;
     }
-    if std::env::args().any(|value| value == "--headless") {
-        let Some(resources) = option("--resource-dir") else {
-            eprintln!("resource_directory_required");
+    if portable {
+        if let Err(code) = configure_portable_webview(&executable_directory, &data) {
+            eprintln!("{code}");
             std::process::exit(1);
-        };
+        }
+    }
+    if std::env::args().any(|value| value == "--headless") {
         match supervisor::Supervisor::start(&resources, &data, policy) {
             Ok(mut runtime) => {
                 // Readiness is parent IPC, not an application log.
@@ -172,7 +225,6 @@ fn main() {
         }
         return;
     }
-    let resource_override = option("--resource-dir");
     let args: Vec<String> = std::env::args().collect();
     let hidden_ui = args.iter().any(|value| value == "--hidden-ui");
     let browser_args = hidden_browser_args(hidden_ui, &args).unwrap_or_else(|code| {
@@ -182,6 +234,19 @@ fn main() {
     if hidden_ui {
         eprintln!("lootweave_hidden_ui_v1: --hidden-ui enabled");
     }
+    // Tao initializes OLE when it creates a window, after setup has begun.
+    // Keep our STA initialization alive until all Tauri/WebView resources are dropped.
+    #[cfg(windows)]
+    let _portable_com = if portable {
+        Some(
+            portable_webview::StaApartment::initialize().unwrap_or_else(|code| {
+                eprintln!("{code}");
+                std::process::exit(1);
+            }),
+        )
+    } else {
+        None
+    };
     let builder = tauri::Builder::default();
     #[cfg(windows)]
     let builder = builder
@@ -193,9 +258,6 @@ fn main() {
         ]);
     let application = builder
         .setup(move |app| {
-            let resources = resource_override
-                .clone()
-                .unwrap_or(app.path().resource_dir()?.join("sidecar"));
             let runtime = supervisor::Supervisor::start(&resources, &data, policy)
                 .map_err(std::io::Error::other)?;
             if hidden_ui {
@@ -217,6 +279,19 @@ fn main() {
                     .min_inner_size(700.0, 600.0);
             if let Some(ref arguments) = browser_args {
                 window = window.additional_browser_args(arguments);
+            }
+            #[cfg(windows)]
+            if portable {
+                // An explicit environment also works for elevated hosts, which
+                // ignore WEBVIEW2_* variables. Its options must include the flags;
+                // Wry skips environment creation and its browser args in this mode.
+                let environment = portable_webview::create_environment(
+                    &executable_directory.join("webview2"),
+                    &data.join("webview"),
+                    browser_args.as_deref(),
+                )
+                .map_err(std::io::Error::other)?;
+                window = window.with_environment(environment);
             }
             window.build()?;
             if hidden_ui {

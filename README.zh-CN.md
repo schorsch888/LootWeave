@@ -6,13 +6,15 @@
 
 LootWeave 是一个开源的 Windows 本地装备决策助手原型，无需玩家自行填写词条权重。仓库目前包含可运行的本地开发实现；唯一可执行的游戏知识包是合成夹具。Deskrawl 是研究对象，Diablo II、III、IV 仍是未来候选，并按版本和模式隔离规则。
 
+截图录入支持逐行核对：每个非空原文行和未完整对应原文行的解析字段都需明确采用或忽略。可选择已有或自定义词条、修正数值和单位；通用等级不会自动当作穿戴等级，必须明确选择并确认。全部处理后一次性应用到候选装备，同标识词条会由核对值替换，采用的词条关联本次截图依据。新截图会清除核对状态，删除待确认标记也不能绕过核对。OCR 模型、解析算法和 evaluator 0.1.7 保持原样。下方既有安装包支持此前的逐行核对功能，但不含本轮先保存未确认观察的修复。
+
 ## 当前源码核心流程
 
 录入表单现在支持护肩、披风，以及宝石等镶嵌来源。更改或删除镶嵌来源会重置效果核对状态；旧来源、作用者、效果与证据引用会保留。
 
 当前源码启动后显示空白真实档案。结构化表单记录具有唯一 ID 的持有物品、带证据的材料／货币余额，以及玩家核对的技能学习／撤销或装备改造报价。资源、报价和预算均有对应 FSD 表单。报价保留原状态、预计结果、context 与职业、等级／技能上限／解锁要求、成本或未知成本、证据和待确认项。未来计划引用报价 ID，可设置非负整数资源上限。评估器 `0.1.7` 汇总已选报价的已知成本并显示材料缺口和预算超额，同时保留技能真实等级、作用者和效果；未知成本、解锁、版本／输入变化、随机结果或未选入的配套报价均不能视为可行。准备条件可行性与游戏机制结论分开报告。投影仅用于未来计划，不改变当前装备或 build hash。旧档案不会自动补出资源或报价；SQLite 保持 schema v1，无需迁移。Deskrawl 仍为 research-only，DPS 和保留／换装建议均未验收。
 
-**当前本地 Windows 安装包为 `dist/LootWeave-MVP-0.1.0-20261005-preparation-windows-x64-setup.exe`（226,029,750 字节；SHA-256 `cb5574695c048d0754616258136af84577d9f87cd0d2a06fae89f493b7fca9fc`），由源码提交 `2c08e023b6767a0c5ca732abfe941286a84aeefb` 构建，包含 evaluator 0.1.7 和 PR #3 runtime integration，默认仍为 eager。虚构数据下 Rust headless/frozen worker 检查 8 项通过（9.0852 秒），覆盖三状态、资源／预算合计 12、预算 10 超额 2、未知余额为 null、SQLite 档案和评估重启持久化、每个结果重启前后各回放十次且实际装备不变。两轮生命周期 13 项通过（37.175 秒）。524 个 bundle 文件均通过哈希校验，3 个前端文件与 production build 逐字节一致。构建耗时 723.625 秒；Rust 单元检查 31 项通过、3 项忽略（47.164 秒），这三项是 supervisor.rs 子进程 fixture，其他测试通过 --ignored 显式调用；GUI 验收仍未完成，不能由这些忽略项推断。此前四个安装包保持不变。以上是已完成的本地检查；远端 CI 与合并状态记录在本阶段 PR 中。M1/M3 真实机制、GUI、OCR 人工 holdout 和双机发行验收仍未通过。**
+**当前本地 Windows 安装包为 `dist/LootWeave-MVP-0.1.0-20261005-ocr-review-windows-x64-setup.exe`（226,036,621 字节；SHA-256 `b846e6e0dc60c1c136ec547b75ec0108663ea49078029b9ba012e16382074834`），由源码提交 `eb33ccf1d303cf9554735a1d6238878f02c8517c` 构建，已包含逐行截图词条核对和 evaluator 0.1.7，默认仍为 eager。524 个资源文件和 3 个前端文件校验通过。实际 Rust 后台宿主的虚构数据检查：截图词条 6 项通过（6.8597 秒），覆盖原文／时间／证据、带符号及旧 `%` 单位比较、SQLite 重启读取和重启前后各 10 次冻结回放；准备条件 8 项通过（9.1709 秒）；两轮生命周期 13 项通过并回收本任务进程。本地回归：Python 502 项通过、1 项 Windows 符号链接权限跳过，前端核心 44、确认 22、运行时 16、获取来源 27、历史与当前结果渲染 32 项通过，TS/Vite、架构和两个冻结 OCR holdout 检查通过。构建耗时 227.831 秒，此前五个安装包保留。远端 CI 与合并状态记录在阶段 PR；真实机制、可见 GUI、OCR 人工 holdout 和双机发行验收仍未通过。**
 
 此前 `20261005-equipment` 安装包的 `eb1995dc` 宿主通过 `scripts/check_desktop.py --cycles 2` 的 13 项后台生命周期检查（34.563 秒），包括两次正常启动／退出、六项服务故障清理、宿主强制退出后的 Job 回收、重启恢复、重启及来源故障下的冻结回放、实例锁和备份／恢复。34.563 秒为整个检查脚本的耗时，不是启动延迟指标；该检查未测量可见 GUI。 此前源码与安装包证据保留在 [PR #4](https://github.com/schorsch888/LootWeave/pull/4)。
 
@@ -40,13 +42,23 @@ React/TypeScript 前端按 feature-sliced 目录组织于 `frontend/src/{app,pag
 
 ## 使用 Windows MVP
 
-当前安装包为 `dist/LootWeave-MVP-0.1.0-20261005-preparation-windows-x64-setup.exe`。安装后即可使用持有资源、准备报价和未来构筑流程；数据保存在 SQLite，不会修改游戏。此前四个安装包作为历史构建保留。
+现有安装包为 `dist/LootWeave-MVP-0.1.0-20261005-ocr-review-windows-x64-setup.exe`，支持旧版截图字段核对，但由较早的 `eb33ccf1d303cf9554735a1d6238878f02c8517c` 源码构建，不含“先保存未确认观察再核对”的新修复。要使用新源码，请使用下方绿色版 ZIP。
 
-新安装包以空白档案启动。记录材料／货币数量，核对技能或装备准备报价，再将报价加入未来计划，以查看声明的可行性、成本、资源缺口和预算超额。未知要求仍保持未知。这些结果不建立游戏机制或推荐。真实 GUI、真实游戏采集、OCR 人工 holdout 和双机发行验收仍未通过。
+### 绿色版 ZIP（免安装）
+
+该 ZIP 是历史本机构建，不是 GitHub CI Release 工件；未来 CI 发行版本的身份与哈希以其 `build-manifest.json` 和 `SHA256SUMS.txt` 为准。本地绿色版 ZIP 为 `dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip`（324,746,175 字节；SHA-256 `8a6daebcaee74a7fd054a7fe3f704a58f099b9f41dd9ff2435fd5a7ab09e09cb`），应用源码为 `8b3d1b7e4152a86ecb0364119f4f4caea1d4ebc6`。解压到本地可写目录，双击 `LootWeave.exe` 即可运行；同名已解压交付目录也可直接使用，无需安装或管理员权限。构建包内含 Python 和 Microsoft WebView2 Fixed Version 运行时；`portable.json` 标记自动选择同目录 `sidecar/`、`webview2/`、`data/`。SQLite、OCR 截图和浏览器数据保存在 `data/`。移动目录前先退出应用；升级时替换应用／运行时文件并保留 `data/`。普通安装版仍将数据放在 `%LOCALAPPDATA%/LootWeave`。实际 Rust 后台宿主通过 6 项检查：789 项归档文件校验、宿主与服务使用包内 C++ 运行库、同目录 SQLite 保存，以及移动后读取同一档案／评估与各 10 次冻结回放。检查耗时 20.298 秒，构建耗时 219.281 秒；远端被动 WebView 检查记录在阶段 PR。可见 GUI、真实游戏和双机发行验收仍未通过。
+新源码会先将截图保存为未确认观察；重采集、识别失败和手工保存都保留原截图引用，只有人工确认字段后才能写入构筑事实。详见 Microsoft [WebView2 分发说明](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution)。Windows OCR 使用系统语言模型，缺少时仍可手动录入。
+
+现有安装包以空白档案启动，可记录候选／当前装备、逐行核对截图字段后应用并确认保存；它不含先保存观察的本轮修复。绿色版 ZIP 面向包含此修复的新源码流程。SQLite 仍保存档案修订和冻结评估。
+
+
+## GitHub CI 与 Releases
+
+单一 GitHub Actions `checks.yml` 工作流会在 pull request、main 推送和手动 CI dispatch 时运行。Windows 打包成功后，会把 `dist/release/` 中四个文件（安装包、绿色版 ZIP、`build-manifest.json`、`SHA256SUMS.txt`）作为 `lootweave-windows-x64-<commit>` 工件保留 7 天；不包含源码、测试、私有日志或用户数据。仅当目标为 main 的 push 或手动 dispatch 且 `contracts-and-browser` 与 `windows-package` 两项均成功后，`publish-preview` 才会使用同一运行的工件发布 GitHub Release，标签为 `v0.1.0-mvp.<run number>`，并始终标记为预发行版。每个 main 源码提交都有独立预览版；不由标签触发发布。此处是工作流说明，不代表当前 CI 已成功或预览版已发布。纯源码维护无需本机打包。
 
 ## 本地运行
 
-要求：原生 OCR 与桌面打包需使用 Windows；Node.js 24 或更高版本；pnpm 11.19.0；服务使用 Python 3.12 或更高版本（本机验证使用 3.12.14，CI 使用 3.13.16）。Python 运行时服务没有第三方运行依赖。先安装前端依赖并构建，再启动本地开发运行时：
+若要在本机运行开发应用，需要 Windows 原生 OCR、Node.js 24 或更高版本、pnpm 11.19.0 和 Python 3.12 或更高版本。纯源码维护不要求本机打包或编译 Rust；Windows 构建、检查与发行包由 GitHub Actions 处理。需要本机运行开发应用时，再安装前端依赖并构建：
 
 ```powershell
 pnpm --dir frontend install --frozen-lockfile

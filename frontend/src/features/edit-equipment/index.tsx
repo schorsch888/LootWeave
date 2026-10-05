@@ -2,9 +2,9 @@ import { useState } from "react";
 import { isExactCount, newId } from "../../shared/api";
 import { SourceFields, SourceList } from "../../entities/build-source";
 import type { Item, PreparationOption, Snapshot } from "../../shared/api";
-import { canMapField, emptyItem, slots, statLabels, unitLabels } from "./model";
-import type { ObservedItemField } from "./model";
-export { emptySnapshot, mapItemField } from "./model";
+import { emptyItem, observationRows, reviewTarget, slots, statLabels, unitLabels, validReviewedItemField } from "./model";
+import type { ObservedItemField, ObservationRow, ReviewedItemField } from "./model";
+export { emptySnapshot, mapItemField, mapReviewedItemFields } from "./model";
 
 const entries = (text: string) => [...new Set(text.split(/[,，\n]/).map(x => x.trim()).filter(Boolean))];
 const numeric = (text: string) => text.trim() ? Number(text) : Number.NaN;
@@ -70,10 +70,54 @@ export function EquipmentEditor({ facts, onChange }: { facts: Snapshot; onChange
   </>;
 }
 
-export function ObservationFields({ fields, onApply, onReviewed }: { fields: ObservedItemField[]; onApply: (field: ObservedItemField) => void; onReviewed: () => void }) {
-  return <div className="ocr-fields"><h3>核对识别字段</h3><p className="muted">确认字段含义后填入候选物品。通用等级可能是物品、角色或穿戴等级，只有确认是穿戴要求后才能填入；有歧义的内容请手动改正。</p>
-    {fields.map((field, index) => <div className="observation-row" key={index}><span>{field.field === "level" ? "等级（含义待确认）" : statLabels[field.field] || field.field}：{field.value ?? "数值未知"} {unitLabels[field.unit || ""] || field.unit || "单位未知"}{field.ambiguous ? " · 存在歧义" : ""}</span><button type="button" disabled={!canMapField(field)} onClick={() => onApply(field)}>{field.field === "level" ? "确认是穿戴要求，填入穿戴等级" : "填入候选物品"}</button></div>)}
-    <button type="button" onClick={onReviewed}>已逐项核对，未使用字段已手动处理或忽略</button>
+type RowDraft = { target: string; customId: string; value: string; unit: string; customUnit: string; state: "pending" | "mapped" | "ignored" };
+const initialRowDraft = (row: ObservationRow): RowDraft => {
+  const field = row.proposal;
+  const target = field && ["vitality", "armor"].includes(field.field) ? field.field : "";
+  const unit = field?.unit || "";
+  return { target, customId: "", value: field?.value !== null && field?.value !== undefined && Number.isFinite(field.value) ? String(field.value) : "",
+    unit: unitLabels[unit] ? unit : unit ? "custom" : "", customUnit: unit, state: "pending" };
+};
+const reviewedRow = (draft: RowDraft): ReviewedItemField => draft.target === "required_level"
+  ? { kind: "required_level", value: numeric(draft.value) }
+  : { kind: "affix", id: draft.target === "custom" ? draft.customId.trim() : draft.target,
+      value: numeric(draft.value), unit: draft.unit === "custom" ? draft.customUnit.trim() : draft.unit };
+
+export function ObservationFields({ fields, rawText, onReviewed }: { fields: ObservedItemField[]; rawText: string; onReviewed: (fields: ReviewedItemField[]) => boolean }) {
+  const [drafts, setDrafts] = useState<Record<string, RowDraft>>({});
+  const [applied, setApplied] = useState(false);
+  const rows = observationRows(rawText, fields);
+  const draftFor = (row: ObservationRow) => drafts[row.key] || initialRowDraft(row);
+  const mapped = rows.filter(row => draftFor(row).state === "mapped").map(row => reviewedRow(draftFor(row)));
+  const handled = rows.filter(row => draftFor(row).state !== "pending").length;
+  const duplicated = new Set(mapped.map(reviewTarget)).size !== mapped.length;
+  const canApply = handled === rows.length && !duplicated && mapped.every(validReviewedItemField);
+  const change = (row: ObservationRow, patch: Partial<RowDraft>) => {
+    if (!applied) setDrafts(previous => ({ ...previous, [row.key]: { ...(previous[row.key] || initialRowDraft(row)), ...patch } }));
+  };
+  return <div className="ocr-fields"><h3>逐行核对截图内容</h3>
+    <p className="muted">按原图为每行选择实际词条、核对数值和单位，或明确忽略。等级只有确认是穿戴要求后才能采用；未解析的内容也需要处理。全部核对后一次性填入候选装备，同名词条会被替换。</p>
+    <p role="status">已处理 {handled} / {rows.length} 行{applied ? " · 已应用到候选装备" : " · 尚未应用"}</p>
+    {rows.map((row, index) => {
+      const draft = draftFor(row), field = reviewedRow(draft);
+      const update = (patch: Partial<RowDraft>) => change(row, { ...patch, state: "pending" });
+      const prefix = "第 " + (index + 1) + " 行";
+      return <div className="observation-row review-row" key={row.key} data-review-key={row.key}>
+        <p className="ocr-original-line">{prefix}原文：<samp>{row.rawText || "未识别到可用文字；请根据原图手动录入，或忽略本次采集。"}</samp>{row.proposal?.ambiguous && <span className="warning"> · 解析存在歧义，请核对原图。</span>}</p>
+        <fieldset disabled={applied} className="fields">
+          <label>字段<select aria-label={prefix + "字段"} value={draft.target} onChange={e => update({ target: e.target.value })}><option value="">请选择字段</option>{Object.entries(statLabels).map(([id, name]) => <option key={id} value={id}>{name}</option>)}<option value="required_level">穿戴等级（需核对含义）</option><option value="custom">其他词条</option></select></label>
+          {draft.target === "custom" && <label>词条标识<input aria-label={prefix + "自定义词条标识"} maxLength={100} value={draft.customId} onChange={e => update({ customId: e.target.value })}/></label>}
+          <label>核对数值<input aria-label={prefix + "数值"} type="number" step={draft.target === "required_level" ? "1" : "any"} value={draft.value} onChange={e => update({ value: e.target.value })}/></label>
+          {draft.target !== "required_level" && <label>单位<select aria-label={prefix + "单位"} value={draft.unit} onChange={e => update({ unit: e.target.value })}><option value="">请选择单位</option>{Object.entries(unitLabels).map(([id, name]) => <option key={id} value={id}>{name}</option>)}<option value="custom">其他单位</option></select></label>}
+          {draft.target !== "required_level" && draft.unit === "custom" && <label>单位名称<input aria-label={prefix + "自定义单位"} maxLength={40} value={draft.customUnit} onChange={e => update({ customUnit: e.target.value })}/></label>}
+          <button type="button" disabled={!validReviewedItemField(field)} onClick={() => { if (validReviewedItemField(field)) change(row, { state: "mapped" }); }}>{draft.target === "required_level" ? "确认是穿戴要求，采用这一行" : "核对后采用这一行"}</button>
+          <button type="button" onClick={() => change(row, { state: "ignored" })}>忽略这一行</button>
+        </fieldset>
+        <span className="muted">{draft.state === "mapped" ? "已选择采用" : draft.state === "ignored" ? "已明确忽略" : "待处理"}</span>
+      </div>;
+    })}
+    {duplicated && <p className="warning">同一字段有多行，请合并或忽略重复行后再应用。</p>}
+    <button type="button" disabled={applied || !canApply} onClick={() => { if (!applied && canApply && onReviewed(mapped)) setApplied(true); }}>应用核对结果并完成</button>
   </div>;
 }
 

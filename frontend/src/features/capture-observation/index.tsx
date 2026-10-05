@@ -43,7 +43,7 @@ export type CaptureObservation = {
   bounds: Bounds;
   raw_text: string;
   language: string;
-  fields: { field: string; value: number | null; unit: string | null; ambiguous: boolean }[];
+  fields: { field: string; value: number | null; unit: string | null; ambiguous: boolean; raw_text?: string }[];
   requires_confirmation: boolean;
   capture_context?: CaptureContext;
   error?: string;
@@ -246,8 +246,21 @@ export function CaptureObservationForm({ gameId, contextKey, onCaptured, onError
         onError("捕获来源或范围已变化，已丢弃这次结果；请重新选择并捕获。");
         return;
       }
-      setPreview({ src: "data:image/bmp;base64," + image.image_base64, observation });
-      onCaptured({ ...observation, ...(image.capture_context ? { capture_context: image.capture_context } : {}) });
+      const captured = { ...observation, ...(image.capture_context ? { capture_context: image.capture_context } : {}) };
+      try {
+        // Keep original observations durable before any draft can reference them.
+        await api("profile/observations", captured);
+      } catch {
+        if (mounted.current) onError("截图依据保存失败，请重试采集；文本输入仍可用。");
+        return;
+      }
+      if (!mounted.current) return;
+      if (currentSourceRef.current !== sourceAtStart) {
+        onError("捕获来源或范围已变化，已丢弃这次结果；请重新选择并捕获。");
+        return;
+      }
+      setPreview({ src: "data:image/bmp;base64," + image.image_base64, observation: captured });
+      onCaptured(captured);
       if (observation.error) onError("此语言的识别暂不可用，请通过原始文本和完整构筑手动确认。");
     } catch (error) {
       if (!mounted.current) return;
