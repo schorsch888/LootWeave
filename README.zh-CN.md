@@ -42,11 +42,11 @@ React/TypeScript 前端按 feature-sliced 目录组织于 `frontend/src/{app,pag
 
 ## 使用 Windows MVP
 
-现有安装包为 `dist/LootWeave-MVP-0.1.0-20261005-ocr-review-windows-x64-setup.exe`，支持旧版截图字段核对，但由较早的 `eb33ccf1d303cf9554735a1d6238878f02c8517c` 源码构建，不含“先保存未确认观察再核对”的新修复。要使用该源码改动，请按下方说明构建绿色版 ZIP。
+现有安装包为 `dist/LootWeave-MVP-0.1.0-20261005-ocr-review-windows-x64-setup.exe`，支持旧版截图字段核对，但由较早的 `eb33ccf1d303cf9554735a1d6238878f02c8517c` 源码构建，不含“先保存未确认观察再核对”的新修复。要使用新源码，请使用下方绿色版 ZIP。
 
 ### 绿色版 ZIP（免安装）
 
-绿色版 ZIP 目标路径为 `dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip`。构建完成后解压到本地可写目录，双击 `LootWeave.exe` 即可运行，无需安装或管理员权限。构建包内含 Python 和 Microsoft WebView2 Fixed Version 运行时；`portable.json` 标记自动选择同目录 `sidecar/`、`webview2/`、`data/`。SQLite、OCR 截图和浏览器数据保存在 `data/`。移动目录前先退出应用；升级时替换应用／运行时文件并保留 `data/`。普通安装版仍将数据放在 `%LOCALAPPDATA%/LootWeave`。本段是构建使用说明，不代表 ZIP 已验收。
+本地绿色版 ZIP 为 `dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip`（324,746,175 字节；SHA-256 `8a6daebcaee74a7fd054a7fe3f704a58f099b9f41dd9ff2435fd5a7ab09e09cb`），应用源码为 `8b3d1b7e4152a86ecb0364119f4f4caea1d4ebc6`。解压到本地可写目录，双击 `LootWeave.exe` 即可运行；同名已解压交付目录也可直接使用，无需安装或管理员权限。构建包内含 Python 和 Microsoft WebView2 Fixed Version 运行时；`portable.json` 标记自动选择同目录 `sidecar/`、`webview2/`、`data/`。SQLite、OCR 截图和浏览器数据保存在 `data/`。移动目录前先退出应用；升级时替换应用／运行时文件并保留 `data/`。普通安装版仍将数据放在 `%LOCALAPPDATA%/LootWeave`。实际 Rust 后台宿主通过 6 项检查：789 项归档文件校验、宿主与服务使用包内 C++ 运行库、同目录 SQLite 保存，以及移动后读取同一档案／评估与各 10 次冻结回放。检查耗时 20.298 秒，构建耗时 219.281 秒；远端被动 WebView 检查记录在阶段 PR。可见 GUI、真实游戏和双机发行验收仍未通过。
 新源码会先将截图保存为未确认观察；重采集、识别失败和手工保存都保留原截图引用，只有人工确认字段后才能写入构筑事实。详见 Microsoft [WebView2 分发说明](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution)。Windows OCR 使用系统语言模型，缺少时仍可手动录入。
 
 现有安装包以空白档案启动，可记录候选／当前装备、逐行核对截图字段后应用并确认保存；它不含先保存观察的本轮修复。绿色版 ZIP 面向包含此修复的新源码流程。SQLite 仍保存档案修订和冻结评估。

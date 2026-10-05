@@ -102,8 +102,8 @@ def verify_local_crt(app, directory):
             expect(api.GetModuleFileNameExW(process.handle, module, name, len(name)), "portable_module_path_unavailable")
             path = Path(name.value).resolve()
             if path.name.lower() in ("vcruntime140.dll", "vcruntime140_1.dll"):
-                expected = directory if process is app.host_handle else directory / "sidecar"
-                expect(path.parent == expected.resolve(), "portable_crt_loaded_outside_package")
+                expected = [directory] if process is app.host_handle else [directory / "sidecar", directory / "sidecar/_internal"]
+                expect(path.parent in [folder.resolve() for folder in expected], "portable_crt_loaded_outside_package")
                 loaded.add(path.name.lower())
         if process is app.host_handle:
             expect(loaded == {"vcruntime140.dll", "vcruntime140_1.dll"}, "portable_host_crt_missing")
