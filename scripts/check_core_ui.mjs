@@ -464,6 +464,17 @@ try {
   await check("optional readiness updates preserve the edited profile identity and draft", () => { const before = component(render(), "ConfirmSnapshot").props; publishStatus({ ...ready, services: { ...ready.services, ocr: { state: "ready", generation: 2 } } }); const after = component(render(), "ConfirmSnapshot").props; assert.equal(after.facts, before.facts); assert.equal(after.profileId, before.profileId); assert.equal(after.revision, before.revision); assert.equal(after.draftApplied, before.draftApplied); });
   await check("pending operations disable profile and history switches", () => { component(render(), "ConfirmSnapshot").props.onBusyChange(true); assert.equal(component(render(), "ProfileLibrary").props.busy, true); assert.equal(component(render(), "EvaluationHistory").props.disabled, true); assert.equal(button(render(), "新建真实录入").props.disabled, true); component(render(), "ConfirmSnapshot").props.onBusyChange(false); });
   await check("source-clock conflicts remain unconfirmed after reopening", () => { component(render(), "ProfileLibrary").props.onOpen({ profile_id: "clock-fixture", revision: 2, facts: fresh, build_hash: "hash", facts_hash: "facts", observation_time_status: "conflict" }); assert.equal(button(render(), "解释保留价值与换装变化 →").props.disabled, true); });
+  await check("source selection opens the selected workflow and keeps API confirmation pending", () => {
+    const source = value => find(render(), node => node.type === "input" && node.props.name === "input-source" && node.props.value === value);
+    assert.equal(source("text").props.checked, true);
+    source("api").props.onChange();
+    assert.equal(source("api").props.checked, true);
+    assert.ok(component(render(), "ImportLiveData"));
+    assert.equal(component(render(), "ConfirmSnapshot").props.draftApplied, false);
+    source("ocr").props.onChange();
+    assert.equal(source("ocr").props.checked, true);
+    assert.ok(component(render(), "CaptureObservationForm"));
+  });
   await check("capture import retains its clock and leaves fields pending", () => { const capture = { observation_id: "fixture-capture", fields: [{ field: "vitality", value: 65, unit: "points", ambiguous: false }], raw_text: "Vitality +65", capture_context: { game_id: "deskrawl", captured_at_ms: 1767225600123 } }; component(render(), "CaptureObservationForm").props.onCaptured(capture); const facts = component(render(), "EquipmentEditor").props.facts; const evidence = facts.evidence.find(e => e.source_ref === "observation://fixture-capture"); assert.equal(evidence.captured_at, "2026-01-01T00:00:00.123Z"); assert.deepEqual(facts.candidate_item.affixes, []); assert.ok(facts.unknowns.includes("ocr_fields_not_mapped")); });
   await check("editing unknown markers cannot bypass capture review and successful mapping binds only the candidate", () => {
     const original = component(render(), "EquipmentEditor").props.facts;

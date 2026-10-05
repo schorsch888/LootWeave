@@ -67,6 +67,8 @@ jobs:
         run: pnpm --dir frontend exec playwright install --with-deps chromium
       - name: Verify keyboard, confirmation, replay and responsive flows
         run: pnpm --dir frontend check:ui
+      - name: Verify owned live API sender, file input and views with fictional data
+        run: pnpm --dir frontend check:live
 
   windows-package:
     runs-on: windows-latest

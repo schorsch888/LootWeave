@@ -26,7 +26,7 @@ Rust owns native desktop operations and the lifetime of desktop service processe
 | Rust host: [main.rs](../desktop/src/main.rs), [supervisor.rs](../desktop/src/supervisor.rs) | Desktop entry, portable paths, session credentials, instance lock, bundle integrity, service startup/readiness, and bounded process cleanup | Game rules, OCR field interpretation, domain storage, or a second evaluator |
 | Rust capture: [capture.rs](../desktop/src/capture.rs), [game_window.rs](../desktop/src/game_window.rs) | Region/window selection, passive OS metadata checks, capture geometry, and source information | Game-memory access, gameplay control, verified game-build inference, or confirmed item facts |
 | Python OCR: [services/ocr](../services/ocr/) | Private captures, bounded Windows OCR helper calls, raw text/regions, and unconfirmed observations | Profile confirmation, item value, or game rules |
-| Python Profile: [services/profile](../services/profile/) | Observations, confirmed item/build/inventory facts, revisions, and `profile.sqlite3` | Pack changes, equipment recommendations, or another service's database |
+| Python Profile: [services/profile](../services/profile/) | Local API observations, descriptive observation summaries, confirmed item/build/inventory facts, revisions, and `profile.sqlite3` | Pack changes, equipment recommendations, route rankings, or another service's database |
 | Python GameKnowledge: [services/knowledge](../services/knowledge/) | Immutable packs with explicit game scope, evidence, validation, pack index, and content hashes | Player-owned item instances, Profile revisions, or invented rules |
 | Python EquipmentEvaluation: [services/evaluation](../services/evaluation/) | Complete-build comparison, eligibility/retention explanations, evaluator versions, frozen replay, and `evaluation.sqlite3` | Profile changes, published pack changes, or assumed mechanics |
 | Python AcquisitionPlanning: [services/planning](../services/planning/) | Measured XP/time trials, source prerequisites, sample estimates, and `planning.sqlite3` | Evaluation ownership, raw weights as drop probabilities, or an unmeasured global optimum |
@@ -59,6 +59,7 @@ Python may use OS facilities for OCR, helper cleanup, and maintenance. Rust may 
 | Planning | Knowledge `/v1/...` | Read versioned source/eligibility evidence, while Planning owns trials and samples |
 | Rust supervisor | Frozen Python entry points | CLI/environment configuration, private readiness pipes, authenticated health checks, and process lifetime |
 | OCR | [windows_ocr.ps1](../scripts/windows_ocr.ps1) | Bounded Windows recognition inside the OCR process scope, without confirmation or game rules |
+| Owned producer or frontend | Gateway → Profile `POST /v1/live/samples` | Authenticated observation input, without automatic confirmation or new network listeners |
 
 Profile, Knowledge, and OCR do not call other business services. Do not read another owner's database or pack directory. Evaluation and Planning obtain packs through Knowledge.
 
@@ -67,6 +68,33 @@ Business services run in separate processes and use HTTP APIs. The Rust host doe
 The data flow is capture/manual input → observation → user confirmation → Profile revision → compatible KnowledgePack → pinned Evaluation request → explanation/replay.
 
 The UI submits these steps. OCR and the gateway must not promote observations to confirmed facts. Planning has a separate workflow.
+
+### Owned live API input
+
+Profile owns the `lootweave-live/1` model, validation, descriptive summaries, observation storage, and draft conversion.
+Producers and the frontend call Profile through the existing authenticated gateway. Profile makes no outbound request for live observations.
+The [protocol guide](live-api.md) defines the input contract. The API does not automatically obtain game data.
+
+Rust retains native capture, desktop operations, and service lifetime. Python retains validation, statistics, and storage.
+React presents results and manages explicit review. No extra listener, supervisor, interpreter embedding, or foreign database access is introduced.
+
+Profile owns separate sample and frozen-preview caches. Each retains at most 16 entries and eight MiB for 600 seconds.
+These bounds describe encoded cache content, not total process memory. Sample publication and polling do not write SQLite.
+Draft conversion saves the frozen source observation. Explicit confirmation creates a normal revision with existing replay pins.
+
+The read response can omit unchanged values after a content-hash check. Ten views share one observation.
+Python describes supplied events and records. Planning still owns accepted trials, comparable outcomes, and route analysis.
+Source estimates and future previews remain separate from confirmed build facts. Missing data remains unknown.
+
+The producer declares game context and field units. Only held equipment can become a candidate.
+Future drops and unopened chest contents cannot establish ownership. Source time, class, context, and draft hashes bind confirmation.
+Later samples cannot replace a selected draft or earlier confirmed revision. The frontend checks source ID and hash before loading a draft.
+
+The owned API replaces earlier external connection routes. Port and pairing-token fields are rejected.
+Storage version 1 remains unchanged. Historical observations and revisions retain their original bytes and evidence support.
+
+Rollback must retain support for `live_api_confirmation` where those revisions exist. Older services cannot validate that evidence kind.
+Tests cover authentication, bounded input, source ordering, context binding, unknown statistics, duplicate instances, immutable previews, and confirmation retries.
 
 ### Wire and data rules
 

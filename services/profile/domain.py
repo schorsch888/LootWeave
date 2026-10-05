@@ -180,7 +180,7 @@ def snapshot(value: dict) -> dict:
         require(evidence_id not in known, "duplicate_evidence_id")
         known.add(evidence_id)
         require(record.get("verification") == "confirmed", "unconfirmed_fact")
-        require(record.get("kind") in ("manual_confirmation", "synthetic", "ocr_confirmation"),
+        require(record.get("kind") in ("manual_confirmation", "synthetic", "ocr_confirmation", "external_api_confirmation", "live_api_confirmation"),
                 "unsupported_input_method")
         require(isinstance(record.get("source_ref"), str) and 0 < len(record["source_ref"]) <= 500,
                 "evidence_source_required")
@@ -280,3 +280,8 @@ def ensure_observation_binding(observation: dict, facts: dict) -> None:
                 and capture.get("game_id") == facts["context"]["game_id"],
                 "observation_game_conflict")
     require(observation_time_status(observation, facts) != "conflict", "observation_time_conflict")
+    if observation.get("method") in ("external_api", "live_api"):
+        require(observation.get("declared_context") == facts["context"], "observation_context_conflict")
+        require(observation.get("declared_class") == facts["class_id"], "observation_class_conflict")
+        require(timestamp(facts["captured_at"]) == observation_capture_time(observation),
+                "observation_time_conflict")

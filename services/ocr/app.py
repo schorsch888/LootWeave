@@ -84,6 +84,9 @@ class OCR:
 
     def recognize(self, body):
         identifier(body.get("observation_id"))
+        origin = body.get("image_origin")
+        require(origin in (None, "file"), "invalid_image_origin")
+        require(origin != "file" or "capture_context" not in body, "image_file_capture_context_conflict")
         require(isinstance(body.get("image_base64"), str), "image_required")
         language = body.get("language", "en-US")
         require(isinstance(language, str) and re.fullmatch(r"[A-Za-z]{2,8}(?:-[A-Za-z0-9]{2,8}){0,2}", language)
@@ -112,6 +115,8 @@ class OCR:
                   "image_ref": "capture://" + image_hash, "image_hash": image_hash,
                   "bounds": bounds, "language": language, "raw_text": "", "fields": [],
                   "lines": [], "requires_confirmation": True}
+        if origin == "file":
+            result.update({"image_origin": "file", "source_capture_time": "unknown"})
         if context is not None:
             result["capture_context"] = context
         if not self.enabled:

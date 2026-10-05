@@ -4,6 +4,64 @@ This record preserves dated developer-machine observations, not release acceptan
 
 Start with the [portable build record](#portable-build-record), [OCR-review installer](#ocr-review-build-record), [preparation history](#preparation-build-record), [owned-equipment history](#owned-equipment-build-record), [runtime experiment](#runtime-performance-experiment-2026-10-05), and [open gates](#open-gates). Reproduction commands and prerequisites are in the [development guide](development.md#validate-a-change) and [research guide](research.md).
 
+## Owned live API input (2026-10-05)
+
+These checks used Linux, Python 3.12.14, Node 24.19.0, and pnpm 11.19.0.
+The final Python suite ran 571 tests in 18.371 seconds. It passed 561 tests and skipped ten Windows-specific tests.
+The 23 owned API cases cover authenticated HTTP, sample ordering, bounded caches, source binding, unknown fields, statistics, and frozen confirmation.
+
+| Check | Current result |
+| --- | --- |
+| TypeScript and production frontend build | Passed, 39 modules |
+| Core UI | 49 cases passed |
+| Confirmation UI | 23 cases passed |
+| Capture UI | Seven cases passed |
+| Acquisition UI | 27 cases passed |
+| Evaluation rendering | 32 cases passed |
+| Frontend runtime | 16 cases passed |
+| Existing browser workflows | 23 application flows and six simulated native flows passed |
+| Owned API browser workflows | Six groups passed with the actual local runtime and fictional observations |
+| Architecture check | Zero findings |
+| Public-document check | 224 text files, zero findings |
+| Python compilation and whitespace checks | Passed |
+
+The owned browser check starts no external assistant or fictional external server.
+It covers OCR/API selection, authenticated sample input, the sender script, JSON files, ten views, and bounded pagination.
+It checks compact unchanged replies, hidden-page pauses, changed values, candidate pauses, hash mismatch, explicit confirmation, and stop-on-scope-failure behavior.
+The visibility check simulates `document.hidden`. It does not establish native Windows background-window behavior.
+
+Actual SQLite reads verify that publication and polling save no observations or revisions.
+Draft loading saves its frozen source. Later samples and explicit refresh preserve the edited draft.
+Confirmation requires the current source association. Saved revisions remain unchanged after failures and source switching.
+
+Known zero resource counts enter drafts. Unknown item flags and missing slots remain unknown.
+Source estimates and unheld previews stay outside confirmed facts.
+
+The final owned browser run is `145d5d3a-ab97-4797-ade7-12c323435f64` under ignored `.local/live-import-check`.
+The existing browser run is `3f4aaaa6-ad45-43d6-af8e-6915ecc984c8` under ignored `.local/ui-check`.
+Both use fictional inputs. Desktop and mobile screenshots remain local.
+
+| Current frontend artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| Owned API JavaScript | 379696 | `c5235842dd14adce7abf27c4d5809c709c38c0690a77d64f4db755ad5e7f0ed5` |
+| Owned API CSS | 9265 | `464627071fc28498236ab9537e6745e837c8c4c25110db28c912fd40a3c83b93` |
+
+The [coverage record](live-feature-coverage.md#current-owned-api-response-sizes) records separate body-size measurements for the current protocol.
+For 1500 fictional held records, the full response was 843288 bytes. The unchanged response was 555 bytes, a 99.93% reduction.
+These body sizes do not establish CPU, total memory, frame-rate, or end-to-end latency gains.
+
+Initial browser attempts lacked the configured browser path or used incorrect locators. Final runs used the existing pinned Chromium installation.
+An added overflow fixture first included other complete runs, so its combined rate did not overflow.
+The corrected single-run fixture verifies rejection of non-finite or unreliable rate results.
+
+Earlier failed reports remain local. Current passing results do not erase them.
+
+Rust retains native capture, desktop entry, and process lifetime. Python retains APIs, validation, descriptive statistics, and storage.
+No Rust product code changed. No matching Windows package was built during this change.
+Automatic game collection, official game API integration, complete mechanics, and Windows real-game acceptance remain unimplemented or unverified.
+
+Sentence and paragraph checks were performed. The complete STE dictionary check remains incomplete.
+
 ## Portable build record
 
 Recorded for the 2026-10-05 portable build. This is a historical local artifact, not a GitHub CI Release. Its original measurements are retained here; packaging was not repeated during this documentation review.
@@ -553,3 +611,20 @@ The fresh Python suite ran 443 cases in 51.713 s: 442 passed and one Windows sym
 Default eager and explicit on-demand each passed 20 fresh-state start/exit cycles and all 13 lifecycle/fault/history/authentication/backup/recovery gates. Hidden passive WebView passed 20 cycles on installed WebView2 154.0.4258.53, with a minimum reported idle count of 19 owned processes (the unchanged required minimum is eight), readiness P95 7.4588 s, maximum summed idle working set 629.84 MiB and private commit 371.58 MiB. All five host/manifest/installer/JavaScript/CSS identities matched before and after the gates.
 
 These are warm developer-machine functional checks, include CDP-client cost and may double-count shared working-set pages. They are not the predeclared headless comparison or visible cold-start acceptance. Original cohort bytes and failures remain unchanged, no new comparative attempt was substituted, and no game source checks or image reconstruction were performed. M4 still requires visible cold-GUI, two clean Windows environments, offline installation/removal and independent release review. Hosted CI must pass at the final PR head before merge.
+
+## Screenshot file import (2026-10-06)
+
+Local uncompressed BMP files enter the existing OCR and Profile observation flow.
+The UI validates size and pixel bounds. Python validates the input again and stores the original pixels.
+File observations cannot claim native window capture context. Unknown screenshot times remain unknown.
+
+After integration with the current main branch, the suite ran 576 tests in 18.557 seconds.
+It passed 566 tests and skipped 10 Windows-only tests.
+Three new tests cover original-byte storage, unknown provenance, and invalid source declarations.
+Nine direct capture-handler checks passed, including file import without native calls and invalid BMP rejection.
+Confirmation checks passed 23 cases. Core UI checks passed 49 cases.
+After main integration, browser checks passed 23 application flows and six simulated native flows.
+The owned API browser checks passed six groups before main integration.
+The frontend build, architecture checks, public document checks, and script compilation passed.
+These checks do not establish Windows OCR or real Deskrawl online acceptance.
+Full STE dictionary review remains incomplete.

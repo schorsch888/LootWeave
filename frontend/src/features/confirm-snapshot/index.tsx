@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { api, newId } from "../../shared/api";
-import type { Snapshot } from "../../shared/api";
+import type { ExternalObservation, Snapshot } from "../../shared/api";
 
 type Capture = { observation_id: string; method: string; image_ref: string; bounds: Record<string, number>; raw_text: string; capture_context?: { game_id: string; captured_at_ms?: number } };
-type Props = { onBusyChange: (busy: boolean) => void; draftApplied: boolean; captureReviewed?: boolean; capture?: Capture; facts: Snapshot; rawText: string; profileId: string; revision: number; onConfirmed: (revision: number, confirmed: Snapshot, buildHash: string) => void; onError: (message: string) => void };
+type Props = { onBusyChange: (busy: boolean) => void; draftApplied: boolean; captureReviewed?: boolean; capture?: Capture; externalObservation?: ExternalObservation; facts: Snapshot; rawText: string; profileId: string; revision: number; onConfirmed: (revision: number, confirmed: Snapshot, buildHash: string) => void; onError: (message: string) => void };
 
-export function ConfirmSnapshot({ onBusyChange, draftApplied, captureReviewed = false, capture, facts, rawText, profileId, revision, onConfirmed, onError }: Props) {
-  const sourceGame = capture?.capture_context?.game_id;
-  const sourceMatches = !sourceGame || sourceGame === facts.context.game_id;
+export function ConfirmSnapshot({ onBusyChange, draftApplied, captureReviewed = false, capture, externalObservation, facts, rawText, profileId, revision, onConfirmed, onError }: Props) {
+  const input = capture || externalObservation;
+  const sourceGame = input?.capture_context?.game_id;
+  const contextKey = (value: Snapshot["context"]) => JSON.stringify(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)));
+  const sourceMatches = (!sourceGame || sourceGame === facts.context.game_id) && (!externalObservation ||
+    contextKey(externalObservation.declared_context) === contextKey(facts.context) && externalObservation.declared_class === facts.class_id);
   const reviewComplete = !capture || captureReviewed;
-  const captureMs = capture?.capture_context?.captured_at_ms;
+  const captureMs = input?.capture_context?.captured_at_ms;
   const capturedAt = typeof captureMs === "number" && Number.isSafeInteger(captureMs) && captureMs > 0
     && captureMs <= 253402300799999 ? new Date(captureMs).toISOString() : undefined;
   const [checked, setChecked] = useState(false);
@@ -19,20 +22,20 @@ export function ConfirmSnapshot({ onBusyChange, draftApplied, captureReviewed = 
     if (!checked || busy || !draftApplied || !sourceMatches || !reviewComplete) return;
     setBusy(true);
     onBusyChange(true);
-    const key = JSON.stringify({ capture, facts, rawText, profileId, revision });
-    const request = pending?.key === key ? pending : { key, observationId: capture?.observation_id || newId("text"), requestId: newId("confirm"), inputEvidenceId: newId("input") };
+    const key = JSON.stringify({ capture, externalObservation, facts, rawText, profileId, revision });
+    const request = pending?.key === key ? pending : { key, observationId: input?.observation_id || newId("text"), requestId: newId("confirm"), inputEvidenceId: newId("input") };
     setPending(request);
     try {
-      await api("profile/observations", capture ? { ...capture, raw_text: capture.raw_text } : { observation_id: request.observationId, method: "text", raw_text: rawText });
+      if (!externalObservation) await api("profile/observations", capture ? { ...capture, raw_text: capture.raw_text } : { observation_id: request.observationId, method: "text", raw_text: rawText });
       const confirmed = structuredClone(facts);
       const sourceRef = "observation://" + request.observationId;
       const addRefs = (value: { evidence_ids: string[] }, ids: string[]) => {
         value.evidence_ids = [...new Set([...value.evidence_ids, ...ids])];
       };
-      if (capture) {
+      if (input) {
         let linked = confirmed.evidence.filter(evidence => evidence.source_ref === sourceRef);
         if (!linked.length) {
-          const evidence = { id: request.inputEvidenceId, kind: "ocr_confirmation", source_ref: sourceRef,
+          const evidence = { id: request.inputEvidenceId, kind: externalObservation ? "live_api_confirmation" : "ocr_confirmation", source_ref: sourceRef,
             captured_at: capturedAt || facts.captured_at, verification: "confirmed", conflicts: [] };
           confirmed.evidence.push(evidence);
           linked = [evidence];
@@ -80,7 +83,7 @@ export function ConfirmSnapshot({ onBusyChange, draftApplied, captureReviewed = 
     }
   };
   return <div className="confirmation">
-    {capturedAt && <p className="muted">原始截图采集时间（UTC）：<time dateTime={capturedAt}>{capturedAt}</time>。请将这份截图的关联依据记在该时点；其他时点的来源应保留原时间。</p>}
+    {capturedAt && <p className="muted">原始{externalObservation ? " API 数据" : "截图"}采集时间（UTC）：<time dateTime={capturedAt}>{capturedAt}</time>。请将关联依据记在该时点；其他时点的来源应保留原时间。</p>}
     {!sourceMatches && <p className="warning">采集来源为 {sourceGame}，请先核对游戏范围，再确认快照。</p>}
     {!reviewComplete && <p className="warning">请先逐行采用或忽略截图内容，并应用核对结果。</p>}
     {!draftApplied && <p className="warning">请先应用完整构筑修改，再确认快照。</p>}

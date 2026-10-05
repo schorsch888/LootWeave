@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { api, newId, sessionCredential } from "../../shared/api";
+import { ImageFileError, readBmpFile } from "./image-file";
 
 type Bounds = { x: number; y: number; width: number; height: number };
 type WindowStatus = "ready" | "background" | "minimized" | "hidden" | "window_unavailable";
@@ -47,6 +48,8 @@ export type CaptureObservation = {
   requires_confirmation: boolean;
   capture_context?: CaptureContext;
   error?: string;
+  image_origin?: "file";
+  source_capture_time?: "unknown";
 };
 
 const windowStatusText: Record<WindowStatus, string> = {
@@ -117,6 +120,8 @@ export function CaptureObservationForm({ gameId, contextKey, onCaptured, onError
   const [countdown, setCountdown] = useState(0);
   const [preview, setPreview] = useState<{ src: string; observation: CaptureObservation }>();
   const mounted = useRef(true);
+  const pendingCapture = useRef(false);
+  const fileInput = useRef<HTMLInputElement | null>(null);
   const detectionGeneration = useRef(0);
   const previousContext = useRef(`${gameId}\n${contextKey}`);
   const currentContext = `${gameId}\n${contextKey}`;
@@ -204,8 +209,52 @@ export function CaptureObservationForm({ gameId, contextKey, onCaptured, onError
     invalidateCapture();
   };
 
+  const readImage = async (image: CapturedImage, sourceAtStart: string, file = false) => {
+    if (!mounted.current || currentSourceRef.current !== sourceAtStart) return;
+    const observation = await api<CaptureObservation>("ocr/regions", {
+      observation_id: newId("capture"), ...image, language, ...(file ? { image_origin: "file" } : {}),
+    });
+    if (!mounted.current) return;
+    if (currentSourceRef.current !== sourceAtStart) {
+      onError("捕获来源或范围已变化，已丢弃这次结果；请重新选择并捕获。");
+      return;
+    }
+    const captured = { ...observation, ...(image.capture_context ? { capture_context: image.capture_context } : {}) };
+    try {
+      await api("profile/observations", captured);
+    } catch {
+      if (mounted.current) onError("截图依据保存失败，请重试采集；文本输入仍可用。");
+      return;
+    }
+    if (!mounted.current) return;
+    if (currentSourceRef.current !== sourceAtStart) {
+      onError("捕获来源或范围已变化，已丢弃这次结果；请重新选择并捕获。");
+      return;
+    }
+    setPreview({ src: "data:image/bmp;base64," + image.image_base64, observation: captured });
+    onCaptured(captured);
+    if (observation.error) onError("此语言的识别暂不可用，请通过原始文本和完整构筑手动确认。");
+  };
+
+  const importImage = async (file?: File) => {
+    if (!file || pendingCapture.current) return;
+    pendingCapture.current = true;
+    const sourceAtStart = currentSourceRef.current;
+    invalidateCapture(); onError(""); setBusy(true); onBusyChange(true);
+    try {
+      await readImage(await readBmpFile(file), sourceAtStart, true);
+    } catch (error) {
+      if (mounted.current) onError(error instanceof ImageFileError ? error.message : "截图文件读取失败，请重新选择。文本输入仍可用。");
+    } finally {
+      pendingCapture.current = false;
+      if (mounted.current) { setBusy(false); onBusyChange(false); }
+      if (fileInput.current) fileInput.current.value = "";
+    }
+  };
+
   const capture = async () => {
-    if (busy || (windowMode && !deskrawlRegionValid)) return;
+    if (pendingCapture.current || busy || (windowMode && !deskrawlRegionValid)) return;
+    pendingCapture.current = true;
     const sourceAtStart = currentSourceRef.current;
     const bindingId = selectedBinding;
     invalidateCapture();
@@ -238,36 +287,14 @@ export function CaptureObservationForm({ gameId, contextKey, onCaptured, onError
         onError("捕获来源或范围已变化，已丢弃这次结果；请重新选择并捕获。");
         return;
       }
-      const observation = await api<CaptureObservation>("ocr/regions", {
-        observation_id: newId("capture"), ...image, language,
-      });
-      if (!mounted.current) return;
-      if (currentSourceRef.current !== sourceAtStart) {
-        onError("捕获来源或范围已变化，已丢弃这次结果；请重新选择并捕获。");
-        return;
-      }
-      const captured = { ...observation, ...(image.capture_context ? { capture_context: image.capture_context } : {}) };
-      try {
-        // Keep original observations durable before any draft can reference them.
-        await api("profile/observations", captured);
-      } catch {
-        if (mounted.current) onError("截图依据保存失败，请重试采集；文本输入仍可用。");
-        return;
-      }
-      if (!mounted.current) return;
-      if (currentSourceRef.current !== sourceAtStart) {
-        onError("捕获来源或范围已变化，已丢弃这次结果；请重新选择并捕获。");
-        return;
-      }
-      setPreview({ src: "data:image/bmp;base64," + image.image_base64, observation: captured });
-      onCaptured(captured);
-      if (observation.error) onError("此语言的识别暂不可用，请通过原始文本和完整构筑手动确认。");
+      await readImage(image, sourceAtStart);
     } catch (error) {
       if (!mounted.current) return;
       onError(errorMessage(error, windowMode
         ? "游戏窗口捕获未完成。请确认已选择可用窗口并手动切换到 Deskrawl。"
         : "区域捕获未完成。请使用 Windows 桌面入口，并检查屏幕坐标；文本输入仍可用。"));
     } finally {
+      pendingCapture.current = false;
       if (mounted.current) {
         setCountdown(0);
         setBusy(false);
@@ -283,7 +310,22 @@ export function CaptureObservationForm({ gameId, contextKey, onCaptured, onError
     detection.version_verified ? "游戏版本已验证。" : "游戏版本尚未验证。",
   ].join(" ") : "";
 
-  return <details>
+  const imagePreview = preview && <figure className="capture-review">
+      <figcaption>{preview.observation.image_origin === "file" ? "本次导入原图" : "本次捕获原图"} · {preview.observation.bounds.width} × {preview.observation.bounds.height} 物理像素</figcaption>
+      <p className="muted">核对画面是否被遮挡，以及文字、符号和单位是否正确。原图按原始像素显示，可滚动查看；修改下方原始文本与完整构筑后仍需明确确认。</p>
+      <div className="capture-image-viewport" role="region" aria-label="原始区域查看区" tabIndex={0}>
+        <img src={preview.src} alt="本次捕获的原始区域"
+          width={preview.observation.bounds.width} height={preview.observation.bounds.height}/>
+      </div>
+      <p className="muted">OCR 识别原文（未校正）</p>
+      <pre aria-label="OCR 识别原文（未校正）">{preview.observation.raw_text || "未识别到可用文字，请手动填写原始文本。"}</pre>
+    </figure>;
+
+  return <>
+    <label>导入截图文件（BMP）<input ref={fileInput} type="file" accept="image/bmp,.bmp" disabled={busy}
+      onChange={event => importImage(event.target.files?.[0])}/></label>
+    <p className="muted">已有截图可直接送到本机 OCR。支持未压缩 BMP，最大 1600 × 1200 像素、6 MiB。文件的实际截图时间和游戏版本未知，识别后仍需逐行核对。</p>
+    <details>
     <summary>{deskrawlScope ? "从 Deskrawl 游戏窗口读取（Windows 桌面）" : "从屏幕区域读取（Windows 桌面）"}</summary>
     <p className="muted">{deskrawlScope
       ? "Deskrawl 范围固定使用明确选择的游戏窗口。坐标为相对客户区原点的物理像素；不会启动或切换游戏。"
@@ -328,15 +370,9 @@ export function CaptureObservationForm({ gameId, contextKey, onCaptured, onError
       {busy ? countdown ? `${countdown} 秒后捕获…` : "正在捕获与读取…" : windowMode ? "捕获所选游戏窗口区域并读取" : "捕获所选区域并读取"}
     </button>
 
-    {preview && <figure className="capture-review">
-      <figcaption>本次捕获原图 · {preview.observation.bounds.width} × {preview.observation.bounds.height} 物理像素</figcaption>
-      <p className="muted">核对画面是否被遮挡，以及文字、符号和单位是否正确。原图按原始像素显示，可滚动查看；修改下方原始文本与完整构筑后仍需明确确认。</p>
-      <div className="capture-image-viewport" role="region" aria-label="原始区域查看区" tabIndex={0}>
-        <img src={preview.src} alt="本次捕获的原始区域"
-          width={preview.observation.bounds.width} height={preview.observation.bounds.height}/>
-      </div>
-      <p className="muted">OCR 识别原文（未校正）</p>
-      <pre aria-label="OCR 识别原文（未校正）">{preview.observation.raw_text || "未识别到可用文字，请手动填写原始文本。"}</pre>
-    </figure>}
-  </details>;
+    {preview?.observation.image_origin !== "file" && imagePreview}
+
+  </details>
+  {preview?.observation.image_origin === "file" && imagePreview}
+  </>;
 }

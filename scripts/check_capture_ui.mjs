@@ -102,7 +102,8 @@ try {
           const imageHash = createHash("sha256").update(Buffer.from(body.image_base64, "base64")).digest("hex");
           return { observation_id: body.observation_id, method: "ocr", state: "unconfirmed", image_ref: "capture://" + imageHash,
             image_hash: imageHash, bounds: body.bounds, raw_text: nativeAttempts === 1 ? "Strength −18.25 points" : "Armor +7 points",
-            language: body.language, fields: [], lines: [], requires_confirmation: true };
+            language: body.language, fields: [], lines: [], requires_confirmation: true,
+            ...(body.image_origin === "file" ? { image_origin: "file", source_capture_time: "unknown" } : {}) };
         }
         assert.equal(path, "profile/observations", "Unexpected API call; no real service or network is permitted.");
         events.push("save-start:" + body.observation_id); saveAttempts++;
@@ -137,6 +138,25 @@ try {
     };
   };
 
+  const bmp = new Uint8Array(78), view = new DataView(bmp.buffer);
+  view.setUint16(0, 0x4d42, true); view.setUint32(2, 78, true); view.setUint32(10, 54, true);
+  view.setUint32(14, 40, true); view.setInt32(18, 3, true); view.setInt32(22, -2, true);
+  view.setUint16(26, 1, true); view.setUint16(28, 24, true);
+  const file = { size: bmp.length, arrayBuffer: async () => bmp.buffer.slice(0) };
+  const upload = (h, value) => find(h.render(), n => n.type === "input" && n.props.type === "file")
+    .props.onChange({ target: { files: [value] } });
+  await check("BMP import persists original bytes without native calls or invented capture context", async () => {
+    const h = makeCapture(); await upload(h, file);
+    assert.equal(h.calls.filter(c => c.kind === "native").length, 0);
+    assert.equal(h.imported.length, 1); const source = h.imported[0];
+    assert.equal(source.image_origin, "file"); assert.equal(source.source_capture_time, "unknown");
+    assert.equal(source.capture_context, undefined); assert.equal(source.state, "unconfirmed");
+    assert.equal(source.image_hash, createHash("sha256").update(bmp).digest("hex")); h.unmount();
+  });
+  await check("invalid BMP import never reaches OCR or Profile", async () => {
+    const h = makeCapture(); await upload(h, { size: 78, arrayBuffer: async () => new ArrayBuffer(78) });
+    assert.equal(h.calls.length, 0); assert.equal(h.imported.length, 0); assert.ok(h.errors.length); h.unmount();
+  });
   const addCaptureFacts = (facts, observation, fields) => {
     const next = structuredClone(facts), id = "input-" + observation.observation_id;
     next.evidence.push({ id, kind: "ocr_confirmation", source_ref: "observation://" + observation.observation_id,

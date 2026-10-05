@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from copy import deepcopy
 from pathlib import Path
 
@@ -10,11 +11,15 @@ from storage import connect, initialize
 from services.profile.domain import (
     build_fingerprint, ensure_observation_binding, observation_capture_time, observation_time_status, snapshot,
 )
+from services.profile.live import draft as live_draft, normalize_sample, observation as live_observation
+from services.profile.live_cache import LiveInputCache, ObservationCache
 
 
 class Profile:
     def __init__(self, data_dir: Path):
         self.database = data_dir / "profile.sqlite3"
+        self.live_reads = ObservationCache()
+        self.live_inputs = LiveInputCache()
         initialize(self.database, """
             CREATE TABLE IF NOT EXISTS observations (id TEXT PRIMARY KEY, payload TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS revisions (
@@ -40,6 +45,14 @@ class Profile:
             return self.observe(body)
         if method == "POST" and path == "/v1/confirmations":
             return self.confirm(body)
+        if method == "POST" and path == "/v1/live/samples":
+            return self.publish_live(body)
+        if method == "GET" and path == "/v1/live/sources":
+            return {"sources": self.live_inputs.sources()}
+        if method == "POST" and path == "/v1/imports/live/read":
+            return self.read_live(body)
+        if method == "POST" and path == "/v1/imports/live/draft":
+            return self.draft_live(body)
         parts = path.strip("/").split("/")
         if method == "GET" and len(parts) == 5 and parts[:2] == ["v1", "profiles"] and parts[3] == "revisions":
             profile_id = identifier(parts[2])
@@ -93,13 +106,61 @@ class Profile:
                 "observation_text_required")
         require(body["method"] == "ocr" or bool(body["raw_text"]), "observation_text_required")
         observation_capture_time(body)
-        payload = {**body, "state": "unconfirmed"}
+        return self.store_observation({**body, "state": "unconfirmed"})
+
+    def store_observation(self, payload):
+        observation_id = identifier(payload.get("observation_id"))
         encoded = canonical(payload)
         with self.connect() as db:
             old = db.execute("SELECT payload FROM observations WHERE id=?", (observation_id,)).fetchone()
             require(old is None or old[0] == encoded, "observation_id_conflict", 409)
             db.execute("INSERT OR IGNORE INTO observations VALUES (?,?)", (observation_id, encoded))
         return payload
+
+    def publish_live(self, body):
+        sample = normalize_sample(body)
+        self.live_inputs.publish(sample["producer_id"], sample)
+        return {"producer_id": sample["producer_id"], "captured_at": sample["captured_at"],
+                "sample_hash": sample["sample_hash"], "state": "unconfirmed"}
+
+    def capture_live(self, body):
+        require(set(body) <= {"observation_id", "producer_id", "context", "class_id", "scope_confirmed",
+                             "previous_content_hash"}, "live_request_invalid")
+        require(body.get("scope_confirmed") is True, "live_scope_confirmation_required")
+        observation_id = identifier(body.get("observation_id"))
+        producer = identifier(body.get("producer_id"))
+        sample = self.live_inputs.get(producer)
+        require(sample is not None, "live_source_missing", 404)
+        return live_observation(sample, observation_id, body.get("context"), body.get("class_id"))
+
+    def read_live(self, body):
+        previous_hash = body.get("previous_content_hash")
+        require(previous_hash is None or isinstance(previous_hash, str)
+                and re.fullmatch(r"[0-9a-f]{64}", previous_hash), "live_request_invalid")
+        observation = self.capture_live(body)
+        encoded = canonical(observation)
+        identity = observation["observation_id"]
+        with self.connect() as db:
+            old = db.execute("SELECT payload FROM observations WHERE id=?", (identity,)).fetchone()
+        require(old is None or old[0] == encoded, "observation_id_conflict", 409)
+        self.live_reads.put(identity, encoded)
+        if previous_hash == observation["source"]["content_hash"]:
+            return {"unchanged": True, **{key: observation[key] for key in (
+                "observation_id", "source", "capture_context", "raw_text")}}
+        return observation
+
+    def draft_live(self, body):
+        require(set(body) <= {"observation_id", "candidate_id", "target_slot"}, "live_request_invalid")
+        observation_id = identifier(body.get("observation_id"))
+        identifier(body.get("candidate_id"))
+        with self.connect() as db:
+            row = db.execute("SELECT payload FROM observations WHERE id=?", (observation_id,)).fetchone()
+        observation = json.loads(row[0]) if row is not None else self.live_reads.get(observation_id)
+        require(observation is not None, "live_preview_expired", 404)
+        facts = snapshot(live_draft(observation, body["candidate_id"], body.get("target_slot")))
+        self.store_observation(observation)
+        return {"observation_id": observation_id, "response_hash": observation["source"]["response_hash"],
+                "facts": facts, "state": "unconfirmed"}
 
     def confirm(self, body):
         request_id = identifier(body.get("request_id"))
