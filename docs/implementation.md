@@ -22,7 +22,7 @@ Python service runtime dependencies are standard-library modules and installed W
 
 ## Development
 
-Use Python 3.12, Node.js 24 or newer, and pnpm 11.19.0. Native capture/OCR and desktop packaging require Windows x64.
+For local source development, use Python 3.12, Node.js 24 or newer, and pnpm 11.19.0. Pure source editing does not require local Windows packaging or Rust compilation; GitHub Actions is the Windows build/check and release artifact path. The commands below run the local development app; desktop packaging instructions are optional.
 
 ~~~powershell
 pnpm --dir frontend install --frozen-lockfile
@@ -35,7 +35,7 @@ The development launcher creates a session secret on an ephemeral literal-loopba
 
 For desktop service launches, Rust assigns its outer job before writing a one-byte boot permit to the service's existing stdin pipe. With `LOOTWEAVE_PARENT_JOB=1`, Python waits for that permit before establishing the nested service job or initializing helpers. Missing/invalid permits and ownership failures publish no readiness. The developer launcher clears the inherited desktop flag and starts independent service roots. Process cleanup is scoped to owned descendants; unrelated siblings remain running. The frozen sidecar and current Rust host must be rebuilt together before validating this protocol in a packaged application.
 
-For desktop builds, install the Rust Windows MSVC toolchain and C++ build tools, then the pinned build dependencies:
+Optional local desktop packaging: install the Rust Windows MSVC toolchain and C++ build tools, then the pinned build dependencies:
 
 ~~~powershell
 python -m pip install -r requirements-build.txt
@@ -77,6 +77,10 @@ English en-US and Simplified Chinese zh-Hans-CN OCR models are installed Windows
 
 Unresolved fields with a unique mapped label, explicit unit and uncontested native row geometry can request English numeric-region recognition. The worker uses the original BMP and one additional helper for at most three crops, projects word bounds back to original pixels and retains the original text/span. Readable primary values and explicit signs are preserved; conflicting candidates remain ambiguous, and consistent crops corroborate rather than replace readable values. The helper has a six-second maximum within the remaining twelve-second request budget; failure is recorded as `numeric_region_error` while primary observations remain usable. Each crop bitmap and input stream is disposed, and the helper stays in the service process scope. All values still require confirmation. The frozen current adapter's fresh synthetic v7 measurement is documented below; real-game acceptance remains open.
 OCR review accepts or ignores each non-empty raw-text line and each parsed field not represented by a complete matching raw-text line, independently. Known and custom affixes require explicit value/unit review; `required_level` is confirmed separately. After all rows are handled, one apply action writes the reviewed fields to the candidate; a matching affix ID is replaced by the reviewed value on application. Screenshot evidence is attached only to mapped candidate fields while raw text, unrelated evidence sources, and capture time remain preserved. A new screenshot resets the review state. An independent UI gate matches the reviewed `observation_id`, so deleting a snapshot unknown marker cannot bypass review. Percent values retain their original unit, and duplicate targets prevent application. The OCR model/algorithm and evaluator 0.1.7 did not change.
+
+## GitHub CI and Releases
+
+A single GitHub Actions `checks.yml` workflow runs on pull requests, main pushes, and manual CI dispatch. Successful Windows packaging uploads the four `dist/release/` files (installer, portable ZIP, `build-manifest.json`, and `SHA256SUMS.txt`) as `lootweave-windows-x64-<commit>` for seven days; source, tests, private logs, and user data are excluded. On main pushes or manual dispatches targeting main, `publish-preview` depends on successful `contracts-and-browser` and `windows-package` jobs, then publishes the artifact from that same run as an always-prerelease GitHub Release tagged `v0.1.0-mvp.<run number>`. Each main source commit gets a separate preview; tags do not trigger publishing. This documents the workflow, not a successful current run or an already-published preview. Pure source maintenance requires no local packaging; the local builder commands below are optional.
 
 ## Deskrawl process and window capture
 
@@ -180,7 +184,7 @@ Read the [roadmap](roadmap.md) for full gates. Synthetic tests do not establish 
 
 ## Portable MVP delivery
 
-`dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip` is 324,746,175 bytes, SHA-256 `8a6daebcaee74a7fd054a7fe3f704a58f099b9f41dd9ff2435fd5a7ab09e09cb`, with 789 entries. Its application source is `8b3d1b7e4152a86ecb0364119f4f4caea1d4ebc6`; the native EXE hash is `61aa28a67774a0be000913449e0a900bb94f0e113294a34b3209f457846398d1`. A same-name extracted delivery folder contains `LootWeave.exe` and no player data. The archive includes Python, WebView2 Fixed Version 154.0.4258.53, and application-local MSVC runtime DLLs. No binary artifacts were uploaded.
+`dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip` is 324,746,175 bytes, SHA-256 `8a6daebcaee74a7fd054a7fe3f704a58f099b9f41dd9ff2435fd5a7ab09e09cb`, with 789 entries. Its application source is `8b3d1b7e4152a86ecb0364119f4f4caea1d4ebc6`; the native EXE hash is `61aa28a67774a0be000913449e0a900bb94f0e113294a34b3209f457846398d1`. A same-name extracted delivery folder was delivered with `LootWeave.exe` and no player data. The archive includes Python, WebView2 Fixed Version 154.0.4258.53, and application-local MSVC runtime DLLs. This was a historical local build, not a GitHub CI Release artifact. Future CI Release identity and hashes are defined by the remote `build-manifest.json` and `SHA256SUMS.txt`.
 
 The actual Rust headless portable host passed six checks in 20.298 seconds, using a scrubbed PATH without Python. Every archive file matched its manifest. Loaded C++ DLL paths were inside the package: the host used the EXE directory, and frozen Python used its existing `sidecar/_internal` runtime. SQLite was created beside the EXE while the working directory was elsewhere; after the whole folder moved to another path with spaces and Unicode, the exact profile/evaluation and ten frozen replays remained identical. Owned hosts and workers exited. The first check attempt wrongly required frozen Python DLLs to live at the sidecar root; its retained failure was corrected to allow the packaged `_internal` directory.
 

@@ -46,15 +46,19 @@ React/TypeScript 前端按 feature-sliced 目录组织于 `frontend/src/{app,pag
 
 ### 绿色版 ZIP（免安装）
 
-本地绿色版 ZIP 为 `dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip`（324,746,175 字节；SHA-256 `8a6daebcaee74a7fd054a7fe3f704a58f099b9f41dd9ff2435fd5a7ab09e09cb`），应用源码为 `8b3d1b7e4152a86ecb0364119f4f4caea1d4ebc6`。解压到本地可写目录，双击 `LootWeave.exe` 即可运行；同名已解压交付目录也可直接使用，无需安装或管理员权限。构建包内含 Python 和 Microsoft WebView2 Fixed Version 运行时；`portable.json` 标记自动选择同目录 `sidecar/`、`webview2/`、`data/`。SQLite、OCR 截图和浏览器数据保存在 `data/`。移动目录前先退出应用；升级时替换应用／运行时文件并保留 `data/`。普通安装版仍将数据放在 `%LOCALAPPDATA%/LootWeave`。实际 Rust 后台宿主通过 6 项检查：789 项归档文件校验、宿主与服务使用包内 C++ 运行库、同目录 SQLite 保存，以及移动后读取同一档案／评估与各 10 次冻结回放。检查耗时 20.298 秒，构建耗时 219.281 秒；远端被动 WebView 检查记录在阶段 PR。可见 GUI、真实游戏和双机发行验收仍未通过。
+该 ZIP 是历史本机构建，不是 GitHub CI Release 工件；未来 CI 发行版本的身份与哈希以其 `build-manifest.json` 和 `SHA256SUMS.txt` 为准。本地绿色版 ZIP 为 `dist/LootWeave-MVP-0.1.0-20261005-portable-windows-x64.zip`（324,746,175 字节；SHA-256 `8a6daebcaee74a7fd054a7fe3f704a58f099b9f41dd9ff2435fd5a7ab09e09cb`），应用源码为 `8b3d1b7e4152a86ecb0364119f4f4caea1d4ebc6`。解压到本地可写目录，双击 `LootWeave.exe` 即可运行；同名已解压交付目录也可直接使用，无需安装或管理员权限。构建包内含 Python 和 Microsoft WebView2 Fixed Version 运行时；`portable.json` 标记自动选择同目录 `sidecar/`、`webview2/`、`data/`。SQLite、OCR 截图和浏览器数据保存在 `data/`。移动目录前先退出应用；升级时替换应用／运行时文件并保留 `data/`。普通安装版仍将数据放在 `%LOCALAPPDATA%/LootWeave`。实际 Rust 后台宿主通过 6 项检查：789 项归档文件校验、宿主与服务使用包内 C++ 运行库、同目录 SQLite 保存，以及移动后读取同一档案／评估与各 10 次冻结回放。检查耗时 20.298 秒，构建耗时 219.281 秒；远端被动 WebView 检查记录在阶段 PR。可见 GUI、真实游戏和双机发行验收仍未通过。
 新源码会先将截图保存为未确认观察；重采集、识别失败和手工保存都保留原截图引用，只有人工确认字段后才能写入构筑事实。详见 Microsoft [WebView2 分发说明](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution)。Windows OCR 使用系统语言模型，缺少时仍可手动录入。
 
 现有安装包以空白档案启动，可记录候选／当前装备、逐行核对截图字段后应用并确认保存；它不含先保存观察的本轮修复。绿色版 ZIP 面向包含此修复的新源码流程。SQLite 仍保存档案修订和冻结评估。
 
 
+## GitHub CI 与 Releases
+
+单一 GitHub Actions `checks.yml` 工作流会在 pull request、main 推送和手动 CI dispatch 时运行。Windows 打包成功后，会把 `dist/release/` 中四个文件（安装包、绿色版 ZIP、`build-manifest.json`、`SHA256SUMS.txt`）作为 `lootweave-windows-x64-<commit>` 工件保留 7 天；不包含源码、测试、私有日志或用户数据。仅当目标为 main 的 push 或手动 dispatch 且 `contracts-and-browser` 与 `windows-package` 两项均成功后，`publish-preview` 才会使用同一运行的工件发布 GitHub Release，标签为 `v0.1.0-mvp.<run number>`，并始终标记为预发行版。每个 main 源码提交都有独立预览版；不由标签触发发布。此处是工作流说明，不代表当前 CI 已成功或预览版已发布。纯源码维护无需本机打包。
+
 ## 本地运行
 
-要求：原生 OCR 与桌面打包需使用 Windows；Node.js 24 或更高版本；pnpm 11.19.0；服务使用 Python 3.12 或更高版本（本机验证使用 3.12.14，CI 使用 3.13.16）。Python 运行时服务没有第三方运行依赖。先安装前端依赖并构建，再启动本地开发运行时：
+若要在本机运行开发应用，需要 Windows 原生 OCR、Node.js 24 或更高版本、pnpm 11.19.0 和 Python 3.12 或更高版本。纯源码维护不要求本机打包或编译 Rust；Windows 构建、检查与发行包由 GitHub Actions 处理。需要本机运行开发应用时，再安装前端依赖并构建：
 
 ```powershell
 pnpm --dir frontend install --frozen-lockfile
