@@ -811,6 +811,7 @@ try {
     .selectOption(dependencyPack.pack_id + "/" + dependencyPack.version);
   await page.getByRole("button", { name: "打开候选装备依赖资料", exact: true }).click();
   const dependencyPanel = page.getByRole("region", { name: "候选装备依赖资料", exact: true });
+  await dependencyPanel.waitFor({ state: "visible" });
   const dependencySelector = dependencyPanel.getByLabel("候选装备资料模板", { exact: true });
   assert.equal(await dependencySelector.inputValue(), "", "candidate_name_automatically_confirmed_template");
   assert.equal(await dependencyPanel.getByRole("button", { name: "查询候选依赖", exact: true }).isDisabled(), true);

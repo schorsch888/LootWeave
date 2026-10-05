@@ -55,7 +55,7 @@ export function ItemDependencies({ facts, pack, ready }: { facts: Snapshot; pack
     <p className="muted">请明确选择对应模板。装备名称和识别文字不会自动确认模板或线上机制。</p>
     {pack && <p className="muted">资料版本 {pack.version} · {pack.context.edition} · 构建 {pack.context.game_build} · {pack.context.mode === "online" ? "线上模式" : pack.context.mode}</p>}
     {!pack?.dependency_templates?.length ? <p className="muted">当前知识包尚未提供装备依赖资料。</p> : <>
-      <label>候选装备资料模板<select value={template} disabled={!ready || busy} onChange={e => { setTemplate(e.target.value); setResult(undefined); setError(""); }}>
+      <label>候选装备资料模板<select aria-label="候选装备资料模板" value={template} disabled={!ready || busy} onChange={e => { setTemplate(e.target.value); setResult(undefined); setError(""); }}>
         <option value="">请选择已核对的装备模板</option>
         {pack.dependency_templates.map(item => <option key={item.template_id} value={item.template_id}>{names[item.template_id] || item.label}</option>)}
       </select></label>
