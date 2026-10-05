@@ -12,7 +12,7 @@ LootWeave 是一个开源的 Windows 本地装备决策助手原型，无需玩�
 
 当前源码启动后显示空白真实档案。结构化表单记录具有唯一 ID 的持有物品、带证据的材料／货币余额，以及玩家核对的技能学习／撤销或装备改造报价。资源、报价和预算均有对应 FSD 表单。报价保留原状态、预计结果、context 与职业、等级／技能上限／解锁要求、成本或未知成本、证据和待确认项。未来计划引用报价 ID，可设置非负整数资源上限。评估器 `0.1.7` 汇总已选报价的已知成本并显示材料缺口和预算超额，同时保留技能真实等级、作用者和效果；未知成本、解锁、版本／输入变化、随机结果或未选入的配套报价均不能视为可行。准备条件可行性与游戏机制结论分开报告。投影仅用于未来计划，不改变当前装备或 build hash。旧档案不会自动补出资源或报价；SQLite 保持 schema v1，无需迁移。Deskrawl 仍为 research-only，DPS 和保留／换装建议均未验收。
 
-**此前已有的本地 Windows 安装包为 `dist/LootWeave-MVP-0.1.0-20261005-owned-equipment-windows-x64-setup.exe`（225,936,027 字节；SHA-256 `f233cc1380efbfb2c63ec1de922c05da29f7c860e8e2031bb8087a0393cc26df`），构建源提交为 `75163eff591469ec1b352fce360c7b00734c8df1`。它包含此前的持有物品／装备功能，通过历史 17 项虚构数据 headless 核心检查（9.056 秒）和 13 项生命周期检查（34.726 秒）。此前四个安装包全部保留，均不含当前 0.1.7 资源／准备报价源码功能；当前源码安装包尚未开始构建。当前源码 0.1.7 检查通过：Python 503 项（502 通过，1 项 Windows symlink 权限跳过；51.586 秒）、core 33 项（含真实 domain 结果 SSR 三状态）、confirmation 20 项（含临时 SQLite 保存／重启／十次回放）、runtime 16 项、Planning 27 项、evaluation cards 32 项（24 历史、8 当前）；TypeScript/Vite 及 architecture/publication 检查通过。这些结果不是旧安装包的验证。本 PR 尚未创建或合并。PR #3 的 runtime eager/on-demand 结论保持原文。真实机制、GUI、OCR 人工 holdout 和双机发行验收仍未通过，Roadmap 阶段并未全部完成。**
+**当前本地 Windows 安装包为 `dist/LootWeave-MVP-0.1.0-20261005-preparation-windows-x64-setup.exe`（226,029,750 字节；SHA-256 `cb5574695c048d0754616258136af84577d9f87cd0d2a06fae89f493b7fca9fc`），由源码提交 `2c08e023b6767a0c5ca732abfe941286a84aeefb` 构建，包含 evaluator 0.1.7 和 PR #3 runtime integration，默认仍为 eager。虚构数据下 Rust headless/frozen worker 检查 8 项通过（9.0852 秒），覆盖三状态、资源／预算合计 12、预算 10 超额 2、未知余额为 null、SQLite 档案和评估重启持久化、每个结果重启前后各回放十次且实际装备不变。两轮生命周期 13 项通过（37.175 秒）。524 个 bundle 文件均通过哈希校验，3 个前端文件与 production build 逐字节一致。构建耗时 723.625 秒；Rust 单元检查 31 项通过、3 项忽略（47.164 秒），这三项是 supervisor.rs 子进程 fixture，其他测试通过 --ignored 显式调用；GUI 验收仍未完成，不能由这些忽略项推断。此前四个安装包保持不变。以上是已完成的本地检查；远端 CI 与合并状态记录在本阶段 PR 中。M1/M3 真实机制、GUI、OCR 人工 holdout 和双机发行验收仍未通过。**
 
 此前 `20261005-equipment` 安装包的 `eb1995dc` 宿主通过 `scripts/check_desktop.py --cycles 2` 的 13 项后台生命周期检查（34.563 秒），包括两次正常启动／退出、六项服务故障清理、宿主强制退出后的 Job 回收、重启恢复、重启及来源故障下的冻结回放、实例锁和备份／恢复。34.563 秒为整个检查脚本的耗时，不是启动延迟指标；该检查未测量可见 GUI。 此前源码与安装包证据保留在 [PR #4](https://github.com/schorsch888/LootWeave/pull/4)。
 
@@ -40,9 +40,9 @@ React/TypeScript 前端按 feature-sliced 目录组织于 `frontend/src/{app,pag
 
 ## 使用 Windows MVP
 
-最新已有安装包为 `dist/LootWeave-MVP-0.1.0-20261005-owned-equipment-windows-x64-setup.exe`，属于旧构建，不含当前源码的材料／货币与准备报价功能。当前源码的打包尚待进行；此前安装包作为历史版本保留。
+当前安装包为 `dist/LootWeave-MVP-0.1.0-20261005-preparation-windows-x64-setup.exe`。安装后即可使用持有资源、准备报价和未来构筑流程；数据保存在 SQLite，不会修改游戏。此前四个安装包作为历史构建保留。
 
-此前已有的本地安装包以空白档案启动，支持旧版持有物品／装备流程及 `0.1.6` 物品字段差异；它不含当前源码的资源余额和准备报价功能，打包待进行。虚构知识包仍可用于示例。当前还可使用手动文本、经验试验和观察样本估计。真实游戏采集、可见 GUI、真实机制、OCR 人工 holdout 和双机发行验收仍未通过。
+新安装包以空白档案启动。记录材料／货币数量，核对技能或装备准备报价，再将报价加入未来计划，以查看声明的可行性、成本、资源缺口和预算超额。未知要求仍保持未知。这些结果不建立游戏机制或推荐。真实 GUI、真实游戏采集、OCR 人工 holdout 和双机发行验收仍未通过。
 
 ## 本地运行
 
