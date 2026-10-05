@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { sourceGroups, sourceKinds } from "../../shared/build-sources";
+import type { SourceKind } from "../../shared/build-sources";
 import { isExactCount, newId } from "../../shared/api";
 import { SourceFields, SourceList } from "../../entities/build-source";
 import type { Item, PreparationOption, Snapshot } from "../../shared/api";
@@ -128,26 +130,31 @@ export function PreparationOptionsEditor({ facts, onChange }: { facts: Snapshot;
   const replace = (index: number, option: PreparationOption) => onChange({ ...facts,
     preparation_options: options.map((entry, i) => i === index ? option : entry) });
   const remove = (index: number) => onChange({ ...facts, preparation_options: options.filter((_, i) => i !== index) });
-  const add = (kind: "equipment" | "skill") => {
+  const add = (kind: "equipment" | SourceKind) => {
     const common = { id: newId("preparation"), context: structuredClone(facts.context), class_id: facts.class_id,
       evidence_ids: [...facts.evidence_ids], unknowns: ["outcome_not_confirmed"], costs: null,
       requirements: { required_level: null, max_rank: null, unlock_state: "unknown" as const } };
     const item = facts.candidate_item;
-    const skillId = newId("skill");
-    const option: PreparationOption = kind === "equipment"
-      ? { ...common, kind, target_id: item.instance_id, input: structuredClone(item),
-          result: { ...structuredClone(item), record_kind: "projected_item" } }
-      : { ...common, kind, target_id: skillId, input: null,
-          result: { id: skillId, rank: 0, effects: [], actor: "hero", evidence_ids: [...facts.evidence_ids] } };
+    let option: PreparationOption;
+    if (kind === "equipment") {
+      option = { ...common, kind, target_id: item.instance_id, input: structuredClone(item),
+        result: { ...structuredClone(item), record_kind: "projected_item" } };
+    } else {
+      const group = sourceGroups[kind];
+      const sourceId = newId(kind);
+      option = { ...common, kind, target_id: sourceId, input: null,
+        result: { id: sourceId, effects: [], actor: group.actor, evidence_ids: [...facts.evidence_ids],
+          ...(group.ranks ? { rank: 0 } : {}) } };
+    }
     onChange({ ...facts, preparation_options: [...options, option] });
   };
   const count = (raw: string) => isExactCount(raw) ? Number(raw) : Number.NaN;
   const shown = (amount: number) => Number.isSafeInteger(amount) && amount >= 0 ? amount : "";
   return <details className="panel">
-    <summary>学习技能与装备改造方案（{options.length}）</summary>
-    <p className="muted">按游戏中已核对的学习、升级或改造条件录入。这里只保存计划；随机结果和未知费用请保留待确认。实际执行后须重新核对物品或技能并保存新档案。</p>
+    <summary>构筑与装备准备方案（{options.length}）</summary>
+    <p className="muted">按游戏中已核对的学习、分配、符文、仆从、临时效果或改造条件录入。这里只保存计划；随机结果和未知费用请保留待确认。实际执行后须重新核对完整配置并保存新档案。</p>
     {options.map((option, index) => <details key={option.id}>
-      <summary>{option.kind === "skill" ? "技能" : "装备改造"} · {option.target_id}</summary>
+      <summary>{option.kind === "equipment" ? "装备改造" : sourceGroups[option.kind].title} · {option.target_id}</summary>
       <p className="muted">方案依据：{option.evidence_ids.join("、")} · 版本：{option.context.edition} / {option.context.game_build}</p>
       {option.kind === "equipment" ? <>
         <label>要改造的持有物品<select aria-label="改造目标物品" value={option.target_id}
@@ -163,17 +170,52 @@ export function PreparationOptionsEditor({ facts, onChange }: { facts: Snapshot;
         <ItemEditor kind="projected" item={option.result} onChange={result => replace(index, { ...option, result,
           unknowns: [...new Set([...option.unknowns, "outcome_not_confirmed"])] })} />
       </> : <>
-        <p className="muted">填写计划完成后的技能等级与效果；等级 0 表示撤销分配。原等级：{option.input?.rank ?? "当前未分配"}。</p>
-        <SourceFields source={option.result} ranks setIds={false} defaultActor="hero" onDelete={() => remove(index)}
+        <label>方案目标{sourceGroups[option.kind].title}<select aria-label={"方案目标" + sourceGroups[option.kind].title}
+          value={option.input ? option.target_id : ""} onChange={event => {
+            const group = sourceGroups[option.kind];
+            const input = facts[group.key].find(source => source.id === event.target.value);
+            const id = input?.id ?? newId(option.kind);
+            replace(index, { ...option, target_id: id, input: structuredClone(input ?? null),
+              result: input ? structuredClone(input) : { id, effects: [], actor: group.actor,
+                evidence_ids: [...facts.evidence_ids], ...(group.ranks ? { rank: 0 } : {}) },
+              unknowns: [...new Set([...option.unknowns, "outcome_not_confirmed"])] });
+          }}>
+          <option value="">新目标（需核对实际条件）</option>
+          {facts[sourceGroups[option.kind].key].map(source => <option key={source.id} value={source.id}>{source.id}</option>)}
+          {option.input && !facts[sourceGroups[option.kind].key].some(source => source.id === option.target_id)
+            && <option value={option.target_id}>原目标已缺失 · {option.target_id}</option>}
+        </select></label>
+        <p className="muted">预计{sourceGroups[option.kind].title}只用于此计划。{sourceGroups[option.kind].ranks
+          ? "等级 0 表示撤销分配；原等级：" + (option.input?.rank ?? "当前未分配") + "。"
+          : "移除当前来源也须核对操作条件和费用。"}</p>
+        {!sourceGroups[option.kind].ranks && <label className="check"><input type="checkbox"
+          aria-label={"计划移除" + sourceGroups[option.kind].title} disabled={!option.input} checked={option.result === null}
+          onChange={event => replace(index, { ...option, result: event.target.checked ? null : structuredClone(option.input),
+            unknowns: [...new Set([...option.unknowns, "outcome_not_confirmed"])] })} />计划移除此来源</label>}
+        {option.result ? <SourceFields source={option.result} ranks={sourceGroups[option.kind].ranks}
+          setIds={sourceGroups[option.kind].setIds} defaultActor={sourceGroups[option.kind].actor}
+          levels={option.kind === "companion"} levelLabel="方案预计仆从等级" onDelete={() => remove(index)}
           onChange={result => replace(index, { ...option, result, target_id: result.id,
-            input: result.id === option.target_id ? option.input : structuredClone(facts.skills.find(skill => skill.id === result.id) ?? null),
+            input: result.id === option.target_id ? option.input
+              : structuredClone(facts[sourceGroups[option.kind].key].find(source => source.id === result.id) ?? null),
             unknowns: [...new Set([...option.unknowns, "outcome_not_confirmed"])] })} />
+          : <p>预计移除：{option.target_id} · 当前作用者：{option.input?.actor === "companion" ? "仆从" : "角色"}</p>}
       </>}
       <div className="fields">
-        <label>此操作要求的角色等级<input aria-label="方案要求等级" type="number" min="1" step="1" value={option.requirements.required_level ?? ""}
+        {option.kind !== "equipment" && (option.kind === "companion" || (option.result ?? option.input)?.actor === "companion"
+          || option.requirements.companion_id) && <label>此操作对应的仆从<select aria-label="方案条件所属仆从"
+          value={option.requirements.companion_id ?? ""} onChange={event => replace(index, { ...option,
+            requirements: { ...option.requirements, companion_id: event.target.value || undefined } })}>
+          <option value="">尚未确认归属</option>
+          {facts.companions.map(companion => <option key={companion.id} value={companion.id}>{companion.id} · {companion.level ?? "等级待确认"}</option>)}
+          {option.requirements.companion_id && !facts.companions.some(companion => companion.id === option.requirements.companion_id)
+            && <option value={option.requirements.companion_id}>已缺失 · {option.requirements.companion_id}</option>}
+        </select><small className="muted">使用这只已持有仆从的实际等级；未记录归属或等级时继续待确认。</small></label>}
+        <label>{option.kind !== "equipment" && (option.kind === "companion" || (option.result ?? option.input)?.actor === "companion")
+          ? "此操作要求的仆从等级" : "此操作要求的角色等级"}<input aria-label="方案要求等级" type="number" min="1" step="1" value={option.requirements.required_level ?? ""}
           onChange={event => replace(index, { ...option, requirements: { ...option.requirements,
             required_level: event.target.value === "" ? null : count(event.target.value) } })} /></label>
-        {option.kind === "skill" && <label>已确认技能等级上限<input aria-label="方案技能等级上限" type="number" min="1" step="1" value={option.requirements.max_rank ?? ""}
+        {option.kind !== "equipment" && sourceGroups[option.kind].ranks && <label>已确认{sourceGroups[option.kind].title}等级上限<input aria-label={"方案" + sourceGroups[option.kind].title + "等级上限"} type="number" min="1" step="1" value={option.requirements.max_rank ?? ""}
           onChange={event => replace(index, { ...option, requirements: { ...option.requirements,
             max_rank: event.target.value === "" ? null : count(event.target.value) } })} /></label>}
         <label>学习或改造条件<select aria-label="方案解锁状态" value={option.requirements.unlock_state}
@@ -205,7 +247,7 @@ export function PreparationOptionsEditor({ facts, onChange }: { facts: Snapshot;
           ...event.target.value.split("\n").map(value => value.trim()).filter(Boolean)] })} /></label>
       <button type="button" onClick={() => remove(index)}>删除准备方案</button>
     </details>)}
-    <div className="fields"><button type="button" onClick={() => add("skill")}>添加技能准备方案</button>
+    <div className="fields">{sourceKinds.map(kind => <button key={kind} type="button" onClick={() => add(kind)}>添加{sourceGroups[kind].title}准备方案</button>)}
       <button type="button" onClick={() => add("equipment")}>添加装备改造方案</button></div>
   </details>;
 }

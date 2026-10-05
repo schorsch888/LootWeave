@@ -176,6 +176,8 @@ class DomainCases(unittest.TestCase):
                 for rune, owner in zip(facts["runes"], owners):
                     if owner is not None:
                         rune["actor"] = owner
+                        if owner == "companion":
+                            rune["companion_id"] = facts["companions"][0]["id"]
                 expected_ids = sorted(rune["id"] for rune in facts["runes"]
                                       if rune.get("actor", "hero") == rule_actor)
                 with self.subTest(rule_actor=rule_actor, owners=owners):
@@ -197,6 +199,8 @@ class DomainCases(unittest.TestCase):
         for skill_actor in ("hero", "companion"):
             facts = copy.deepcopy(DEMO["facts"])
             facts["skills"][0]["actor"] = skill_actor
+            if skill_actor == "companion":
+                facts["skills"][0]["companion_id"] = facts["companions"][0]["id"]
             pack = copy.deepcopy(PACK)
             companion = next(rule for rule in pack["rules"] if rule["id"] == "companion-support")
             companion["requires_skills"] = ["fixture-cold-bolt"]
@@ -230,7 +234,7 @@ class DomainCases(unittest.TestCase):
         quote = skill_quote(self.facts, rank=2, cost=0)
         removal = skill_quote(self.facts, self.facts["skills"][0]["id"], rank=0, option_id="remove-cold", cost=0)
         self.facts["preparation_options"] = [quote, removal]
-        purpose["future_builds"] = [{"skills": ["fixture-fire-bolt"], "conditions": {},
+        purpose["future_builds"] = [{"skills": ["fixture-fire-bolt"], "conditions": copy.deepcopy(self.facts["conditions"]),
                                     "feasibility": "hypothetical", "preparation_options": [quote["id"], removal["id"]]}]
         result = run_evaluation(self.facts, self.pack, purpose)
         self.assertEqual("candidate", result["retention"])

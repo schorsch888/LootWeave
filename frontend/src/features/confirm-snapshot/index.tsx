@@ -55,7 +55,7 @@ export function ConfirmSnapshot({ onBusyChange, draftApplied, captureReviewed = 
         for (const balance of confirmed.owned_resources?.balances ?? []) addRefs(balance, ids);
         for (const option of confirmed.preparation_options ?? []) {
           addRefs(option, ids);
-          addRefs(option.result, ids);
+          if (option.result) addRefs(option.result, ids);
           if (option.kind === "equipment") {
             for (const affix of option.result.affixes) addRefs(affix, ids);
             for (const embedded of option.result.embedded_items) addRefs(embedded, ids);

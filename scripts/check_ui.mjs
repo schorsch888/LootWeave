@@ -380,7 +380,7 @@ try {
   const ownerFacts = JSON.parse(await readFile(path.join(root, "fixtures/demo.json"), "utf8")).facts;
   ownerFacts.companions.forEach(source => { source.effects = []; });
   ownerFacts.equipped_items.weapon.embedded_items.push({
-    id: "companion-anchor", actor: "companion", effects: ["fixture-companion-support"],
+    id: "companion-anchor", actor: "companion", companion_id: ownerFacts.companions[0].id, effects: ["fixture-companion-support"],
     evidence_ids: ["demo-input"]
   });
   ownerFacts.candidate_item = structuredClone(ownerFacts.equipped_items.weapon);
@@ -397,7 +397,7 @@ try {
   await lostPanel.getByText("仆从 · 仆从支持", { exact: true }).waitFor({ state: "visible" });
   assert.equal(await lostPanel.getByText("角色 · 仆从支持", { exact: true }).count(), 0,
     "companion_loss_presented_as_hero_loss");
-  await check("评估器 0.1.7");
+  await check("评估器 0.1.8");
   await page.locator(".result").screenshot({ path: path.join(output, "actor-comparison.png") });
   results.push("actual_companion_loss_keeps_owner_in_complete_build_and_ui");
   await page.locator("summary").filter({ hasText: "查看或编辑完整构筑数据" }).click();
@@ -424,7 +424,7 @@ try {
   await check("每次换装，都有依据");
   await page.getByRole("button", { name: "打开历史评估", exact: true }).click();
   await page.locator("summary").filter({ hasText: "查看历史冻结评估" }).click();
-  await page.locator("article.reason").filter({ hasText: "评估器版本：0.1.7" })
+  await page.locator("article.reason").filter({ hasText: "评估器版本：0.1.8" })
     .getByRole("button", { name: "查看这份冻结结果", exact: true }).last().click();
   await check("正在查看保存的冻结输入及其规则版本");
   await check("换装会丢失机制");
@@ -781,6 +781,90 @@ try {
   assert.equal(await backgroundOption.count(), 1, "late_detection_lost_current_window_binding");
   assert.equal(await windowSelector.inputValue(), "", "new_detection_silently_selected_window");
   simulatedNativeChecks.push("late_detection_from_previous_context_cannot_replace_new_window_list");
+
+  stage = "complete_future_build";
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const loadFullDemoButton = page.getByRole("button", { name: "加载合成示例", exact: true });
+  await loadFullDemoButton.and(page.locator(":enabled")).waitFor();
+  const fullDemoResponse = page.waitForResponse(response => new URL(response.url()).pathname === "/api/demo");
+  await loadFullDemoButton.click();
+  assert.equal((await fullDemoResponse).status(), 200, "full_future_demo_load_failed");
+  await loadFullDemoButton.and(page.locator(":enabled")).waitFor();
+  await check("当前使用合成示例");
+  const futureFixture = spawnSync(python, ["-c", "import json; from tests.test_future_builds import full_case; f,p=full_case(); print(json.dumps({'facts':f,'intent':p}))"],
+    { cwd: root, windowsHide: true, timeout: 10000, encoding: "utf8" });
+  assert.ifError(futureFixture.error);
+  assert.equal(futureFixture.status, 0, "full_future_fixture_failed");
+  const planned = JSON.parse(futureFixture.stdout);
+  const jsonSummary = page.locator("summary").filter({ hasText: "查看或编辑完整构筑数据" });
+  if (!await jsonSummary.evaluate(element => element.parentElement.open)) await jsonSummary.click();
+  await page.getByLabel("完整构筑数据", { exact: true }).fill(JSON.stringify(planned.facts, null, 2));
+  const validatedFullFacts = page.waitForResponse(response => new URL(response.url()).pathname === "/api/profile/snapshots/validate");
+  await page.getByRole("button", { name: "应用构筑修改", exact: true }).click();
+  assert.equal((await validatedFullFacts).status(), 200, "full_future_facts_rejected");
+  await jsonSummary.click();
+  const goalSummary = page.locator("summary").filter({ hasText: "目标需求与未来构筑" });
+  if (!await goalSummary.evaluate(element => element.parentElement.open)) await goalSummary.click();
+  await page.getByLabel("所需能力标识", { exact: false }).fill(planned.intent.required_capabilities.join("\n"));
+  const allowed = page.locator(".build-editor fieldset").filter({ has: page.locator("legend").getByText("允许改变的构筑部分", { exact: true }) });
+  for (const title of ["技能", "天赋", "巅峰", "符文", "仆从", "临时效果", "装备"])
+    await allowed.getByRole("checkbox", { name: title === "技能" ? title : "允许更改" + title, exact: true }).check();
+  for (const limit of planned.intent.budget.resource_limits) {
+    await page.getByRole("button", { name: "添加资源预算上限", exact: true }).click();
+    await page.getByLabel("预算资源", { exact: true }).last().fill(limit.resource_id);
+    await page.getByLabel("预算上限", { exact: true }).last().fill(String(limit.amount));
+  }
+  await page.getByRole("button", { name: "添加未来构筑", exact: true }).click();
+  const futureEditor = page.locator(".build-editor .source-list").filter({ has: page.getByText("未来构筑 1", { exact: true }) });
+  await futureEditor.getByLabel("可行性", { exact: false }).selectOption("owned");
+  for (const optionId of planned.intent.future_builds[0].preparation_options)
+    await futureEditor.locator('input[data-preparation-id="' + optionId + '"]').check();
+  const sourceNames = { skills: "技能", talents: "天赋", paragon: "巅峰", runes: "符文", companions: "仆从", temporary_effects: "临时效果" };
+  for (const [group, title] of Object.entries(sourceNames)) {
+    const shown = await futureEditor.getByLabel("未来" + title + "标识", { exact: true }).inputValue();
+    assert.deepEqual(shown.split(",").map(value => value.trim()).filter(Boolean).sort(),
+      [...planned.intent.future_builds[0][group]].sort(), "future_source_selection_" + group);
+  }
+  await futureEditor.getByLabel("buff_active", { exact: false }).selectOption("active");
+  await confirm();
+  const confirmedBeforePlan = JSON.parse(await page.getByLabel("完整构筑数据", { exact: true }).inputValue());
+  const fullFutureResponse = page.waitForResponse(response => new URL(response.url()).pathname === "/api/evaluation/evaluations" && response.request().method() === "POST");
+  await evaluate();
+  const fullResponse = await fullFutureResponse;
+  assert.equal(fullResponse.status(), 200, "full_future_evaluation_failed");
+  const fullRequest = fullResponse.request().postDataJSON();
+  const fullEvaluation = await fullResponse.json();
+  const fullPlan = fullEvaluation.future_preparation[0];
+  assert.equal(fullEvaluation.pin.evaluator_version, "0.1.8");
+  for (const group of Object.keys(sourceNames))
+    assert.deepEqual([...fullRequest.intent.future_builds[0][group]].sort(), [...planned.intent.future_builds[0][group]].sort());
+  assert.equal(fullPlan.status, "feasible");
+  assert.equal(fullPlan.resources[0].cost, 24);
+  assert.equal(fullPlan.comparison.status, "mechanism_loss");
+  for (const capability of ["resource_efficiency", "survival", "frost_cycle"])
+    assert(fullPlan.comparison.lost_capabilities.includes(capability), "future_dependency_loss_missing_" + capability);
+  assert(fullPlan.comparison.missing_requirements.includes("survival"));
+  const planView = page.locator(".future-preparation");
+  await planView.getByText("满足已记录的准备条件", { exact: false }).waitFor();
+  await planView.getByRole("heading", { name: "完整未来配置的机制变化", exact: true }).waitFor();
+  const plannedLosses = planView.locator(".delta-grid > div").filter({ has: page.getByRole("heading", { name: "计划失去", exact: true }) });
+  await plannedLosses.getByText("角色 · 生存依赖", { exact: true }).waitFor();
+  await plannedLosses.getByText("角色 · 符文循环", { exact: true }).waitFor();
+  await planView.getByText("完整未来配置（计划，不会写入当前档案）", { exact: true }).click();
+  await planView.getByText("仆从等级 12", { exact: false }).waitFor();
+  const unchanged = await page.request.get(runtimeUrl + "/api/profile/profiles/" + fullRequest.profile_id + "/revisions/" + fullRequest.profile_revision,
+    { headers: { Authorization: "Bearer " + credential } });
+  assert.equal(unchanged.status(), 200);
+  assert.deepEqual((await unchanged.json()).facts, confirmedBeforePlan, "future_evaluation_changed_actual_profile");
+  assert.equal(confirmedBeforePlan.talents.length, 1);
+  assert.equal(confirmedBeforePlan.paragon.length, 1);
+  assert.equal(confirmedBeforePlan.runes.length, 2);
+  assert.equal(confirmedBeforePlan.temporary_effects.length, 0);
+  await page.getByRole("button", { name: "回放验证", exact: true }).click();
+  await check("回放一致");
+  await planView.screenshot({ path: path.join(output, "complete-future-build.png") });
+  assert.equal(errors.length, 0, "complete_future_uncaught_browser_error");
+  results.push("complete_future_quote_selection_costs_dependency_losses_manual_confirmation_and_replay_preserve_actual_build");
 
   stage = "source_fault_frozen_history";
   const serviceStatus = async () => {

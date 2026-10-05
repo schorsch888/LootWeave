@@ -1,3 +1,4 @@
+import { isExactCount } from "../../shared/api";
 import type { Source } from "../../shared/api";
 
 type SourceListProps = {
@@ -5,6 +6,7 @@ type SourceListProps = {
   sources: Source[];
   evidenceIds: string[];
   ranks?: boolean;
+  levels?: boolean;
   setIds?: boolean;
   defaultActor?: "hero" | "companion";
   onChange: (sources: Source[]) => void;
@@ -18,9 +20,11 @@ function listValue(value: string): string[] {
   return value.split(",").map(part => part.trim()).filter(Boolean);
 }
 
-export function SourceFields({ source, ranks, setIds, defaultActor, onChange, onDelete }: {
+export function SourceFields({ source, ranks, setIds, defaultActor, levels = false, levelLabel = "仆从实际等级", onChange, onDelete }: {
   source: Source;
   ranks: boolean;
+  levels?: boolean;
+  levelLabel?: string;
   setIds: boolean;
   defaultActor: "hero" | "companion";
   onChange: (source: Source) => void;
@@ -39,10 +43,19 @@ export function SourceFields({ source, ranks, setIds, defaultActor, onChange, on
           if (Number.isFinite(rank)) onChange({ ...source, rank });
         }
       }} /></label>}
+    {levels && <label>{levelLabel}<input aria-label={levelLabel} type="number" min="1" step="1"
+      value={Number.isSafeInteger(source.level) && (source.level ?? 0) > 0 ? source.level : ""}
+      onChange={event => onChange({ ...source, level: event.target.value === "" ? undefined
+        : isExactCount(event.target.value) && Number(event.target.value) > 0 ? Number(event.target.value) : Number.NaN })} /></label>}
+    {(source.actor ?? defaultActor) === "companion" && !levels && <label>仆从归属 ID<input aria-label="仆从归属 ID"
+      value={source.companion_id ?? ""} onChange={event => onChange({ ...source, companion_id: event.target.value || undefined })} /></label>}
     <label>明确效果（逗号分隔，不推断）<input value={source.effects.join(", ")}
       onChange={event => onChange({ ...source, effects: listValue(event.target.value) })} /></label>
     <label>作用者<select value={source.actor ?? defaultActor}
-      onChange={event => onChange({ ...source, actor: event.target.value })}>
+      onChange={event => {
+        const { companion_id, ...rest } = source;
+        onChange({ ...rest, actor: event.target.value, ...(event.target.value === "companion" ? { companion_id } : {}) });
+      }}>
       <option value="hero">角色本人</option><option value="companion">仆从</option>
     </select></label>
     {setIds && <label>符文组 ID（可选）<input value={source.set_id ?? ""}
@@ -52,7 +65,7 @@ export function SourceFields({ source, ranks, setIds, defaultActor, onChange, on
   </div>;
 }
 
-export function SourceList({ title, sources, evidenceIds, ranks = false, setIds = false, defaultActor = "hero", onChange }: SourceListProps) {
+export function SourceList({ title, sources, evidenceIds, ranks = false, levels = false, setIds = false, defaultActor = "hero", onChange }: SourceListProps) {
   const replace = (index: number, next: Source) => onChange(sources.map((source, i) => i === index ? next : source));
   const remove = (index: number) => onChange(sources.filter((_, i) => i !== index));
   const add = () => onChange([...sources, {
@@ -62,7 +75,7 @@ export function SourceList({ title, sources, evidenceIds, ranks = false, setIds 
   return <details>
     <summary>{title}（{sources.length}）</summary>
     <div className="source-list">
-      {sources.map((source, index) => <SourceFields key={index} source={source} ranks={ranks} setIds={setIds} defaultActor={defaultActor}
+      {sources.map((source, index) => <SourceFields key={index} source={source} ranks={ranks} levels={levels} setIds={setIds} defaultActor={defaultActor}
         onChange={next => replace(index, next)} onDelete={() => remove(index)} />)}
       <button type="button" onClick={add}>添加{title}</button>
     </div>

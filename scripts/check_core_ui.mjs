@@ -37,7 +37,7 @@ function* nodes(value) {
 }
 const find = (tree, predicate) => { const node = [...nodes(tree)].find(predicate); assert.ok(node, "Expected core control missing"); return node; };
 const component = (tree, name) => find(tree, n => typeof n.type === "function" && n.type.name === name);
-const button = (tree, text) => find(tree, n => n.type === "button" && n.props.children === text);
+const button = (tree, text) => find(tree, n => n.type === "button" && [n.props.children].flat(Infinity).join("") === text);
 const check = async (name, run) => { await run(); checks.push({ name, passed: true }); };
 try {
   globalThis.window = { location: { hash: "", pathname: "/" } };
@@ -67,6 +67,25 @@ try {
     assert.ok(html[2].includes("准备条件待确认"));
     assert.ok(html[2].includes("<td>fixture-shard</td><td>12</td><td>待核对</td><td>12</td><td>待核对</td>"));
     assert.ok(html.every(markup => markup.includes("条件满足也不代表 DPS 或真实游戏机制已验证")));
+  });
+
+  const fullResults = spawnSync(process.env.LOOTWEAVE_PYTHON || "python", ["-c", "import json; from tests.test_future_builds import full_case,full_result; f,p=full_case(); print(json.dumps({'facts':f,'intent':p,'result':full_result(f,p)}))"],
+    { cwd: root, windowsHide: true, encoding: "utf8", timeout: 10000 });
+  assert.ifError(fullResults.error); assert.equal(fullResults.status, 0, fullResults.stderr);
+  const full = JSON.parse(fullResults.stdout);
+  await check("complete future rendering separates affordable preparation from lost survival and rune dependencies", () => {
+    const report = full.result.future_preparation[0];
+    assert.equal(report.status, "feasible"); assert.equal(report.comparison.status, "mechanism_loss");
+    for (const capability of ["resource_efficiency", "survival", "frost_cycle"])
+      assert.ok(report.comparison.lost_capabilities.includes(capability));
+    const html = renderToStaticMarkup(createElement(EvaluationCard, { result: full.result, onReplay() {}, replaying: false, replayed: false }));
+    assert.ok(html.includes("满足已记录的准备条件") && html.includes("完整未来配置的机制变化"));
+    assert.ok(html.includes("计划失去") && html.includes("角色 · 生存依赖") && html.includes("角色 · 符文循环"));
+    assert.ok(html.includes("完整未来配置（计划，不会写入当前档案）"));
+    assert.ok(html.includes("预计装备") && html.includes("预计条件"));
+    assert.ok(html.includes("仆从等级 12") && html.includes("fixture-fire-bolt"));
+    assert.deepEqual(full.facts.talents.length, 1); assert.deepEqual(full.facts.paragon.length, 1);
+    assert.equal(full.facts.runes.length, 2);
   });
 
   await check("resource review keeps absent quantities unknown and does not alter equipment", () => {
@@ -99,6 +118,56 @@ try {
     assert.equal(quote.requirements.unlock_state, "unknown");
     assert.ok(quote.unknowns.includes("outcome_not_confirmed"));
     assert.equal(JSON.stringify(demo.facts), before);
+  });
+  await check("all future source quote kinds begin unconfirmed without changing current sources", () => {
+    for (const [kind, title, group, ranked] of [["skill", "技能", "skills", true], ["talent", "天赋", "talents", true],
+      ["paragon", "巅峰", "paragon", true], ["rune", "符文", "runes", false],
+      ["companion", "仆从", "companions", false], ["temporary_effect", "临时效果", "temporary_effects", false]]) {
+      let changed;
+      const before = JSON.stringify(demo.facts);
+      button(equipment.PreparationOptionsEditor({ facts: demo.facts, onChange: x => { changed = x; } }), "添加" + title + "准备方案").props.onClick();
+      const quote = changed.preparation_options[0];
+      assert.equal(quote.kind, kind); assert.equal(quote.input, null); assert.equal(quote.costs, null);
+      assert.equal(quote.requirements.unlock_state, "unknown"); assert.ok(quote.unknowns.includes("outcome_not_confirmed"));
+      assert.equal(quote.result.rank, ranked ? 0 : undefined);
+      assert.deepEqual(changed[group], demo.facts[group]); assert.equal(JSON.stringify(demo.facts), before);
+    }
+  });
+  await check("explicit rune removal retains original input and invalidates projected review", () => {
+    let facts = structuredClone(demo.facts);
+    const original = JSON.stringify(facts);
+    const render = () => equipment.PreparationOptionsEditor({ facts, onChange: x => { facts = x; } });
+    button(render(), "添加符文准备方案").props.onClick();
+    find(render(), n => n.props["aria-label"] === "方案目标符文").props.onChange({ target: { value: demo.facts.runes[0].id } });
+    facts.preparation_options[0].unknowns = [];
+    find(render(), n => n.props["aria-label"] === "计划移除符文").props.onChange({ target: { checked: true } });
+    const quote = facts.preparation_options[0];
+    assert.equal(quote.result, null); assert.deepEqual(quote.input, demo.facts.runes[0]);
+    assert.ok(quote.unknowns.includes("outcome_not_confirmed")); assert.deepEqual(facts.runes, demo.facts.runes);
+    find(render(), n => n.props["aria-label"] === "计划移除符文").props.onChange({ target: { checked: false } });
+    assert.deepEqual(facts.preparation_options[0].result, demo.facts.runes[0]);
+    assert.equal(JSON.stringify(demo.facts), original);
+  });
+  await check("each future source selection updates only its group and never current facts", () => {
+    for (const [kind, group, ranked] of [["skill", "skills", true], ["talent", "talents", true],
+      ["paragon", "paragon", true], ["rune", "runes", false], ["companion", "companions", false], ["temporary_effect", "temporary_effects", false]]) {
+      const facts = structuredClone(demo.facts), id = "planned-" + kind;
+      facts.preparation_options = [{ id: "quote-" + kind, kind, target_id: id, input: null,
+        result: { id, actor: kind === "companion" ? "companion" : "hero", effects: [], evidence_ids: ["demo-input"], ...(ranked ? { rank: 3 } : {}) },
+        context: facts.context, class_id: facts.class_id, costs: null, unknowns: ["outcome_not_confirmed"], evidence_ids: ["demo-input"],
+        requirements: { required_level: null, max_rank: null, unlock_state: "unknown" } }];
+      const before = JSON.stringify(facts);
+      let purpose = { ...structuredClone(demo.intent), allowed_build_changes: [group], future_builds: [] };
+      const render = () => BuildEditor({ facts, intent: purpose, onFactsChange: () => assert.fail("current facts changed"), onIntentChange: x => { purpose = x; } });
+      button(render(), "添加未来构筑").props.onClick();
+      const oldBuild = structuredClone(purpose.future_builds[0]);
+      find(render(), n => n.props["data-preparation-id"] === "quote-" + kind).props.onChange({ target: { checked: true } });
+      assert.ok(purpose.future_builds[0][group].includes(id));
+      for (const other of ["skills", "talents", "paragon", "runes", "companions", "temporary_effects"].filter(key => key !== group))
+        assert.deepEqual(purpose.future_builds[0][other], oldBuild[other]);
+      find(render(), n => n.props["data-preparation-id"] === "quote-" + kind).props.onChange({ target: { checked: false } });
+      assert.deepEqual(purpose.future_builds[0][group], oldBuild[group]); assert.equal(JSON.stringify(facts), before);
+    }
   });
   const projection = () => { const input = structuredClone(demo.facts.candidate_item); return { id: "upgrade", kind: "equipment", target_id: input.instance_id,
     input, result: { ...structuredClone(input), record_kind: "projected_item" }, context: structuredClone(demo.facts.context), class_id: demo.facts.class_id,

@@ -124,7 +124,7 @@ class ServiceIntegrationTests(unittest.TestCase):
         facts["conditions"]["buff_active"] = "unknown"
         purpose.update(required_capabilities=["temporary_focus"], future_builds=[])
         body, result = self.create_result(facts, purpose)
-        self.assertEqual("0.1.7", result["pin"]["evaluator_version"])
+        self.assertEqual("0.1.8", result["pin"]["evaluator_version"])
         self.assertEqual("needs_confirmation", result["retention"])
         self.assertEqual("blocked", result["comparison"]["status"])
         self.assertEqual([], result["comparison"]["missing_requirements"])
@@ -144,7 +144,7 @@ class ServiceIntegrationTests(unittest.TestCase):
             replay = self.evaluation.call("POST", "/v1/evaluations/evaluate/replay", {})
             self.assertTrue(replay["identical"])
             self.assertEqual(result, replay["result"])
-            self.assertEqual("0.1.7", replay["result"]["pin"]["evaluator_version"])
+            self.assertEqual("0.1.8", replay["result"]["pin"]["evaluator_version"])
 
     def test_confirmed_effect_owners_and_embedded_default_survive_http_replay(self):
         facts = copy.deepcopy(DEMO["facts"])
@@ -153,9 +153,9 @@ class ServiceIntegrationTests(unittest.TestCase):
         candidate["embedded_items"] = [{"id": "socketed", "effects": ["fixture-vitality-support"],
                                          "evidence_ids": ["demo-input"]}]
         for rune in facts["runes"]:
-            rune["actor"] = "companion"
+            rune.update(actor="companion", companion_id=facts["companions"][0]["id"])
         body, result = self.create_result(facts)
-        self.assertEqual("0.1.7", result["pin"]["evaluator_version"])
+        self.assertEqual("0.1.8", result["pin"]["evaluator_version"])
         self.assertEqual("keep", result["retention"])
         for phase in ("before", "after"):
             frost = next(row for row in result["comparison"][phase] if row["rule_id"] == "frost-two")

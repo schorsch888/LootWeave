@@ -15,6 +15,11 @@ def source(value: dict, known: set[str]) -> None:
     effects = strings(value.get("effects"), "source_effects_required")
     require(len(effects) == len(set(effects)), "duplicate_source_effect")
     require(value.get("actor", "hero") in ("hero", "companion"), "invalid_effect_owner")
+    if "level" in value:
+        require(type(value["level"]) is int and 1 <= value["level"] < 2**53,
+                "source_level_required")
+    if "companion_id" in value:
+        identifier(value["companion_id"])
     evidence_refs(value, known)
 
 
@@ -93,7 +98,8 @@ def preparation_facts(value: dict, known: set[str]) -> None:
         option_id = identifier(option.get("id"))
         require(option_id not in ids, "duplicate_preparation_option")
         ids.add(option_id)
-        require(option.get("kind") in ("equipment", "skill"), "preparation_kind_required")
+        require(option.get("kind") in ("equipment", "skill", "talent", "paragon", "rune", "companion", "temporary_effect"),
+                "preparation_kind_required")
         context(option.get("context"))
         identifier(option.get("class_id"))
         target_id = identifier(option.get("target_id"))
@@ -108,6 +114,8 @@ def preparation_facts(value: dict, known: set[str]) -> None:
             require(key in requirements and (requirements[key] is None or
                     (type(requirements[key]) is int and 1 <= requirements[key] < 2**53)),
                     "preparation_requirements_required")
+        if "companion_id" in requirements:
+            identifier(requirements["companion_id"])
         require("input" in option, "preparation_input_required")
         if option["kind"] == "equipment":
             item(option["input"], known)
@@ -126,16 +134,35 @@ def preparation_facts(value: dict, known: set[str]) -> None:
                     "projected_socket_capacity_exceeded")
         else:
             before, after = option["input"], option.get("result")
-            if before is not None:
-                source(before, known)
-                require(before["id"] == target_id and type(before.get("rank")) is int
-                        and before["rank"] >= 0, "preparation_skill_required")
-            source(after, known)
-            require(after["id"] == target_id and type(after.get("rank")) is int
-                    and 0 <= after["rank"] < 2**53, "preparation_skill_required")
-            require(after["rank"] != 0 or not after["effects"], "unallocated_source_has_effects")
-            require(before is None or before.get("actor", "hero") == after.get("actor", "hero"),
-                    "preparation_skill_owner_conflict")
+            ranked = option["kind"] in ("skill", "talent", "paragon")
+            code = "preparation_skill_required" if option["kind"] == "skill" else "preparation_source_required"
+            require("result" in option and (ranked or before is not None or after is not None), code)
+            for entry in (before, after):
+                if entry is None:
+                    continue
+                source(entry, known)
+                require(entry["id"] == target_id, code)
+                if ranked:
+                    require(type(entry.get("rank")) is int and entry["rank"] >= 0, code)
+                if option["kind"] == "rune" and entry.get("set_id") is not None:
+                    identifier(entry["set_id"])
+                if option["kind"] == "companion":
+                    require(entry.get("actor", "companion") == "companion", "preparation_source_owner_conflict")
+                if option["kind"] == "companion" and entry.get("companion_id") is not None:
+                    require(entry["companion_id"] == target_id, "preparation_source_owner_conflict")
+            if ranked:
+                require(after is not None and type(after.get("rank")) is int
+                        and 0 <= after["rank"] < 2**53, code)
+                require(after["rank"] != 0 or not after["effects"], "unallocated_source_has_effects")
+            default_actor = "companion" if option["kind"] == "companion" else "hero"
+            require(before is None or after is None or
+                    before.get("actor", default_actor) == after.get("actor", default_actor),
+                    "preparation_skill_owner_conflict" if option["kind"] == "skill" else
+                    "preparation_source_owner_conflict")
+            owner_default = target_id if option["kind"] == "companion" else None
+            require(before is None or after is None or
+                    before.get("companion_id", owner_default) == after.get("companion_id", owner_default),
+                    "preparation_source_owner_conflict")
 
 
 def snapshot(value: dict) -> dict:
@@ -192,6 +219,8 @@ def snapshot(value: dict) -> dict:
             if key in ("skills", "talents", "paragon"):
                 require(type(entry.get("rank")) is int and entry["rank"] >= 0, "source_rank_required")
                 require(entry["rank"] != 0 or not entry["effects"], "unallocated_source_has_effects")
+            if key == "companions" and entry.get("companion_id") is not None:
+                require(entry["companion_id"] == entry["id"], "source_companion_identity_conflict")
             if key == "runes" and entry.get("set_id") is not None:
                 identifier(entry["set_id"])
     for entry in value["observed_panel"]:

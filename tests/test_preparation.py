@@ -386,7 +386,7 @@ class PreparationPersistence(unittest.TestCase):
             self.assertEqual(result, evaluation.read("quoted-result"))
             for _ in range(10):
                 self.assertEqual(result, evaluation.replay("quoted-result")["result"])
-            self.assertEqual("0.1.7", result["pin"]["evaluator_version"])
+            self.assertEqual("0.1.8", result["pin"]["evaluator_version"])
 
 
 if __name__ == "__main__":
