@@ -2,9 +2,9 @@
 
 ## Start here
 
-- Read [README](README.md), [design](docs/design.md), and [roadmap](docs/roadmap.md) before changing the project.
+- Read [README](README.md), [design](docs/design.md), [architecture contract](docs/architecture.md), and [roadmap](docs/roadmap.md) before changing the project.
 - For research work, read the [research guide](docs/research.md) and the selected evidence relevant to the task.
-- This is a research and design project with reproducibility tools and selected evidence, not a runnable application. Distinguish facts, constraints, proposals, unknowns, and unmeasured targets.
+- The project contains research tools, selected evidence, and an experimental local implementation. Real-game support and a production Windows release remain unaccepted. Distinguish facts, constraints, proposals, unknowns, and unmeasured targets.
 - Product implementation requires a task requesting it. Continue authorized work without repeated confirmation for routine, reversible local steps.
 
 ## Make focused changes
@@ -18,7 +18,10 @@
 ## Preserve domain boundaries
 
 - Required architecture: preserve the Windows single-EXE entry point; use Feature-Sliced Design (FSD) for the frontend and Domain-Driven Design (DDD) microservices organized by business capability for the backend.
-- Required implementation stack: Rust + Python. React/TypeScript, Tauri, the Rust/Python responsibility split, deployment, and packaging remain proposals requiring validation.
+- Required implementation stack: Rust + Python. React/TypeScript, Tauri, and the Rust/Python split follow the [architecture contract](docs/architecture.md). Packaging, deployment on clean machines, and real-game support still require acceptance evidence.
+- Before editing code, identify its owner, permitted callers, data owner, and affected contract. Rust owns desktop capture and supervision. Python owns OCR, business services, and their storage. Keep game rules and equipment decisions out of frontend and gateway code.
+- Use versioned APIs between business services. Do not import another service's implementation or open its storage. Limit shared helpers to wire contracts and infrastructure. The architecture contract defines the exceptions for service composition and offline maintenance.
+- For authorized ownership, IPC, deployment, or language changes, follow the architecture change procedure. Do not move or copy business rules into Rust during incidental cleanup or optimization. Preserve pinned replay. Record compatibility, checks, and remaining unknowns.
 - Isolate rules by game, edition, build, mode, and season. Deskrawl is the first research target; Diablo II, III, and IV are future targets.
 - Static definitions are not owned item instances. Field decoding does not establish complete mechanics, DPS, or final drop probabilities. Unknown prerequisites must block unsupported conclusions.
 - Do not read or modify player saves, modify game files, inject into games, access process memory or DMA, control gameplay, or dispose of items automatically.
@@ -38,6 +41,7 @@ Run these checks from the repository root, plus checks relevant to the change. T
 
 ```sh
 python -m unittest discover -s tests -v
+python scripts/check_architecture.py
 python scripts/check_public_docs.py
 python -m compileall -q scripts
 ```

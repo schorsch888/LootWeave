@@ -77,6 +77,7 @@ python -m compileall -q scripts
 | [开发指南](docs/development.md) | 源码环境、检查、Windows 构建与故障排查 |
 | [实现说明](docs/implementation.md) | 当前源码行为、服务归属与接口约定 |
 | [设计](docs/design.md) | 产品边界、数据模型、架构与隐私 |
+| [架构约束](docs/architecture.md) | Rust/Python 职责、允许的调用关系、agent 约束与验证范围 |
 | [路线图](docs/roadmap.md) | 里程碑、依赖与验收条件 |
 | [研究指南](docs/research.md) | 证据目录、前置条件、复现方法与限制 |
 | [验证记录](docs/validation.md) | 有日期的测量、构建身份、失败与未通过的验收条件 |
@@ -99,7 +100,7 @@ python -m compileall -q scripts
 | [services/](services/) | 按业务能力组织的 Python 服务，以及 OCR 基础设施 |
 | [runtime.py](runtime.py) | 本地开发启动器 |
 
-架构要求采用 Rust + Python、Windows 单 EXE 启动入口、FSD 前端与 DDD 后端微服务。当前宿主、框架、职责划分和打包方案仍需验证；详见[设计](docs/design.md#local-architecture)。
+架构要求采用 Rust + Python、Windows 单 EXE 启动入口、FSD 前端与 DDD 后端微服务。当前宿主、框架与 Rust/Python 职责遵循[架构约束](docs/architecture.md)。打包、干净机器部署和真实游戏支持仍需验收证据。
 
 ## 参与贡献与获取帮助
 
