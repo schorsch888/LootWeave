@@ -179,11 +179,12 @@ def process_snapshot():
 
 
 def process_snapshot_time():
+    """Use precise UTC FILETIME; a coarse tick can predate a newly created child."""
     kernel = ctypes.WinDLL("kernel32", use_last_error=True)
-    kernel.GetSystemTimeAsFileTime.argtypes = (ctypes.POINTER(wintypes.FILETIME),)
-    kernel.GetSystemTimeAsFileTime.restype = None
+    kernel.GetSystemTimePreciseAsFileTime.argtypes = (ctypes.POINTER(wintypes.FILETIME),)
+    kernel.GetSystemTimePreciseAsFileTime.restype = None
     before = wintypes.FILETIME()
-    kernel.GetSystemTimeAsFileTime(ctypes.byref(before))
+    kernel.GetSystemTimePreciseAsFileTime(ctypes.byref(before))
     return _filetime_value(before)
 
 
