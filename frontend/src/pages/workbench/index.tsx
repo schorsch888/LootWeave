@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { CaptureObservationForm } from "../../features/capture-observation";
 import type { CaptureObservation } from "../../features/capture-observation";
-import { EquipmentEditor, ObservationFields, emptySnapshot, mapItemField } from "../../features/edit-equipment";
+import { EquipmentEditor, PreparationOptionsEditor, ObservationFields, emptySnapshot, mapItemField } from "../../features/edit-equipment";
 import { BuildEditor } from "../../features/edit-build";
+import { OwnedResourcesEditor } from "../../features/edit-owned-resources";
 import { ProfileLibrary } from "../../features/profile-library";
 import { AcquisitionEvidence } from "../../features/acquisition-evidence";
 import { RouteTrials } from "../../features/route-trials";
@@ -163,6 +164,8 @@ export function Workbench() {
           <p className="muted">版本不确定时保留 unknown。研究包提供的版本参考不会自动成为你的游戏版本。</p>
         </section>
         <EquipmentEditor facts={facts} onChange={changeFacts}/>
+        <OwnedResourcesEditor facts={facts} onChange={changeFacts}/>
+        <PreparationOptionsEditor facts={facts} onChange={changeFacts}/>
         <section className="panel"><div className="section-heading"><div><span className="eyebrow">04 · BUILD AND INTENT</span><h2>当前构筑与比较目标</h2></div></div>
           <BuildEditor facts={facts} intent={purpose} onFactsChange={changeFacts} onIntentChange={next => { setPurpose(next); setResult(undefined); setReplayed(false); }}/>
           <div className="fields conditions">{Object.entries(facts.conditions).map(([key, state]) => <label key={key}>{({ hero_cast: "角色本人施法", mana_starved: "法力成为瓶颈", survival_required: "需要生存机制", companion_present: "仆从可用", target_frozen: "目标已冻结", buff_active: "临时增益有效" } as Record<string, string>)[key] || key}<select value={state} onChange={e => changeFacts({ ...facts, conditions: { ...facts.conditions, [key]: e.target.value } })}><option value="active">已确认生效</option><option value="inactive">已确认未生效</option><option value="unknown">未知 · 需要确认</option></select></label>)}</div>

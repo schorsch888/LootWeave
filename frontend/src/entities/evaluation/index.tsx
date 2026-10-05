@@ -10,7 +10,23 @@ const owners: Record<string, string> = { hero: "角色", companion: "仆从" };
 const mechanismStates: Record<string, string> = { active: "已确认生效", inactive: "已确认未生效", unknown: "未知 · 待确认" };
 const unknownRequirement = "unknown_required_capability:";
 const blockerNames: Record<string, string> = { game_mechanics_not_accepted: "真实游戏机制尚未验证，当前只比较已确认的物品字段。", inventory_not_fully_scanned: "库存尚未完整核对，不能判断全部未来用途。", inventory_not_recorded: "此快照尚未记录库存；请核对后保存，缺少记录不等于空库存。", future_build_change_not_permitted: "所选未来组合包含未允许的技能或装备更改。", candidate_class_incompatible: "候选装备不适用于当前职业；当前场景不能给出构筑用途结论。", cross_time_snapshot: "存在其他时点的来源，请核对同一时点的构筑。", "input_unknown:build_not_reviewed": "当前构筑尚未完整核对。", "input_unknown:current_slot_not_reviewed": "当前同槽装备尚未核对。", "input_unknown:ocr_fields_not_mapped": "请逐项核对截图识别字段。" };
-const blockerLabel = (value: string) => blockerNames[value] || (value.startsWith(unknownRequirement)
+const preparationBlockers: Record<string, string> = {
+  preparation_option_not_recorded: "准备方案未记录", preparation_evidence_unconfirmed: "方案依据存在冲突或来自其他时点",
+  preparation_scope_mismatch: "方案的游戏版本、模式或职业已变化", preparation_unknown: "准备方案仍有不确定项",
+  preparation_target_conflict: "同一目标选择了多个互相冲突的方案", preparation_unlock_unknown: "学习或改造条件尚未确认",
+  preparation_unlock_not_met: "尚未解锁学习或改造条件", preparation_level_unknown: "操作等级要求尚未确认",
+  preparation_level_not_met: "角色等级未达到操作要求", preparation_input_changed: "原物品或技能已变化，需要重新核对方案",
+  preparation_skill_selection_conflict: "方案目标技能与未来构筑选择不一致", preparation_rank_limit_unknown: "技能等级上限尚未确认",
+  preparation_rank_not_met: "目标技能等级超过已确认上限", preparation_companion_requirements_unknown: "仆从专属学习条件尚未确认",
+  preparation_item_not_selected: "改造目标物品尚未选入未来配套", preparation_outcome_unknown: "预计改后属性存在未知或随机结果",
+  preparation_cost_unknown: "准备方案的全部费用尚未确认", future_skill_not_recorded: "未来技能的等级和来源尚未记录",
+  future_skill_removal_not_recorded: "撤销原技能的条件和费用尚未记录", preparation_cost_out_of_range: "合计费用超出可靠整数范围",
+  preparation_resource_unknown: "相关材料或货币数量尚未核对", preparation_resource_insufficient: "持有材料或货币不足",
+  preparation_budget_exceeded: "合计费用超过本次预算", future_required_level_unknown: "所选配套物品的穿戴等级尚未确认",
+};
+const blockerLabel = (value: string) => preparationBlockers[value.split(":")[0]]
+  ? preparationBlockers[value.split(":")[0]] + "：" + value.split(":").slice(1).join(" · ")
+  : blockerNames[value] || (value.startsWith(unknownRequirement)
   ? "该版本知识包尚未收录所需机制：" + value.slice(unknownRequirement.length) + "，暂不能判断其适用性。"
   : value.startsWith("unknown_affix_or_unit:") ? "尚无此词条的机制或单位规则：" + value.split(":")[1]
   : value.startsWith("unknown_context:") ? "游戏范围仍待确认：" + value.split(":")[1]
@@ -43,6 +59,24 @@ export function EvaluationCard({ result, onReplay, replaying, replayed }: { resu
     {result.comparison.item_rolls && <div className="roll-delta"><h3>实际词条对比</h3><p className="muted">{result.comparison.item_rolls.current_item?.name || "当前槽位无物品记录"} → {result.comparison.item_rolls.candidate_item.name || "候选物品"}。仅比较物品字段；缺失值保留为未知，不作为零值。</p>
       {result.comparison.item_rolls.rows.length ? <table><thead><tr><th>词条</th><th>当前物品</th><th>候选物品</th><th>差值</th><th>核对状态</th></tr></thead><tbody>{result.comparison.item_rolls.rows.map(row => <tr key={row.affix_id}><td>{statNames[row.affix_id] || row.affix_id}</td><td>{rollValue(row.current_value, row.current_unit)}</td><td>{rollValue(row.candidate_value, row.candidate_unit)}</td><td>{row.delta === null ? "—" : (row.delta > 0 ? "+" : "") + row.delta + (row.current_unit === "percent" || row.current_unit === "percent_points" ? " 百分点" : " " + (units[row.current_unit || ""] || row.current_unit || ""))}</td><td>{rollStates[row.status] || row.status}</td></tr>)}</tbody></table> : <p className="muted">尚无实际词条，请在装备表单中录入。</p>}
       <p className="muted">差值不代表 DPS 或提升比例，特殊效果、套装与完整构筑需要另外核对。</p>
+    </div>}
+    {(result.future_preparation ?? []).length > 0 && <div className="future-preparation">
+      <h3>未来配装的准备条件</h3>
+      <p className="muted">按本次已核对的方案、角色等级、解锁条件、材料和预算计算。预计结果只属于计划，游戏中的实际结果需重新核对；条件满足也不代表 DPS 或真实游戏机制已验证。</p>
+      {result.future_preparation!.map(plan => <details open key={plan.future_build_index}>
+        <summary>未来构筑 {plan.future_build_index + 1} · {({ feasible: "满足已记录的准备条件", infeasible: "当前条件不满足", unknown: "准备条件待确认" })[plan.status]}</summary>
+        <p>原可行性声明：{feasibility[plan.declared_feasibility] || plan.declared_feasibility}</p>
+        <p>预计技能：{plan.skill_allocations.map(skill => skill.id + " · " + skill.rank + " 级 · " + (owners[skill.actor || "hero"] || skill.actor)).join("、") || "未记录"}</p>
+        {plan.options.filter(option => option.kind === "equipment").map(option => {
+          const item = option.projected_result;
+          return "affixes" in item ? <p key={option.id}>预计改后物品：{item.name || option.target_id} · 强化 {item.upgrade_state.known ? item.upgrade_state.level : "未知"}
+            {item.affixes.map(affix => " · " + (statNames[affix.id] || affix.id) + " " + rollValue(affix.value, affix.unit)).join("")}</p> : null;
+        })}
+        {plan.resources.length > 0 && <table><thead><tr><th>材料或货币</th><th>已确认费用合计</th><th>持有</th><th>预算上限</th><th>材料缺口</th><th>超出预算</th></tr></thead>
+          <tbody>{plan.resources.map(row => <tr key={row.resource_id}><td>{row.resource_id}</td><td>{row.cost ?? "待确认"}</td><td>{row.available ?? "待核对"}</td><td>{row.budget_limit ?? "未设上限"}</td><td>{row.missing ?? "待核对"}</td><td>{row.budget_excess ?? "未设上限"}</td></tr>)}</tbody></table>}
+        {plan.blockers.length > 0 && <ul>{plan.blockers.map(reason => <li key={reason}>{blockerLabel(reason)}</li>)}</ul>}
+        <small>准备方案依据：{plan.input_evidence_ids.join("、") || "待核对"}</small>
+      </details>)}
     </div>}
     <div className="verdict"><strong>{status[result.comparison.status] || result.comparison.status}</strong><span>保留价值与立即换装分别判断</span></div>
     {result.comparison.scope_compatible === false ? <p className="warning">游戏机制尚未验证，或范围、版本不匹配；物品字段差异仍可查看。</p> : <div className="delta-grid">

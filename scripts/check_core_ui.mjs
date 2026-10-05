@@ -1,6 +1,7 @@
 // Direct component handlers and static rendering; no browser, desktop or input automation.
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { createServer } from "../frontend/node_modules/vite/dist/node/index.js";
@@ -46,10 +47,117 @@ try {
   const model = await server.ssrLoadModule("/src/features/edit-equipment/model.ts");
   const { SourceList } = await server.ssrLoadModule("/src/entities/build-source/index.tsx");
   const { BuildEditor } = await server.ssrLoadModule("/src/features/edit-build/index.tsx");
+  const { OwnedResourcesEditor } = await server.ssrLoadModule("/src/features/edit-owned-resources/index.tsx");
   const { EvaluationCard } = await server.ssrLoadModule("/src/entities/evaluation/index.tsx");
   const { Workbench } = await server.ssrLoadModule("/src/pages/workbench/index.tsx");
   const demo = JSON.parse(readFileSync(resolve(root, "fixtures/demo.json"), "utf8"));
   const fresh = equipment.emptySnapshot();
+  const renderedPreparations = spawnSync(process.env.LOOTWEAVE_PYTHON || "python", ["-c", "import copy,json; from tests.test_preparation import prepared_case,run_case; f,p=prepared_case(); rows=[run_case(f,p)]; f['owned_resources']['balances'][0]['amount']=8; rows.append(run_case(f,p)); del f['owned_resources']; rows.append(run_case(f,p)); print(json.dumps(rows))"],
+    { cwd: root, windowsHide: true, encoding: "utf8", timeout: 10000 });
+  assert.ifError(renderedPreparations.error);
+  assert.equal(renderedPreparations.status, 0, renderedPreparations.stderr);
+  const preparationRows = JSON.parse(renderedPreparations.stdout);
+  await check("frozen preparation rendering distinguishes feasible, shortage and unknown amounts", () => {
+    const html = preparationRows.map(result => renderToStaticMarkup(createElement(EvaluationCard, { result, onReplay() {}, replaying: false, replayed: false })));
+    assert.ok(html[0].includes("满足已记录的准备条件"));
+    assert.ok(html[0].includes("fixture-fire-bolt · 3 级 · 角色"));
+    assert.ok(html[0].includes("预计改后物品"));
+    assert.ok(html[1].includes("当前条件不满足"));
+    assert.ok(html[1].includes("<td>fixture-shard</td><td>12</td><td>8</td><td>12</td><td>4</td>"));
+    assert.ok(html[2].includes("准备条件待确认"));
+    assert.ok(html[2].includes("<td>fixture-shard</td><td>12</td><td>待核对</td><td>12</td><td>待核对</td>"));
+    assert.ok(html.every(markup => markup.includes("条件满足也不代表 DPS 或真实游戏机制已验证")));
+  });
+
+  await check("resource review keeps absent quantities unknown and does not alter equipment", () => {
+    let changed;
+    const original = JSON.stringify(fresh);
+    button(OwnedResourcesEditor({ facts: fresh, onChange: x => { changed = x; } }), "开始核对资源").props.onClick();
+    assert.deepEqual(changed.owned_resources, { coverage: "partial", balances: [] });
+    assert.equal(JSON.stringify(fresh), original);
+    button(OwnedResourcesEditor({ facts: changed, onChange: x => { changed = x; } }), "添加材料或货币").props.onClick();
+    assert.ok(Number.isNaN(changed.owned_resources.balances[0].amount));
+    assert.deepEqual(changed.owned_resources.balances[0].evidence_ids, fresh.evidence_ids);
+  });
+  await check("resource changes invalidate complete coverage and preserve evidence", () => {
+    let changed;
+    const facts = { ...demo.facts, owned_resources: { coverage: "complete", balances: [{ resource_id: "fixture-shard", amount: 20, evidence_ids: ["demo-input"] }] } };
+    const tree = OwnedResourcesEditor({ facts, onChange: x => { changed = x; } });
+    find(tree, n => n.props["aria-label"] === "第 1 项资源个数").props.onChange({ target: { value: "" } });
+    assert.equal(changed.owned_resources.coverage, "partial");
+    assert.ok(Number.isNaN(changed.owned_resources.balances[0].amount));
+    assert.equal(facts.owned_resources.balances[0].amount, 20);
+  });
+  await check("new preparation quote records a projection and unknown cost rather than changing actual equipment", () => {
+    let changed;
+    const before = JSON.stringify(demo.facts);
+    button(equipment.PreparationOptionsEditor({ facts: demo.facts, onChange: x => { changed = x; } }), "添加装备改造方案").props.onClick();
+    const quote = changed.preparation_options[0];
+    assert.equal(quote.result.record_kind, "projected_item");
+    assert.deepEqual(quote.input, demo.facts.candidate_item);
+    assert.equal(quote.costs, null);
+    assert.equal(quote.requirements.unlock_state, "unknown");
+    assert.ok(quote.unknowns.includes("outcome_not_confirmed"));
+    assert.equal(JSON.stringify(demo.facts), before);
+  });
+  const projection = () => { const input = structuredClone(demo.facts.candidate_item); return { id: "upgrade", kind: "equipment", target_id: input.instance_id,
+    input, result: { ...structuredClone(input), record_kind: "projected_item" }, context: structuredClone(demo.facts.context), class_id: demo.facts.class_id,
+    requirements: { required_level: 1, max_rank: null, unlock_state: "unlocked" }, costs: [{ resource_id: "shard", amount: 5 }, { resource_id: "gold", amount: 100 }],
+    unknowns: [], evidence_ids: ["demo-input"] }; };
+  await check("fee confirmation preserves paid draft rows across uncheck and recheck", () => {
+    let facts = { ...demo.facts, preparation_options: [projection()] };
+    const render = () => equipment.PreparationOptionsEditor({ facts, onChange: x => { facts = x; } });
+    find(render(), n => n.props["aria-label"] === "已核对方案全部费用").props.onChange({ target: { checked: false } });
+    assert.equal(facts.preparation_options[0].costs.length, 2);
+    assert.ok(facts.preparation_options[0].unknowns.includes("costs_not_confirmed"));
+    find(render(), n => n.props["aria-label"] === "已核对方案全部费用").props.onChange({ target: { checked: true } });
+    assert.deepEqual(facts.preparation_options[0].costs, projection().costs);
+    assert.ok(!facts.preparation_options[0].unknowns.includes("costs_not_confirmed"));
+  });
+  await check("equipment projection edits invalidate result review while keeping actual instance unchanged", () => {
+    let changed;
+    const facts = { ...demo.facts, preparation_options: [projection()] };
+    const tree = equipment.PreparationOptionsEditor({ facts, onChange: x => { changed = x; } });
+    const editor = component(tree, "ItemEditor");
+    editor.props.onChange({ ...editor.props.item, upgrade_state: { known: true, level: 2 } });
+    assert.ok(changed.preparation_options[0].unknowns.includes("outcome_not_confirmed"));
+    assert.equal(changed.preparation_options[0].result.upgrade_state.level, 2);
+    assert.deepEqual(changed.candidate_item, facts.candidate_item);
+  });
+  await check("future selection retains planned skill rank and actor without mutating confirmed facts", () => {
+    let changed;
+    const quote = { ...projection(), id: "learn", kind: "skill", target_id: "fixture-fire-bolt", input: null,
+      result: { id: "fixture-fire-bolt", rank: 4, actor: "hero", effects: [], evidence_ids: ["demo-input"] } };
+    const facts = { ...demo.facts, preparation_options: [quote] };
+    const purpose = { ...demo.intent, allowed_build_changes: ["skills"], future_builds: [{ skills: demo.facts.skills.map(s => s.id), conditions: {}, feasibility: "owned", preparation_options: [] }] };
+    const tree = BuildEditor({ facts, intent: purpose, onFactsChange: () => assert.fail("facts changed"), onIntentChange: x => { changed = x; } });
+    find(tree, n => n.props["data-preparation-id"] === "learn").props.onChange({ target: { checked: true } });
+    assert.ok(changed.future_builds[0].skills.includes("fixture-fire-bolt"));
+    assert.deepEqual(changed.future_builds[0].preparation_options, ["learn"]);
+    assert.equal(changed.revision, purpose.revision + 1);
+    const html = renderToStaticMarkup(createElement(BuildEditor, { facts, intent: changed, onFactsChange() {}, onIntentChange() {} }));
+    assert.ok(html.includes("fixture-fire-bolt · 4 级 · 角色"));
+    assert.ok(!facts.skills.some(skill => skill.id === "fixture-fire-bolt"));
+  });
+  await check("resource budget accepts explicit zero and leaves blank unknown", () => {
+    let changed;
+    const purpose = { ...demo.intent, budget: { resource_limits: [{ resource_id: "shard", amount: 5 }] } };
+    const render = intent => BuildEditor({ facts: demo.facts, intent, onFactsChange() {}, onIntentChange: x => { changed = x; } });
+    find(render(purpose), n => n.props["aria-label"] === "预算上限").props.onChange({ target: { value: "0" } });
+    assert.equal(changed.budget.resource_limits[0].amount, 0);
+    assert.equal(changed.revision, purpose.revision + 1);
+    find(render(changed), n => n.props["aria-label"] === "预算上限").props.onChange({ target: { value: "" } });
+    assert.ok(Number.isNaN(changed.budget.resource_limits[0].amount));
+  });
+  await check("missing preparation option remains visible until explicitly removed", () => {
+    let changed;
+    const purpose = { ...demo.intent, future_builds: [{ skills: [], conditions: {}, feasibility: "owned", preparation_options: ["lost-quote"] }] };
+    const tree = BuildEditor({ facts: demo.facts, intent: purpose, onFactsChange() {}, onIntentChange: x => { changed = x; } });
+    button(tree, "移除失效准备方案").props.onClick();
+    assert.deepEqual(changed.future_builds[0].preparation_options, []);
+    assert.deepEqual(purpose.future_builds[0].preparation_options, ["lost-quote"]);
+  });
+
   const equipmentStates = []; let equipmentCursor = 0;
   globalThis.equipmentFixture = { useState(value) {
     const index = equipmentCursor++;

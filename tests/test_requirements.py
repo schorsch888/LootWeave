@@ -34,7 +34,15 @@ class RequirementTests(unittest.TestCase):
                 result = current_result(case["inputs"])
                 expected = case["expected_current_result"]
                 self.assertEqual(expected["retention"], result["retention"])
-                self.assertEqual(expected["blockers"], result["blockers"])
+                expected_blockers = list(expected["blockers"])
+                if case["evaluation_id"] == "legacy-unknown-goal-future-use":
+                    # This unchanged legacy input has no confirmed learning/removal quotes.
+                    # Engine 0.1.7 must expose both missing preparation facts in addition to the unknown goal.
+                    expected_blockers += ["future_skill_not_recorded:fixture-fire-bolt",
+                                          "future_skill_removal_not_recorded:fixture-cold-bolt"]
+                    self.assertEqual("unknown", result["future_preparation"][0]["status"])
+                    self.assertFalse(any(reason["kind"] == "future_use" for reason in result["reasons"]))
+                self.assertEqual(sorted(expected_blockers), result["blockers"])
                 self.assertEqual(expected["comparison"],
                                  {key:result["comparison"].get(key) for key in expected["comparison"]})
                 self.assertEqual(digest(case["inputs"]["intent"]), result["pin"]["intent_hash"])

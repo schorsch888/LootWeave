@@ -42,7 +42,7 @@ export function ConfirmSnapshot({ onBusyChange, draftApplied, capture, facts, ra
           captured_at: facts.captured_at, verification: "confirmed", conflicts: [] });
         const ids = [request.inputEvidenceId];
         addRefs(confirmed, ids);
-        for (const item of [...Object.values(confirmed.equipped_items), confirmed.candidate_item]) {
+        for (const item of [...Object.values(confirmed.equipped_items), confirmed.candidate_item, ...(confirmed.inventory_items ?? [])]) {
           addRefs(item, ids);
           for (const affix of item.affixes) addRefs(affix, ids);
           for (const embedded of item.embedded_items) addRefs(embedded, ids);
@@ -50,6 +50,15 @@ export function ConfirmSnapshot({ onBusyChange, draftApplied, capture, facts, ra
         for (const sources of [confirmed.skills, confirmed.talents, confirmed.paragon, confirmed.runes,
           confirmed.companions, confirmed.temporary_effects, confirmed.observed_panel]) {
           for (const source of sources) addRefs(source, ids);
+        }
+        for (const balance of confirmed.owned_resources?.balances ?? []) addRefs(balance, ids);
+        for (const option of confirmed.preparation_options ?? []) {
+          addRefs(option, ids);
+          addRefs(option.result, ids);
+          if (option.kind === "equipment") {
+            for (const affix of option.result.affixes) addRefs(affix, ids);
+            for (const embedded of option.result.embedded_items) addRefs(embedded, ids);
+          }
         }
       }
       const result = await api<{ revision: number; facts: Snapshot; facts_hash: string; build_hash: string; observation_time_status?: string }>("profile/confirmations", {

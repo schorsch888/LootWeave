@@ -39,7 +39,7 @@ def combination():
     return facts, purpose
 
 
-def run(facts, purpose=None, pack=None, version='0.1.6'):
+def run(facts, purpose=None, pack=None, version='0.1.7'):
     pack = deepcopy(pack or PACK)
     profile = {'contract_version': 1, 'profile_id': 'owned-fixture', 'revision': 1,
                'facts': facts, 'facts_hash': digest(facts)}

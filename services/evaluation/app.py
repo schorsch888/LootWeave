@@ -43,7 +43,6 @@ class Evaluation:
                 "profile_revision_required")
         require(isinstance(body.get("pack_hash"), str) and len(body["pack_hash"]) == 64,
                 "pack_hash_required")
-        purpose = intent(body.get("intent"))
         request_hash = digest(body)
         with connect(self.database) as db:
             old = db.execute("SELECT request_hash,result,result_hash FROM evaluations WHERE id=?", (evaluation_id,)).fetchone()
@@ -52,6 +51,7 @@ class Evaluation:
                 stored = json.loads(old[1])
                 require(digest(stored) == old[2], "evaluation_integrity_error", 409)
                 return stored
+        purpose = intent(body.get("intent"))
         profile = self.profile.call("GET", f"/v1/profiles/{profile_id}/revisions/{body['profile_revision']}")
         require(profile.get("observation_time_status", "not_recorded") in ("verified", "not_recorded"),
                 "profile_observation_time_conflict", 409)
