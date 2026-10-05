@@ -784,8 +784,12 @@ try {
 
   stage = "complete_future_build";
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.getByRole("button", { name: "加载合成示例", exact: true }).and(page.locator(":enabled")).waitFor();
-  await page.getByRole("button", { name: "加载合成示例", exact: true }).click();
+  const loadFullDemoButton = page.getByRole("button", { name: "加载合成示例", exact: true });
+  await loadFullDemoButton.and(page.locator(":enabled")).waitFor();
+  const fullDemoResponse = page.waitForResponse(response => new URL(response.url()).pathname === "/api/demo");
+  await loadFullDemoButton.click();
+  assert.equal((await fullDemoResponse).status(), 200, "full_future_demo_load_failed");
+  await loadFullDemoButton.and(page.locator(":enabled")).waitFor();
   await check("当前使用合成示例");
   const futureFixture = spawnSync(python, ["-c", "import json; from tests.test_future_builds import full_case; f,p=full_case(); print(json.dumps({'facts':f,'intent':p}))"],
     { cwd: root, windowsHide: true, timeout: 10000, encoding: "utf8" });
@@ -801,7 +805,7 @@ try {
   await jsonSummary.click();
   const goalSummary = page.locator("summary").filter({ hasText: "目标需求与未来构筑" });
   if (!await goalSummary.evaluate(element => element.parentElement.open)) await goalSummary.click();
-  await page.getByLabel("所需能力标识（每行一项）", { exact: true }).fill(planned.intent.required_capabilities.join("\n"));
+  await page.getByLabel("所需能力标识", { exact: false }).fill(planned.intent.required_capabilities.join("\n"));
   const allowed = page.locator(".build-editor fieldset").filter({ has: page.locator("legend").getByText("允许改变的构筑部分", { exact: true }) });
   for (const title of ["技能", "天赋", "巅峰", "符文", "仆从", "临时效果", "装备"])
     await allowed.getByRole("checkbox", { name: title === "技能" ? title : "允许更改" + title, exact: true }).check();
@@ -812,7 +816,7 @@ try {
   }
   await page.getByRole("button", { name: "添加未来构筑", exact: true }).click();
   const futureEditor = page.locator(".build-editor .source-list").filter({ has: page.getByText("未来构筑 1", { exact: true }) });
-  await futureEditor.getByLabel("可行性", { exact: true }).selectOption("owned");
+  await futureEditor.getByLabel("可行性", { exact: false }).selectOption("owned");
   for (const optionId of planned.intent.future_builds[0].preparation_options)
     await futureEditor.locator('input[data-preparation-id="' + optionId + '"]').check();
   const sourceNames = { skills: "技能", talents: "天赋", paragon: "巅峰", runes: "符文", companions: "仆从", temporary_effects: "临时效果" };
@@ -821,7 +825,7 @@ try {
     assert.deepEqual(shown.split(",").map(value => value.trim()).filter(Boolean).sort(),
       [...planned.intent.future_builds[0][group]].sort(), "future_source_selection_" + group);
   }
-  await futureEditor.getByLabel("buff_active", { exact: true }).selectOption("active");
+  await futureEditor.getByLabel("buff_active", { exact: false }).selectOption("active");
   await confirm();
   const confirmedBeforePlan = JSON.parse(await page.getByLabel("完整构筑数据", { exact: true }).inputValue());
   const fullFutureResponse = page.waitForResponse(response => new URL(response.url()).pathname === "/api/evaluation/evaluations" && response.request().method() === "POST");
